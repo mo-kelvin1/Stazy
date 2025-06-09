@@ -1,14 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
-import { Link } from "expo-router";
 
-export default function Index() {
+export default function Booking() {
   return (
     <View style={styles.container}>
-      <Text>Index Screen</Text>
-      <Link href={"/(modals)/login"}>Login</Link>
-      <Link href={"/(modals)/booking"}>booking</Link>
-      <Link href={"/listing/32"}>listing details</Link>
+      <Text>Booking Screen</Text>
     </View>
   );
 }

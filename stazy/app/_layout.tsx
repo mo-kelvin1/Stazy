@@ -1,52 +1,116 @@
+import { useFonts } from "expo-font";
+import { SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
-import { AuthProvider } from "../components/AuthProvider";
-import { useAuth } from "../hooks/useAuth";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import * as SecureStore from "expo-secure-store";
+import { Ionicons } from "@expo/vector-icons";
+import Colors from "@/constants/Colors";
+import { TouchableOpacity } from "react-native";
 
-function RootLayoutNav() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
+const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+// Cache the Clerk JWT
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      return SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      return;
+    }
+  },
+};
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    mon: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  });
+
+  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
 
   useEffect(() => {
-    if (isLoading) return;
-    const seg = segments[0] as string;
-    const inAuthGroup = seg === "(auth)";
-
-    if (!isAuthenticated && !inAuthGroup) {
-      // User is not authenticated and not in auth screens, redirect to userchecker
-      router.replace("./(auth)/userchecker");
-    } else if (isAuthenticated && inAuthGroup) {
-      // User is authenticated but still in auth screens, redirect to home
-      router.replace("/(tabs)");
+    if (loaded) {
+      SplashScreen.hideAsync();
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [loaded]);
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#FF385C" />
-      </View>
-    );
+  if (!loaded) {
+    return null;
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY!}
+      tokenCache={tokenCache}
     >
-      <Stack.Screen name="(auth)" options={{ presentation: "modal" }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+      <RootLayoutNav />
+    </ClerkProvider>
   );
 }
 
-export default function RootLayout() {
+function RootLayoutNav() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  // Automatically open login if user is not authenticated
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/(modals)/login");
+    }
+  }, [isLoaded]);
+
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <Stack>
+      <Stack.Screen
+        name="(modals)/login"
+        options={{
+          presentation: "modal",
+          title: "Log in or sign up",
+          headerTitleStyle: {
+            fontFamily: "mon-sb",
+          },
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="close-outline" size={28} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="listing/[id]" options={{ headerTitle: "" }} />
+      <Stack.Screen
+        name="(modals)/booking"
+        options={{
+          presentation: "transparentModal",
+          animation: "fade",
+          headerTransparent: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "#fff",
+                borderColor: Colors.dark,
+                borderRadius: 20,
+                borderWidth: 1,
+                padding: 4,
+              }}
+            >
+              <Ionicons name="close-outline" size={22} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+    </Stack>
   );
 }
