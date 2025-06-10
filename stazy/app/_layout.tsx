@@ -5,23 +5,40 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
-import { TouchableOpacity } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 // Cache the Clerk JWT
 const tokenCache = {
   async getToken(key: string) {
     try {
+      if (Platform.OS === "web") {
+        return localStorage.getItem(key);
+      }
       return SecureStore.getItemAsync(key);
     } catch (err) {
+      console.error("Error getting token:", err);
       return null;
     }
   },
   async saveToken(key: string, value: string) {
     try {
+      if (Platform.OS === "web") {
+        return localStorage.setItem(key, value);
+      }
       return SecureStore.setItemAsync(key, value);
     } catch (err) {
-      return;
+      console.error("Error saving token:", err);
+    }
+  },
+  async clearToken(key: string) {
+    try {
+      if (Platform.OS === "web") {
+        return localStorage.removeItem(key);
+      }
+      return SecureStore.deleteItemAsync(key);
+    } catch (err) {
+      console.error("Error clearing token:", err);
     }
   },
 };

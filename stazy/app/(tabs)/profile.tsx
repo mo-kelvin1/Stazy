@@ -6,10 +6,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
   const { signOut, isSignedIn } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Redirect to login page or perform other logout actions
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
   return (
     <SafeAreaView>
       <View>
-        <Button title="Log out" onPress={() => signOut} />
+        <Button title="Log out" onPress={handleLogout} />
         {!isSignedIn && (
           <Link href={"/(modals)/login"}>
             <Text>Log in</Text>
