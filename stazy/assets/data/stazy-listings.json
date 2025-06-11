@@ -1,0 +1,761 @@
+[
+    {
+      "id": "home_001",
+      "type": "homes",
+      "category": "apartments",
+      "name": "Modern Downtown Loft",
+      "summary": "Stylish 2-bedroom loft in the heart of downtown with city views and modern amenities",
+      "description": "Experience urban living at its finest in this beautifully designed 2-bedroom loft. Floor-to-ceiling windows offer stunning city views, while the open-plan living space features contemporary furnishings and high-end appliances. Perfect for business travelers or couples seeking a sophisticated stay.",
+      "location": {
+        "address": "123 Main Street, Downtown",
+        "city": "New York",
+        "state": "NY",
+        "country": "USA",
+        "zipcode": "10001",
+        "latitude": 40.7128,
+        "longitude": -74.0060
+      },
+      "host": {
+        "id": "host_001",
+        "name": "Sarah Johnson",
+        "avatar": "https://example.com/avatars/sarah.jpg",
+        "verified": true,
+        "response_rate": 98,
+        "response_time": "within 1 hour"
+      },
+      "property_details": {
+        "property_type": "Apartment",
+        "room_type": "Entire home/apt",
+        "accommodates": 4,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "beds": 2,
+        "square_feet": 1200
+      },
+      "pricing": {
+        "base_price": 150,
+        "cleaning_fee": 50,
+        "service_fee": 25,
+        "weekly_discount": 10,
+        "monthly_discount": 20
+      },
+      "amenities": [
+        "WiFi", "Kitchen", "Washer/Dryer", "Air conditioning", "Heating", 
+        "TV", "Workspace", "Gym", "Pool", "Parking", "Elevator"
+      ],
+      "images": [
+        "https://example.com/images/loft1.jpg",
+        "https://example.com/images/loft2.jpg",
+        "https://example.com/images/loft3.jpg"
+      ],
+      "availability": {
+        "minimum_nights": 2,
+        "maximum_nights": 30,
+        "calendar_updated": "2025-06-10"
+      },
+      "reviews": {
+        "count": 47,
+        "rating": 4.8,
+        "accuracy": 4.9,
+        "cleanliness": 4.8,
+        "communication": 4.9,
+        "location": 4.7,
+        "value": 4.6
+      }
+    },
+    {
+      "id": "home_002",
+      "type": "homes",
+      "category": "houses",
+      "name": "Cozy Beach House",
+      "summary": "Charming 3-bedroom beach house with ocean views and private deck",
+      "description": "Wake up to the sound of waves in this delightful beach house. Features include a spacious deck overlooking the ocean, fully equipped kitchen, and comfortable bedrooms. Just steps from the beach with easy access to water sports and local restaurants.",
+      "location": {
+        "address": "456 Ocean Drive",
+        "city": "Malibu",
+        "state": "CA",
+        "country": "USA",
+        "zipcode": "90265",
+        "latitude": 34.0259,
+        "longitude": -118.7798
+      },
+      "host": {
+        "id": "host_002",
+        "name": "Mike Rodriguez",
+        "avatar": "https://example.com/avatars/mike.jpg",
+        "verified": true,
+        "response_rate": 95,
+        "response_time": "within 4 hours"
+      },
+      "property_details": {
+        "property_type": "House",
+        "room_type": "Entire home/apt",
+        "accommodates": 6,
+        "bedrooms": 3,
+        "bathrooms": 2,
+        "beds": 3,
+        "square_feet": 1800
+      },
+      "pricing": {
+        "base_price": 280,
+        "cleaning_fee": 75,
+        "service_fee": 45,
+        "weekly_discount": 15,
+        "monthly_discount": 25
+      },
+      "amenities": [
+        "WiFi", "Kitchen", "Washer/Dryer", "Beach access", "Deck", 
+        "BBQ grill", "TV", "Parking", "Hot tub", "Beach chairs"
+      ],
+      "images": [
+        "https://example.com/images/beach1.jpg",
+        "https://example.com/images/beach2.jpg",
+        "https://example.com/images/beach3.jpg"
+      ],
+      "availability": {
+        "minimum_nights": 3,
+        "maximum_nights": 14,
+        "calendar_updated": "2025-06-09"
+      },
+      "reviews": {
+        "count": 89,
+        "rating": 4.9,
+        "accuracy": 4.8,
+        "cleanliness": 4.9,
+        "communication": 4.9,
+        "location": 5.0,
+        "value": 4.7
+      }
+    },
+    {
+      "id": "home_003",
+      "type": "homes",
+      "category": "unique_stays",
+      "name": "Rustic Mountain Cabin",
+      "summary": "Off-grid cabin in the mountains with fireplace and hiking trails",
+      "description": "Disconnect from the world in this authentic log cabin nestled in the mountains. Features wood-burning fireplace, rustic furnishings, and access to pristine hiking trails. Perfect for nature lovers seeking tranquility and adventure.",
+      "location": {
+        "address": "789 Pine Ridge Road",
+        "city": "Aspen",
+        "state": "CO",
+        "country": "USA",
+        "zipcode": "81611",
+        "latitude": 39.1911,
+        "longitude": -106.8175
+      },
+      "host": {
+        "id": "host_003",
+        "name": "Emma Wilson",
+        "avatar": "https://example.com/avatars/emma.jpg",
+        "verified": true,
+        "response_rate": 92,
+        "response_time": "within 8 hours"
+      },
+      "property_details": {
+        "property_type": "Cabin",
+        "room_type": "Entire home/apt",
+        "accommodates": 4,
+        "bedrooms": 2,
+        "bathrooms": 1,
+        "beds": 2,
+        "square_feet": 900
+      },
+      "pricing": {
+        "base_price": 120,
+        "cleaning_fee": 40,
+        "service_fee": 20,
+        "weekly_discount": 12,
+        "monthly_discount": 22
+      },
+      "amenities": [
+        "Fireplace", "Kitchen", "Hiking", "Mountain views", "Wood stove", 
+        "Outdoor seating", "No WiFi", "Generator", "Well water"
+      ],
+      "images": [
+        "https://example.com/images/cabin1.jpg",
+        "https://example.com/images/cabin2.jpg",
+        "https://example.com/images/cabin3.jpg"
+      ],
+      "availability": {
+        "minimum_nights": 2,
+        "maximum_nights": 7,
+        "calendar_updated": "2025-06-08"
+      },
+      "reviews": {
+        "count": 34,
+        "rating": 4.7,
+        "accuracy": 4.8,
+        "cleanliness": 4.6,
+        "communication": 4.5,
+        "location": 4.9,
+        "value": 4.8
+      }
+    },
+    {
+      "id": "service_001",
+      "type": "services",
+      "category": "cleaning",
+      "name": "Professional Deep Cleaning",
+      "summary": "Comprehensive cleaning service for vacation rentals and homes",
+      "description": "Our professional cleaning team provides thorough deep cleaning services for vacation rentals, apartments, and homes. We use eco-friendly products and ensure every corner is spotless for the next guest's arrival.",
+      "location": {
+        "service_area": "Greater Los Angeles Area",
+        "city": "Los Angeles",
+        "state": "CA",
+        "country": "USA"
+      },
+      "provider": {
+        "id": "provider_001",
+        "name": "CleanPro Services",
+        "contact": "contact@cleanpro.com",
+        "phone": "+1-555-0123",
+        "verified": true,
+        "rating": 4.8,
+        "reviews_count": 156
+      },
+      "service_details": {
+        "duration": "2-4 hours",
+        "team_size": "2-3 cleaners",
+        "availability": "7 days a week",
+        "advance_booking": "24 hours"
+      },
+      "pricing": {
+        "base_rate": 80,
+        "per_hour": 25,
+        "additional_services": {
+          "oven_cleaning": 20,
+          "refrigerator_cleaning": 15,
+          "window_cleaning": 30
+        }
+      },
+      "services_included": [
+        "Bathroom deep clean", "Kitchen sanitization", "Floor mopping", 
+        "Dusting", "Bed making", "Trash removal", "Laundry folding"
+      ],
+      "images": [
+        "https://example.com/images/cleaning1.jpg",
+        "https://example.com/images/cleaning2.jpg"
+      ],
+      "reviews": {
+        "count": 156,
+        "rating": 4.8,
+        "reliability": 4.9,
+        "quality": 4.8,
+        "value": 4.7
+      }
+    },
+    {
+      "id": "service_002",
+      "type": "services",
+      "category": "maintenance",
+      "name": "Handyman Services",
+      "summary": "Professional repair and maintenance for rental properties",
+      "description": "Experienced handyman services for all your property maintenance needs. From plumbing fixes to electrical work, we keep your rental property in top condition to ensure guest satisfaction.",
+      "location": {
+        "service_area": "Miami-Dade County",
+        "city": "Miami",
+        "state": "FL",
+        "country": "USA"
+      },
+      "provider": {
+        "id": "provider_002",
+        "name": "FixIt Fast",
+        "contact": "info@fixitfast.com",
+        "phone": "+1-555-0456",
+        "verified": true,
+        "rating": 4.6,
+        "reviews_count": 89
+      },
+      "service_details": {
+        "response_time": "Same day",
+        "availability": "Monday-Saturday",
+        "emergency_service": true,
+        "licensed_insured": true
+      },
+      "pricing": {
+        "service_call": 45,
+        "hourly_rate": 65,
+        "emergency_rate": 95
+      },
+      "services_offered": [
+        "Plumbing repairs", "Electrical work", "Appliance repair", 
+        "HVAC maintenance", "Painting", "Furniture assembly", "Lock changes"
+      ],
+      "images": [
+        "https://example.com/images/handyman1.jpg",
+        "https://example.com/images/handyman2.jpg"
+      ],
+      "reviews": {
+        "count": 89,
+        "rating": 4.6,
+        "punctuality": 4.7,
+        "quality": 4.8,
+        "communication": 4.5
+      }
+    },
+    {
+      "id": "service_003",
+      "type": "services",
+      "category": "concierge",
+      "name": "Guest Concierge Service",
+      "summary": "Personal concierge service for vacation rental guests",
+      "description": "Enhance your guests' experience with our premium concierge service. We handle restaurant reservations, activity bookings, transportation arrangements, and special requests to make their stay memorable.",
+      "location": {
+        "service_area": "Manhattan",
+        "city": "New York",
+        "state": "NY",
+        "country": "USA"
+      },
+      "provider": {
+        "id": "provider_003",
+        "name": "Elite Concierge NYC",
+        "contact": "concierge@elitenyc.com",
+        "phone": "+1-555-0789",
+        "verified": true,
+        "rating": 4.9,
+        "reviews_count": 203
+      },
+      "service_details": {
+        "availability": "24/7",
+        "response_time": "Within 30 minutes",
+        "languages": ["English", "Spanish", "French", "Mandarin"],
+        "advance_booking": "Not required"
+      },
+      "pricing": {
+        "monthly_retainer": 200,
+        "per_request": 25,
+        "premium_package": 350
+      },
+      "services_offered": [
+        "Restaurant reservations", "Event tickets", "Transportation", 
+        "Shopping assistance", "Tour bookings", "Special occasions", "Emergency assistance"
+      ],
+      "images": [
+        "https://example.com/images/concierge1.jpg",
+        "https://example.com/images/concierge2.jpg"
+      ],
+      "reviews": {
+        "count": 203,
+        "rating": 4.9,
+        "responsiveness": 4.9,
+        "helpfulness": 4.8,
+        "professionalism": 4.9
+      }
+    },
+    {
+      "id": "experience_001",
+      "type": "experiences",
+      "category": "tours",
+      "name": "Historic Walking Tour",
+      "summary": "Guided walking tour through the historic district with local stories",
+      "description": "Discover the rich history of our city with an expert local guide. This 3-hour walking tour covers major landmarks, hidden gems, and fascinating stories that bring the past to life. Perfect for history buffs and curious travelers.",
+      "location": {
+        "meeting_point": "City Hall Steps",
+        "city": "Boston",
+        "state": "MA",
+        "country": "USA"
+      },
+      "host": {
+        "id": "guide_001",
+        "name": "Professor James Mitchell",
+        "avatar": "https://example.com/avatars/james.jpg",
+        "expertise": "Local History",
+        "verified": true,
+        "languages": ["English"],
+        "experience_years": 8
+      },
+      "experience_details": {
+        "duration": "3 hours",
+        "group_size": "8-15 people",
+        "difficulty": "Easy",
+        "age_requirement": "All ages welcome",
+        "weather_dependent": false
+      },
+      "pricing": {
+        "adult_price": 35,
+        "child_price": 20,
+        "group_discount": 10,
+        "private_tour": 280
+      },
+      "includes": [
+        "Professional guide", "Historical maps", "Photo opportunities", 
+        "Small group size", "Local recommendations"
+      ],
+      "schedule": {
+        "days": ["Tuesday", "Thursday", "Saturday", "Sunday"],
+        "times": ["10:00 AM", "2:00 PM"],
+        "advance_booking": "48 hours"
+      },
+      "images": [
+        "https://example.com/images/tour1.jpg",
+        "https://example.com/images/tour2.jpg",
+        "https://example.com/images/tour3.jpg"
+      ],
+      "reviews": {
+        "count": 127,
+        "rating": 4.8,
+        "guide_knowledge": 4.9,
+        "entertainment": 4.7,
+        "value": 4.8
+      }
+    },
+    {
+      "id": "experience_002",
+      "type": "experiences",
+      "category": "food_drink",
+      "name": "Wine Tasting Experience",
+      "summary": "Private wine tasting with sommelier in vineyard setting",
+      "description": "Indulge in a sophisticated wine tasting experience featuring local wines paired with artisanal cheeses. Our certified sommelier will guide you through the tasting process while sharing knowledge about wine regions and production methods.",
+      "location": {
+        "venue": "Sunset Vineyard",
+        "address": "1234 Wine Country Road",
+        "city": "Napa",
+        "state": "CA",
+        "country": "USA"
+      },
+      "host": {
+        "id": "sommelier_001",
+        "name": "Isabella Martinez",
+        "avatar": "https://example.com/avatars/isabella.jpg",
+        "expertise": "Wine & Culinary Arts",
+        "verified": true,
+        "certifications": ["Level 3 Sommelier", "Wine Educator"],
+        "experience_years": 12
+      },
+      "experience_details": {
+        "duration": "2.5 hours",
+        "group_size": "4-12 people",
+        "age_requirement": "21+",
+        "includes_transport": false,
+        "outdoor_setting": true
+      },
+      "pricing": {
+        "per_person": 85,
+        "private_group": 680,
+        "additional_tastings": 15
+      },
+      "includes": [
+        "6 wine tastings", "Cheese and charcuterie board", "Vineyard tour", 
+        "Tasting notes", "Wine education", "Souvenir glass"
+      ],
+      "schedule": {
+        "days": ["Wednesday", "Friday", "Saturday", "Sunday"],
+        "times": ["11:00 AM", "3:00 PM", "5:00 PM"],
+        "seasonal": "Year-round",
+        "advance_booking": "72 hours"
+      },
+      "images": [
+        "https://example.com/images/wine1.jpg",
+        "https://example.com/images/wine2.jpg",
+        "https://example.com/images/wine3.jpg"
+      ],
+      "reviews": {
+        "count": 94,
+        "rating": 4.9,
+        "wine_selection": 4.9,
+        "host_expertise": 4.8,
+        "atmosphere": 4.9,
+        "value": 4.7
+      }
+    },
+    {
+      "id": "experience_003",
+      "type": "experiences",
+      "category": "adventure",
+      "name": "Kayaking Adventure",
+      "summary": "Guided kayaking tour through scenic waterways with wildlife viewing",
+      "description": "Paddle through pristine waters on this exciting kayaking adventure. Explore hidden coves, observe local wildlife, and enjoy the tranquility of nature. Suitable for beginners with basic instruction provided.",
+      "location": {
+        "launch_point": "Marina Bay",
+        "city": "San Diego",
+        "state": "CA",
+        "country": "USA"
+      },
+      "host": {
+        "id": "guide_002",
+        "name": "Captain Rick Thompson",
+        "avatar": "https://example.com/avatars/rick.jpg",
+        "expertise": "Marine Biology & Water Sports",
+        "verified": true,
+        "certifications": ["Coast Guard Licensed", "First Aid/CPR"],
+        "experience_years": 15
+      },
+      "experience_details": {
+        "duration": "4 hours",
+        "group_size": "6-12 people",
+        "difficulty": "Beginner-Intermediate",
+        "age_requirement": "12+",
+        "weather_dependent": true
+      },
+      "pricing": {
+        "adult_price": 75,
+        "youth_price": 55,
+        "equipment_included": true,
+        "photos_package": 25
+      },
+      "includes": [
+        "Kayak and paddle", "Life jacket", "Dry bag", "Safety briefing", 
+        "Wildlife guide", "Snacks and water"
+      ],
+      "schedule": {
+        "days": ["Daily"],
+        "times": ["8:00 AM", "1:00 PM"],
+        "seasonal": "March-November",
+        "weather_contingent": true,
+        "advance_booking": "24 hours"
+      },
+      "images": [
+        "https://example.com/images/kayak1.jpg",
+        "https://example.com/images/kayak2.jpg",
+        "https://example.com/images/kayak3.jpg"
+      ],
+      "reviews": {
+        "count": 168,
+        "rating": 4.7,
+        "guide_expertise": 4.8,
+        "adventure_level": 4.6,
+        "safety": 4.9,
+        "wildlife_sightings": 4.5
+      }
+    },
+    {
+      "id": "home_004",
+      "type": "homes",
+      "category": "luxury",
+      "name": "Luxury Penthouse Suite",
+      "summary": "Ultra-modern penthouse with panoramic city views and premium amenities",
+      "description": "Experience the pinnacle of luxury living in this stunning penthouse suite. Floor-to-ceiling windows offer 360-degree city views, while premium furnishings and state-of-the-art amenities ensure an unforgettable stay. Features include a private rooftop terrace, marble bathrooms, and concierge service.",
+      "location": {
+        "address": "789 Skyline Avenue, 45th Floor",
+        "city": "Chicago",
+        "state": "IL",
+        "country": "USA",
+        "zipcode": "60611",
+        "latitude": 41.8781,
+        "longitude": -87.6298
+      },
+      "host": {
+        "id": "host_004",
+        "name": "Alexandra Chen",
+        "avatar": "https://example.com/avatars/alexandra.jpg",
+        "verified": true,
+        "superhost": true,
+        "response_rate": 100,
+        "response_time": "within 30 minutes"
+      },
+      "property_details": {
+        "property_type": "Penthouse",
+        "room_type": "Entire home/apt",
+        "accommodates": 8,
+        "bedrooms": 4,
+        "bathrooms": 4,
+        "beds": 4,
+        "square_feet": 3500
+      },
+      "pricing": {
+        "base_price": 450,
+        "cleaning_fee": 150,
+        "service_fee": 75,
+        "weekly_discount": 8,
+        "monthly_discount": 18
+      },
+      "amenities": [
+        "City views", "Rooftop terrace", "Concierge", "Valet parking", 
+        "Wine cellar", "Home theater", "Gym access", "Spa", "Chef's kitchen", "Smart home"
+      ],
+      "images": [
+        "https://example.com/images/penthouse1.jpg",
+        "https://example.com/images/penthouse2.jpg",
+        "https://example.com/images/penthouse3.jpg",
+        "https://example.com/images/penthouse4.jpg"
+      ],
+      "availability": {
+        "minimum_nights": 3,
+        "maximum_nights": 30,
+        "calendar_updated": "2025-06-11"
+      },
+      "reviews": {
+        "count": 28,
+        "rating": 4.9,
+        "accuracy": 5.0,
+        "cleanliness": 4.9,
+        "communication": 4.9,
+        "location": 4.8,
+        "value": 4.7
+      }
+    },
+    {
+      "id": "home_005",
+      "type": "homes",
+      "category": "budget",
+      "name": "Cozy Studio Near University",
+      "summary": "Affordable studio apartment perfect for students and budget travelers",
+      "description": "Clean and comfortable studio apartment in a safe neighborhood near the university. Features kitchenette, fast WiFi, and easy access to public transportation. Ideal for solo travelers, students, or short business trips.",
+      "location": {
+        "address": "321 College Street",
+        "city": "Austin",
+        "state": "TX",
+        "country": "USA",
+        "zipcode": "78705",
+        "latitude": 30.2672,
+        "longitude": -97.7431
+      },
+      "host": {
+        "id": "host_005",
+        "name": "David Kim",
+        "avatar": "https://example.com/avatars/david.jpg",
+        "verified": true,
+        "response_rate": 94,
+        "response_time": "within 2 hours"
+      },
+      "property_details": {
+        "property_type": "Studio",
+        "room_type": "Entire home/apt",
+        "accommodates": 2,
+        "bedrooms": 0,
+        "bathrooms": 1,
+        "beds": 1,
+        "square_feet": 450
+      },
+      "pricing": {
+        "base_price": 45,
+        "cleaning_fee": 20,
+        "service_fee": 8,
+        "weekly_discount": 15,
+        "monthly_discount": 30
+      },
+      "amenities": [
+        "WiFi", "Kitchenette", "TV", "Air conditioning", "Heating", 
+        "Workspace", "Public transport", "Self check-in", "Essentials"
+      ],
+      "images": [
+        "https://example.com/images/studio1.jpg",
+        "https://example.com/images/studio2.jpg"
+      ],
+      "availability": {
+        "minimum_nights": 1,
+        "maximum_nights": 28,
+        "calendar_updated": "2025-06-10"
+      },
+      "reviews": {
+        "count": 112,
+        "rating": 4.5,
+        "accuracy": 4.6,
+        "cleanliness": 4.4,
+        "communication": 4.5,
+        "location": 4.7,
+        "value": 4.8
+      }
+    },
+    {
+      "id": "service_004",
+      "type": "services",
+      "category": "photography",
+      "name": "Property Photography",
+      "summary": "Professional photography service for vacation rental listings",
+      "description": "Enhance your property listings with stunning professional photography. Our experienced photographers specialize in vacation rental properties, capturing the best angles and lighting to attract more bookings and increase your revenue.",
+      "location": {
+        "service_area": "San Francisco Bay Area",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA"
+      },
+      "provider": {
+        "id": "provider_004",
+        "name": "PropertyLens Pro",
+        "contact": "booking@propertylens.com",
+        "phone": "+1-555-0321",
+        "verified": true,
+        "rating": 4.9,
+        "reviews_count": 78
+      },
+      "service_details": {
+        "session_duration": "2-3 hours",
+        "delivery_time": "48-72 hours",
+        "included_photos": "25-40 high-res images",
+        "equipment": "Professional DSLR, drone (if applicable)"
+      },
+      "pricing": {
+        "studio_apartment": 150,
+        "1_bedroom": 200,
+        "2_bedroom": 250,
+        "3_bedroom_plus": 300,
+        "drone_photography": 100,
+        "rush_delivery": 50
+      },
+      "services_included": [
+        "Interior photography", "Exterior shots", "Staging consultation", 
+        "Photo editing", "Online gallery", "Commercial usage rights"
+      ],
+      "images": [
+        "https://example.com/images/photography1.jpg",
+        "https://example.com/images/photography2.jpg"
+      ],
+      "reviews": {
+        "count": 78,
+        "rating": 4.9,
+        "photo_quality": 4.9,
+        "professionalism": 4.8,
+        "timeliness": 4.9
+      }
+    },
+    {
+      "id": "experience_004",
+      "type": "experiences",
+      "category": "wellness",
+      "name": "Sunset Yoga Session",
+      "summary": "Relaxing yoga class on the beach at sunset with meditation",
+      "description": "Unwind with a peaceful yoga session as the sun sets over the ocean. Our certified instructor guides you through gentle poses suitable for all levels, followed by a calming meditation. Perfect way to end your day in paradise.",
+      "location": {
+        "venue": "Sunset Beach",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "USA"
+      },
+      "host": {
+        "id": "instructor_001",
+        "name": "Luna Rodriguez",
+        "avatar": "https://example.com/avatars/luna.jpg",
+        "expertise": "Yoga & Meditation",
+        "verified": true,
+        "certifications": ["RYT 500", "Meditation Teacher"],
+        "experience_years": 10
+      },
+      "experience_details": {
+        "duration": "75 minutes",
+        "group_size": "8-16 people",
+        "difficulty": "All levels",
+        "age_requirement": "16+",
+        "weather_dependent": true
+      },
+      "pricing": {
+        "per_person": 40,
+        "yoga_mat_rental": 5,
+        "private_session": 200
+      },
+      "includes": [
+        "Yoga instruction", "Meditation guidance", "Beach setting", 
+        "All levels welcome", "Complimentary water"
+      ],
+      "schedule": {
+        "days": ["Daily"],
+        "times": ["One hour before sunset"],
+        "seasonal": "Year-round",
+        "weather_contingent": true,
+        "advance_booking": "12 hours"
+      },
+      "images": [
+        "https://example.com/images/yoga1.jpg",
+        "https://example.com/images/yoga2.jpg",
+        "https://example.com/images/yoga3.jpg"
+      ],
+      "reviews": {
+        "count": 156,
+        "rating": 4.8,
+        "instructor_quality": 4.9,
+        "location_beauty": 4.9,
+        "relaxation": 4.8,
+        "value": 4.6
+      }
+    }  
+]
