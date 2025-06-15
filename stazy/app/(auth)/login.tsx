@@ -12,7 +12,6 @@ import {
 import { Link, Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
-import signup from "./signup";
 import { defaultStyles } from "@/constants/styles";
 
 export default function Login() {
@@ -34,20 +33,26 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      await login(email, password);
-      // Navigation will be handled by the root layout based on auth state
+      const result = await login(email, password);
+
+      if (result.success) {
+        // Navigation will be handled by the root layout based on auth state
+        // The layout will automatically redirect to /(tabs) when isAuthenticated becomes true
+      } else {
+        Alert.alert(
+          "Login Failed",
+          result.message || "Please check your credentials and try again"
+        );
+      }
     } catch (error) {
+      console.error("Login error:", error);
       Alert.alert(
         "Login Failed",
-        "Please check your credentials and try again"
+        "An unexpected error occurred. Please try again."
       );
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSignUp = () => {
-    router.push("./signup");
   };
 
   return (
@@ -69,6 +74,7 @@ export default function Login() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!isLoading}
         />
 
         <TextInput
@@ -77,9 +83,10 @@ export default function Login() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!isLoading}
         />
         <View style={styles.forgotPasswordContainer}>
-          <Link href="/(auth)/otp" style={styles.forgotPasswordLink}>
+          <Link href="/(auth)/forgotpassword" style={styles.forgotPasswordLink}>
             Forgot Password?
           </Link>
         </View>
@@ -89,7 +96,7 @@ export default function Login() {
             (!email || !password || isLoading) && styles.continueButtonDisabled,
           ]}
           onPress={handleContinue}
-          disabled={isLoading}
+          disabled={!email || !password || isLoading}
         >
           <Text style={styles.continueButtonText}>
             {isLoading ? "Signing in..." : "Sign In"}
@@ -102,7 +109,7 @@ export default function Login() {
           <View style={styles.dividerLine} />
         </View>
         <View style={{ flexDirection: "row", justifyContent: "center" }}>
-          <Text>Don't have an account</Text>
+          <Text>Don't have an account?</Text>
           <Link href="./signup" style={styles.signupLink}>
             Sign Up
           </Link>

@@ -29,15 +29,23 @@ public class AuthenticationUser {
     @Email
     @Column(unique = true)
     private String email;
+    @JsonIgnore
     private Boolean emailVerified = false;
+    @JsonIgnore
     private String emailVerificationToken = null;
+    @JsonIgnore
     private LocalDateTime emailVerificationTokenExpiryDate = null;
     @JsonIgnore
     private String password;
+    @JsonIgnore
     private String passwordResetToken = null;
+    @JsonIgnore
     private LocalDateTime passwordResetTokenExpiryDate = null;
     @JsonIgnore
     private String salt;
+    private String firstname;
+    private String lastname;
+    private String phoneNumber;
 
     public AuthenticationUser(String email, String password) {
         this.email = email;

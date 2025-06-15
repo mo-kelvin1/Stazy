@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.stazy.backend.dto.AuthenticationRequestBody;
 import com.stazy.backend.dto.AuthenticationResponseBody;
+import com.stazy.backend.dto.CompleteProfileRequest;
 import com.stazy.backend.model.AuthenticationUser;
 import com.stazy.backend.repository.AuthenticationUserRepository;
 import com.stazy.backend.utils.Encoder;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 
 @Service
 public class AuthenticationService {
@@ -178,4 +180,35 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Password reset token failed");
         }
     }
-}
+
+    public void completeUserProfile(CompleteProfileRequest request, String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Missing or malformed Authorization header");
+        }
+
+        String jwtToken = token.substring(7).trim();
+
+        if (jwtToken.isEmpty()) {
+            throw new IllegalArgumentException("Empty JWT token after removing Bearer prefix");
+        }
+
+        String email;
+        try {
+            email = jwt.getEmailFromToken(jwtToken);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to decode JWT: " + e.getMessage(), e);
+        }
+
+        Optional<AuthenticationUser> user = authenticationUserRepository.findByEmail(email);
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        AuthenticationUser u = user.get();
+        u.setFirstname(request.getFirstname());
+        u.setLastname(request.getLastname());
+        u.setPhoneNumber(request.getPhonenumber());
+        authenticationUserRepository.save(u);
+    }
+
+};

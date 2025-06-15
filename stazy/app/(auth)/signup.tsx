@@ -15,10 +15,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 
 const signup = () => {
+  const router = useRouter();
+  const { signup } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
   const handleContinue = async () => {
     if (!isValidEmail(email)) {
       Alert.alert("Error", "Please enter a valid email address");
@@ -35,12 +43,25 @@ const signup = () => {
 
     setIsLoading(true);
     try {
-      await login(email, password);
-      // Navigation will be handled by the root layout based on auth state
+      const result = await signup(email, password, confirmPassword);
+
+      if (result.success) {
+        // Navigate to OTP screen with userId
+        router.push({
+          pathname: "/(auth)/otpscreen",
+          params: { userId: result.userId },
+        });
+      } else {
+        Alert.alert(
+          "Signup Failed",
+          result.message || "An error occurred during signup"
+        );
+      }
     } catch (error) {
+      console.error("Signup error:", error);
       Alert.alert(
-        "Login Failed",
-        "Please check your credentials and try again"
+        "Signup Failed",
+        "An unexpected error occurred. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -50,12 +71,7 @@ const signup = () => {
   const handleClose = () => {
     router.back();
   };
-  const router = useRouter();
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flexDirection: "row", justifyContent: "center" }}>
@@ -75,6 +91,7 @@ const signup = () => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!isLoading}
         />
 
         <TextInput
@@ -83,6 +100,7 @@ const signup = () => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!isLoading}
         />
         <TextInput
           style={styles.input}
@@ -90,6 +108,7 @@ const signup = () => {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
+          editable={!isLoading}
         />
       </View>
 
@@ -100,7 +119,7 @@ const signup = () => {
             styles.continueButtonDisabled,
         ]}
         onPress={handleContinue}
-        disabled={isLoading}
+        disabled={!email || !password || !confirmPassword || isLoading}
       >
         <Text style={styles.continueButtonText}>
           {isLoading ? "Creating Account..." : "Create Account"}

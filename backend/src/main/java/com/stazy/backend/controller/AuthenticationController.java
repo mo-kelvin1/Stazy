@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stazy.backend.dto.AuthenticationRequestBody;
 import com.stazy.backend.dto.AuthenticationResponseBody;
+import com.stazy.backend.dto.CompleteProfileRequest;
 import com.stazy.backend.model.AuthenticationUser;
 import com.stazy.backend.service.AuthenticationService;
 
@@ -14,11 +15,13 @@ import jakarta.validation.Valid;
 
 import java.io.UnsupportedEncodingException;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -72,5 +75,13 @@ public class AuthenticationController {
             @RequestParam String token) {
         authenticationService.resetPassword(email, newPassword, token);
         return "Password reset successfully";
+    }
+
+    @PostMapping("/complete-profile")
+    public String completeUserProfile(
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody CompleteProfileRequest request) {
+        authenticationService.completeUserProfile(request, token);
+        return "Profile completed successfully";
     }
 }
