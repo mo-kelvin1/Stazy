@@ -1,286 +1,168 @@
+import React, { useState, useRef, useEffect } from "react";
 import {
-  Animated,
+  SafeAreaView,
   StatusBar,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
+  Animated,
+  Alert,
+  View,
+  Text,
 } from "react-native";
-
-import EditScreenInfo from "@/components/EditScreenInfo";
-import { Text, View } from "@/components/Themed";
+import { Stack } from "expo-router";
+import { Property } from "../../data/mockProperties";
+import PropertyCard from "../../components/cards/PropertyCard";
 import FadeInView from "../../components/cards/FadeInView";
-import { Ionicons } from "@expo/vector-icons";
-import { Stack, router } from "expo-router";
+import CategoryListingComponent from "../../components/cards/CategoryListingPage";
+import { HomeHeader } from "../../components/home/HomeHeader";
+import { CategorySection } from "../../components/home/CategorySection";
+import { useHomeData } from "../../hooks/useHomeData";
+import { useWishlist } from "../../hooks/useWishlist";
+import { homeStyles } from "../../constants/homeStyles";
 
-import React, { useState } from "react";
+export default function HomePage() {
+  const {
+    properties,
+    loading,
+    activeTab,
+    setActiveTab,
+    categorizedProperties,
+  } = useHomeData();
 
-export default function TabOneScreen() {
-  const [activeTab, setActiveTab] = useState<
-    "Homes" | "Experiences" | "Services"
-  >("Homes");
-  // TODO: Replace this with your actual wishlist count logic or state
-  const wishlistCount = 0;
+  const {
+    likedItems,
+    wishlistCount,
+    handleHeartPress,
+    initializeWishlistData,
+  } = useWishlist();
 
-  function handleTabPress(tab: "Homes" | "Experiences" | "Services"): void {
-    setActiveTab(tab);
-    // Optionally, you can add navigation or analytics logic here
-  }
-
-  // Define missing variables for headerHeight, searchBarOpacity, inputRef, searchQuery, setSearchQuery, and handleSearchSubmit
-  const [headerHeight] = useState(120); // Example static height, adjust as needed
-  const [searchBarOpacity] = useState(1); // Example static opacity, adjust as needed
-  const inputRef = React.useRef<TextInput>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null
+  );
+  const [showCategoryListing, setShowCategoryListing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  function handleSearchSubmit() {
-    // Implement your search logic here
-    console.log("Search submitted:", searchQuery);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [180, 80],
+    extrapolate: "clamp",
+  });
+
+  const searchBarOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  useEffect(() => {
+    initializeWishlistData();
+  }, [initializeWishlistData]);
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim() !== "") {
+      console.log("Search Submitted:", searchQuery);
+    }
+  };
+
+  const handleItemPress = (item: Property) => {
+    console.log("HomePage: Property card clicked for:", item.id);
+    setSelectedProperty(item);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    console.log("HomePage: Closing modal");
+    setModalVisible(false);
+    setSelectedProperty(null);
+  };
+
+  const handleTabPress = (tab: string) => {
+    console.log("HomePage: Tab pressed:", tab);
+    setActiveTab(tab);
+  };
+
+  const handleCategoryPress = (category: string) => {
+    console.log("HomePage: Category pressed:", category);
+    setSelectedCategory(category);
+    setShowCategoryListing(true);
+  };
+
+  const handleBackFromCategoryListing = () => {
+    setShowCategoryListing(false);
+    setSelectedCategory("");
+  };
+
+  const onHeartPress = (itemId: string) => {
+    handleHeartPress(itemId, properties);
+  };
+
+  if (showCategoryListing) {
+    const categoryProperties = categorizedProperties[selectedCategory] || [];
+    return (
+      <CategoryListingComponent
+        category={selectedCategory}
+        properties={categoryProperties}
+        onBackPress={handleBackFromCategoryListing}
+        likedItems={likedItems}
+        onHeartPress={onHeartPress}
+      />
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <SafeAreaView style={homeStyles.container}>
+      <FadeInView style={homeStyles.FadeInView}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Animated.View
-          style={[styles.searchContainer, { opacity: searchBarOpacity }]}
-        >
-          <View style={styles.searchBar}>
-            <Ionicons
-              name="search"
-              size={20}
-              color="#717171"
-              style={styles.searchIcon}
-            />
-            <TextInput
-              ref={inputRef}
-              style={styles.searchText}
-              placeholder="Start your search"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearchSubmit}
-              returnKeyType="search"
-            />
-          </View>
+        <HomeHeader
+          headerHeight={headerHeight}
+          searchBarOpacity={searchBarOpacity}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          wishlistCount={wishlistCount}
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onSearchSubmit={handleSearchSubmit}
+        />
 
-          {/* Wishlist counter */}
-          {wishlistCount > 0 && (
-            <TouchableOpacity
-              style={styles.wishlistButton}
-              onPress={() => {
-                // Navigate to wishlist screen
-                router.push("/wishlist");
-                console.log("Navigate to wishlist");
-              }}
-            >
-              <Ionicons name="heart" size={16} color="white" />
-              <Text
-                style={{ color: "white", fontWeight: "bold", marginLeft: 4 }}
-              >
-                {wishlistCount}
-              </Text>
-            </TouchableOpacity>
+        <Animated.ScrollView
+          style={homeStyles.scrollView}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
           )}
-        </Animated.View>
-
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "Homes" && styles.activeTab]}
-            onPress={() => handleTabPress("Homes")}
-          >
-            <Ionicons
-              name="home"
-              size={20}
-              color={activeTab === "Homes" ? "#222222" : "#717171"}
-            />
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "Homes" && styles.activeTabText,
-              ]}
-            >
-              Homes
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === "Experiences" && styles.activeTab,
-            ]}
-            onPress={() => handleTabPress("Experiences")}
-          >
-            <View style={styles.tabWithBadge}>
-              <Ionicons
-                name="balloon"
-                size={20}
-                color={activeTab === "Experiences" ? "#222222" : "#717171"}
-              />
+          scrollEventThrottle={16}
+        >
+          {loading ? (
+            <View style={homeStyles.loadingContainer}>
+              <Text>Loading...</Text>
             </View>
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "Experiences" && styles.activeTabText,
-              ]}
-            >
-              Experiences
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "Services" && styles.activeTab]}
-            onPress={() => handleTabPress("Services")}
-          >
-            <View style={styles.tabWithBadge}>
-              <Ionicons
-                name="restaurant"
-                size={20}
-                color={activeTab === "Services" ? "#222222" : "#717171"}
+          ) : (
+            Object.entries(categorizedProperties).map(([category, items]) => (
+              <CategorySection
+                key={category}
+                category={category}
+                items={items as Property[]}
+                likedItems={likedItems}
+                onCategoryPress={handleCategoryPress}
+                onItemPress={handleItemPress}
+                onHeartPress={onHeartPress}
               />
-            </View>
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "Services" && styles.activeTabText,
-              ]}
-            >
-              Services
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+            ))
+          )}
+        </Animated.ScrollView>
 
-      <Text style={styles.title}>Tab One</Text>
-      <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
-      />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+        <PropertyCard
+          property={selectedProperty}
+          isVisible={modalVisible}
+          onClose={closeModal}
+          likedItems={likedItems}
+          onHeartPress={onHeartPress}
+        />
+      </FadeInView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 8,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#e9e9e9",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flex: 1,
-    marginRight: 8,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchText: {
-    flex: 1,
-  },
-  tabContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  tab: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  tabWithBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "relative",
-  },
-  tabText: {
-    marginLeft: 4,
-    color: "#717171",
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#007AFF",
-  },
-  activeTabText: {
-    color: "#007AFF",
-  },
-  wishlistButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    padding: 8,
-  },
-  wishlistButtonText: {
-    color: "white",
-    marginLeft: 4,
-  },
-  wishlistBadge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    backgroundColor: "red",
-    borderRadius: 8,
-    padding: 4,
-  },
-  wishlistBadgeText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  wishlistModal: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  wishlistModalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 8,
-  },
-  wishlistModalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  wishlistModalButton: {
-    marginTop: 10,
-  },
-});

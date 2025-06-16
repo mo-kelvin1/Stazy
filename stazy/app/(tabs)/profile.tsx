@@ -74,6 +74,11 @@ export default function profile() {
               title="Privacy & Security"
               subtitle="Control your privacy"
             />
+            <ProfileOption
+              icon="person-add-outline"
+              title="Become A Host"
+              subtitle="Host your homes and services"
+            />
           </View>
 
           <View style={styles.section}>
