@@ -6,27 +6,53 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
+import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
 
-const FeatureCard = ({ title, subtitle, icon, isNew = false, onPress }) => (
+type FeatureCardProps = {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  isNew?: boolean;
+  onPress: () => void;
+};
+
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  title,
+  subtitle,
+  icon,
+  isNew = false,
+  onPress,
+}) => (
   <TouchableOpacity style={styles.featureCard} onPress={onPress}>
     {isNew && (
       <View style={styles.newBadge}>
         <Text style={styles.newBadgeText}>NEW</Text>
       </View>
     )}
-    <View style={styles.featureIcon}>
-      {icon}
-    </View>
+    <View style={styles.featureIcon}>{icon}</View>
     <Text style={styles.featureTitle}>{title}</Text>
     {subtitle && <Text style={styles.featureSubtitle}>{subtitle}</Text>}
   </TouchableOpacity>
 );
 
-const MenuOption = ({ icon, title, onPress, showChevron = true }) => (
+type MenuOptionProps = {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  onPress: () => void;
+  showChevron?: boolean;
+};
+
+const MenuOption: React.FC<MenuOptionProps> = ({
+  icon,
+  title,
+  onPress,
+  showChevron = true,
+}) => (
   <TouchableOpacity style={styles.menuOption} onPress={onPress}>
     <View style={styles.menuLeft}>
       <View style={styles.menuIconContainer}>
@@ -43,6 +69,11 @@ const MenuOption = ({ icon, title, onPress, showChevron = true }) => (
 export default function Profile() {
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#ffffff"
+        translucent={false}
+      />
       <FadeInView style={styles.fadeInView}>
         {/* Header */}
         <View style={styles.header}>
@@ -73,6 +104,7 @@ export default function Profile() {
                 </View>
               }
               onPress={() => {}}
+              subtitle={undefined}
             />
             <FeatureCard
               title="Connections"
@@ -83,6 +115,7 @@ export default function Profile() {
                 </View>
               }
               onPress={() => {}}
+              subtitle={undefined}
             />
           </View>
 
@@ -93,7 +126,9 @@ export default function Profile() {
             </View>
             <View style={styles.hostText}>
               <Text style={styles.hostTitle}>Become a host</Text>
-              <Text style={styles.hostSubtitle}>It's easy to start hosting and earn extra income.</Text>
+              <Text style={styles.hostSubtitle}>
+                It's easy to start hosting and earn extra income.
+              </Text>
             </View>
           </TouchableOpacity>
 
@@ -129,7 +164,12 @@ export default function Profile() {
 
           {/* Switch to hosting button */}
           <TouchableOpacity style={styles.hostingButton}>
-            <Ionicons name="repeat-outline" size={20} color="white" style={styles.hostingButtonIcon} />
+            <Ionicons
+              name="repeat-outline"
+              size={20}
+              color="white"
+              style={styles.hostingButtonIcon}
+            />
             <Text style={styles.hostingButtonText}>Switch to hosting</Text>
           </TouchableOpacity>
 
@@ -156,6 +196,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     backgroundColor: "white",
+    marginHorizontal: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 16,
   },
   headerTitle: {
     fontSize: 28,
