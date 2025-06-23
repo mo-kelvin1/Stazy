@@ -6,129 +6,175 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
+import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
 
-const ProfileOption = ({
-  icon,
-  title,
-  subtitle,
-  onPress,
-}: {
-  icon: string;
+type FeatureCardProps = {
   title: string;
   subtitle?: string;
-  onPress?: () => void;
+  icon: React.ReactNode;
+  isNew?: boolean;
+  onPress: () => void;
+};
+
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  title,
+  subtitle,
+  icon,
+  isNew = false,
+  onPress,
 }) => (
-  <TouchableOpacity style={styles.optionItem} onPress={onPress}>
-    <View style={styles.optionLeft}>
-      <Ionicons
-        name={icon as any}
-        size={24}
-        color="#666"
-        style={styles.optionIcon}
-      />
-      <View>
-        <Text style={styles.optionTitle}>{title}</Text>
-        {subtitle && <Text style={styles.optionSubtitle}>{subtitle}</Text>}
+  <TouchableOpacity style={styles.featureCard} onPress={onPress}>
+    {isNew && (
+      <View style={styles.newBadge}>
+        <Text style={styles.newBadgeText}>NEW</Text>
       </View>
-    </View>
-    <Ionicons name="chevron-forward" size={20} color="#ccc" />
+    )}
+    <View style={styles.featureIcon}>{icon}</View>
+    <Text style={styles.featureTitle}>{title}</Text>
+    {subtitle && <Text style={styles.featureSubtitle}>{subtitle}</Text>}
   </TouchableOpacity>
 );
 
-export default function profile() {
+type MenuOptionProps = {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  onPress: () => void;
+  showChevron?: boolean;
+};
+
+const MenuOption: React.FC<MenuOptionProps> = ({
+  icon,
+  title,
+  onPress,
+  showChevron = true,
+}) => (
+  <TouchableOpacity style={styles.menuOption} onPress={onPress}>
+    <View style={styles.menuLeft}>
+      <View style={styles.menuIconContainer}>
+        <Ionicons name={icon} size={24} color="#484848" />
+      </View>
+      <Text style={styles.menuTitle}>{title}</Text>
+    </View>
+    {showChevron && (
+      <Ionicons name="chevron-forward" size={20} color="#ADADAD" />
+    )}
+  </TouchableOpacity>
+);
+
+export default function Profile() {
   return (
     <SafeAreaView style={styles.container}>
-      <FadeInView style={styles.FadeInView}>
-        <ScrollView>
-          <View style={styles.header}>
-            <View style={styles.profileSection}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>JD</Text>
-              </View>
-              <Text style={styles.name}>John Doe</Text>
-              <Text style={styles.email}>john.doe@example.com</Text>
-              <TouchableOpacity style={styles.editButton}>
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#ffffff"
+        translucent={false}
+      />
+      <FadeInView style={styles.fadeInView}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Profile</Text>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Ionicons name="notifications-outline" size={24} color="#484848" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>K</Text>
             </View>
+            <Text style={styles.name}>Kelvin</Text>
+            <Text style={styles.status}>Guest</Text>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account</Text>
-            <ProfileOption
-              icon="person-outline"
-              title="Personal Information"
-              subtitle="Update your details"
+          {/* Feature Cards Row */}
+          <View style={styles.featureRow}>
+            <FeatureCard
+              title="Past trips"
+              isNew={true}
+              icon={
+                <View style={styles.suitcaseIcon}>
+                  <Text style={styles.suitcaseEmoji}>🧳</Text>
+                </View>
+              }
+              onPress={() => {}}
+              subtitle={undefined}
             />
-            <ProfileOption
-              icon="card-outline"
-              title="Payment Methods"
-              subtitle="Manage your cards"
-            />
-            <ProfileOption
-              icon="shield-checkmark-outline"
-              title="Privacy & Security"
-              subtitle="Control your privacy"
-            />
-            <ProfileOption
-              icon="person-add-outline"
-              title="Become A Host"
-              subtitle="Host your homes and services"
-            />
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferences</Text>
-            <ProfileOption
-              icon="notifications-outline"
-              title="Notifications"
-              subtitle="Push, email, SMS"
-            />
-            <ProfileOption
-              icon="language-outline"
-              title="Language"
-              subtitle="English"
-            />
-            <ProfileOption
-              icon="moon-outline"
-              title="Dark Mode"
-              subtitle="System default"
+            <FeatureCard
+              title="Connections"
+              isNew={true}
+              icon={
+                <View style={styles.connectionsIcon}>
+                  <Text style={styles.connectionsEmoji}>👥</Text>
+                </View>
+              }
+              onPress={() => {}}
+              subtitle={undefined}
             />
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Support</Text>
-            <ProfileOption
+          {/* Become a host section */}
+          <TouchableOpacity style={styles.hostCard}>
+            <View style={styles.hostIcon}>
+              <Text style={styles.hostEmoji}>🏠</Text>
+            </View>
+            <View style={styles.hostText}>
+              <Text style={styles.hostTitle}>Become a host</Text>
+              <Text style={styles.hostSubtitle}>
+                It's easy to start hosting and earn extra income.
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Menu Options */}
+          <View style={styles.menuSection}>
+            <MenuOption
+              icon="settings-outline"
+              title="Account settings"
+              onPress={() => {}}
+            />
+            <MenuOption
               icon="help-circle-outline"
-              title="Help Center"
-              subtitle="Get support"
+              title="Get help"
+              onPress={() => {}}
             />
-            <ProfileOption
-              icon="chatbubble-outline"
-              title="Contact Us"
-              subtitle="Send feedback"
+            <MenuOption
+              icon="person-outline"
+              title="View profile"
+              onPress={() => {}}
             />
-            <ProfileOption
-              icon="document-text-outline"
-              title="Terms & Privacy"
-              subtitle="Legal information"
+            <MenuOption
+              icon="hand-left-outline"
+              title="Privacy"
+              onPress={() => {}}
+            />
+            <MenuOption
+              icon="log-out-outline"
+              title="Log out"
+              onPress={() => {}}
+              showChevron={false}
             />
           </View>
 
-          <View style={styles.section}>
-            <TouchableOpacity style={styles.signOutButton}>
-              <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Switch to hosting button */}
+          <TouchableOpacity style={styles.hostingButton}>
+            <Ionicons
+              name="repeat-outline"
+              size={20}
+              color="white"
+              style={styles.hostingButtonIcon}
+            />
+            <Text style={styles.hostingButtonText}>Switch to hosting</Text>
+          </TouchableOpacity>
 
-          <View style={styles.footer}>
-            <Text style={styles.version}>Version 1.0.0</Text>
-          </View>
+          {/* Bottom spacing */}
+          <View style={styles.bottomSpacing} />
         </ScrollView>
       </FadeInView>
     </SafeAreaView>
@@ -138,113 +184,238 @@ export default function profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#F7F7F7",
   },
-  FadeInView: {
+  fadeInView: {
     flex: 1,
   },
   header: {
-    backgroundColor: "#fff",
-    paddingBottom: 20,
-  },
-  profileSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: "white",
+    marginHorizontal: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "600",
+    color: "#222222",
+  },
+  notificationButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#F7F7F7",
+  },
+  profileCard: {
+    backgroundColor: "white",
+    marginHorizontal: 24,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#333333",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
   },
   avatarText: {
     color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "600",
   },
   name: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#222222",
     marginBottom: 4,
   },
-  email: {
+  status: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 20,
+    color: "#717171",
   },
-  editButton: {
+  featureRow: {
+    flexDirection: "row",
     paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#007AFF",
+    marginBottom: 16,
+    gap: 12,
   },
-  editButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
+  featureCard: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    position: "relative",
+  },
+  newBadge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#4A90E2",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  newBadgeText: {
+    color: "white",
+    fontSize: 10,
     fontWeight: "600",
+    letterSpacing: 0.5,
   },
-  section: {
-    backgroundColor: "#fff",
-    marginTop: 20,
-    paddingVertical: 8,
+  featureIcon: {
+    marginBottom: 12,
   },
-  sectionTitle: {
+  suitcaseIcon: {
+    alignItems: "center",
+  },
+  suitcaseEmoji: {
+    fontSize: 40,
+  },
+  connectionsIcon: {
+    alignItems: "center",
+  },
+  connectionsEmoji: {
+    fontSize: 40,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#222222",
+    textAlign: "center",
+  },
+  featureSubtitle: {
+    fontSize: 14,
+    color: "#717171",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  hostCard: {
+    backgroundColor: "white",
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  hostIcon: {
+    marginRight: 16,
+  },
+  hostEmoji: {
+    fontSize: 32,
+  },
+  hostText: {
+    flex: 1,
+  },
+  hostTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    color: "#333",
+    fontWeight: "600",
+    color: "#222222",
+    marginBottom: 4,
   },
-  optionItem: {
+  hostSubtitle: {
+    fontSize: 14,
+    color: "#717171",
+    lineHeight: 20,
+  },
+  menuSection: {
+    backgroundColor: "white",
+    marginHorizontal: 24,
+    borderRadius: 16,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  menuOption: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f5f5f5",
+    borderBottomColor: "#F0F0F0",
   },
-  optionLeft: {
+  menuLeft: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
   },
-  optionIcon: {
+  menuIconContainer: {
     marginRight: 16,
   },
-  optionTitle: {
+  menuTitle: {
     fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 2,
+    color: "#222222",
   },
-  optionSubtitle: {
-    fontSize: 14,
-    color: "#666",
-  },
-  signOutButton: {
+  hostingButton: {
+    backgroundColor: "#222222",
+    marginHorizontal: 80,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 24,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    marginHorizontal: 20,
-    marginVertical: 10,
+    marginBottom: 24,
   },
-  signOutText: {
+  hostingButtonIcon: {
+    marginRight: 8,
+  },
+  hostingButtonText: {
+    color: "white",
     fontSize: 16,
-    color: "#FF3B30",
     fontWeight: "600",
-    marginLeft: 8,
   },
-  footer: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  version: {
-    fontSize: 14,
-    color: "#999",
+  bottomSpacing: {
+    height: 100,
   },
 });
