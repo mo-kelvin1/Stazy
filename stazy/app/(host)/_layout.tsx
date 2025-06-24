@@ -4,7 +4,7 @@ import { useColorScheme } from "react-native";
 
 export default function HostLayout() {
   const colorScheme = useColorScheme();
-  const activeTint = "#000";
+  const activeTint = "#007AFF";
 
   return (
     <Tabs

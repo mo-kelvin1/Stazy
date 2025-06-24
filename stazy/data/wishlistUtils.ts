@@ -159,7 +159,10 @@ export const getItemType = (item: WishlistItem): 'property' | 'experience' | 'se
 // Helper function to get item image
 export const getItemImage = (item: WishlistItem): string => {
   if ('image' in item) {
-    return Array.isArray(item.image) ? item.image[0] : item.image;
+    if (Array.isArray(item.image)) {
+      return typeof item.image[0] === 'string' ? item.image[0] : '';
+    }
+    return typeof item.image === 'string' ? item.image : '';
   }
   return '';
 };

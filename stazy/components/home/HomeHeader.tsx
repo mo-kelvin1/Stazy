@@ -74,7 +74,6 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
             style={homeStyles.wishlistButton}
             onPress={() => {
               router.push("/wishlist");
-              console.log("Navigate to wishlist");
             }}
           >
             <Ionicons name="heart" size={16} color="white" />

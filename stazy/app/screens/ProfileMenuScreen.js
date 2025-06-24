@@ -12,9 +12,11 @@ import { router } from "expo-router";
 import MenuHeader from "../../components/ProfileMenu/MenuHeader";
 import MenuItem from "../../components/ProfileMenu/MenuItem";
 import FloatingButton from "../../components/ProfileMenu/FloatingButton";
+import {useAuth} from "../../hooks/useAuth"; 
 
 const ProfileMenuScreen = () => {
   const navigation = useNavigation();
+  const { logout } = useAuth();
 
   const handleCreateListing = () => {
     router.push("/(host)/listings");
@@ -24,8 +26,16 @@ const ProfileMenuScreen = () => {
     router.replace("/(tabs)");
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
+const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      if (err instanceof Error) {
+        Alert.alert("Logout failed", err.message);
+      } else {
+        Alert.alert("Logout failed", "An unknown error occurred.");
+      }
+    }
   };
 
   const handleNotificationPress = () => {

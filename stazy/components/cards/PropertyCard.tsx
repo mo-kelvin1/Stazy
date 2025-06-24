@@ -1,5 +1,5 @@
-// components/PropertyCard.tsx - Updated to properly handle image arrays
-import React, { useState, useRef } from "react";
+// components/PropertyCard.tsx
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,14 +12,17 @@ import {
   ScrollView,
   Animated,
   StyleSheet,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Property } from "../../data/mockProperties";
+import { HomeItem } from "../../hooks/useHomeData";
+import { hosts } from "../../data/hosts";
+import { HostProfile } from "../../data/hosts";
 
 const { width, height } = Dimensions.get("window");
 
 interface PropertyCardProps {
-  property: Property | null;
+  property: HomeItem | null;
   isVisible: boolean;
   onClose: () => void;
   likedItems: Set<string>;
@@ -37,10 +40,8 @@ export default function PropertyCard({
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const modalAnimation = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isVisible) {
-      console.log("PropertyCard: Modal opened for property:", property?.id);
-      // Reset image index when modal opens
       setCurrentImageIndex(0);
       Animated.spring(modalAnimation, {
         toValue: 1,
@@ -58,70 +59,31 @@ export default function PropertyCard({
   }, [isVisible]);
 
   const handleClose = () => {
-    console.log("PropertyCard: Close button clicked");
     onClose();
-  };
-
-  const handleShare = () => {
-    console.log(
-      "PropertyCard: Share button clicked for property:",
-      property?.id
-    );
   };
 
   const handleHeartPress = () => {
     if (property) {
-      console.log(
-        "PropertyCard: Heart button clicked for property:",
-        property.id
-      );
       onHeartPress(property.id);
     }
   };
 
   const nextImage = () => {
-    if (property && property.image) {
-      const images = Array.isArray(property.image)
-        ? property.image
-        : [property.image];
-      const newIndex =
-        currentImageIndex < images.length - 1 ? currentImageIndex + 1 : 0;
-      console.log(
-        "PropertyCard: Next image clicked, moving to index:",
-        newIndex
-      );
-      setCurrentImageIndex(newIndex);
-    }
+    const images = property?.images ?? [];
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
-    if (property && property.image) {
-      const images = Array.isArray(property.image)
-        ? property.image
-        : [property.image];
-      const newIndex =
-        currentImageIndex > 0 ? currentImageIndex - 1 : images.length - 1;
-      console.log(
-        "PropertyCard: Previous image clicked, moving to index:",
-        newIndex
-      );
-      setCurrentImageIndex(newIndex);
-    }
+    const images = property?.images ?? [];
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const handleShowAmenities = () => {
-    console.log(
-      "PropertyCard: Show amenities button clicked, showAll:",
-      !showAllAmenities
-    );
-    setShowAllAmenities(!showAllAmenities);
+    setShowAllAmenities((prev) => !prev);
   };
 
   const handleReserve = () => {
-    console.log(
-      "PropertyCard: Reserve button clicked for property:",
-      property?.id
-    );
+    console.log("Reserve clicked");
   };
 
   const getAmenityIcon = (amenity: string) => {
@@ -137,26 +99,509 @@ export default function PropertyCard({
     return iconMap[amenity] || "checkmark-circle";
   };
 
+  // Helper for amenity icons
+  const amenityIconMap: { [key: string]: string } = {
+    Wifi: "wifi",
+    "Home gym": "barbell",
+    Parking: "car",
+    Pool: "water",
+    "Outdoor entertainment": "leaf",
+    Kitchen: "restaurant",
+    "Air conditioning": "snow",
+    Breakfast: "cafe",
+    Fireplace: "flame",
+    "Smart TV": "tv",
+    "Private Pool": "water",
+    "Garden Access": "flower",
+    "Laundry Service": "shirt",
+    "Shared Kitchen": "restaurant",
+    "BBQ Grill": "flame",
+    "Solar Power": "sunny",
+    "Deck Lounge": "cafe",
+    "Mini Fridge": "cube",
+    "Outdoor Chairs": "chair",
+    "Hot Tub": "water",
+    "Board Games": "game-controller",
+    "Breakfast Included": "cafe",
+    Fan: "logo-fanlab",
+    "Security System": "shield-checkmark",
+    "Smart Lighting": "bulb",
+    "Voice Assistants": "mic",
+    Balcony: "business",
+    "Air Conditioning": "snow",
+    "Open Kitchen": "restaurant",
+    "Outdoor Area": "leaf",
+    "Fire Pit": "flame",
+    "Wi-Fi": "wifi",
+    // fallback
+    default: "checkmark-circle",
+  };
+
+  // Helper to find host profile by name/email
+  const getHostProfile = (
+    name: string,
+    email: string
+  ): HostProfile | undefined => {
+    return hosts.find(
+      (h) =>
+        h.name?.toLowerCase() === name?.toLowerCase() &&
+        h.email?.toLowerCase() === email?.toLowerCase()
+    );
+  };
+
   if (!property) return null;
 
-  // Handle both single image (string) and multiple images (array)
-  const images = Array.isArray(property.image)
-    ? property.image
-    : [property.image];
-  const currentImage = images[currentImageIndex] || images[0];
+  // Determine type
+  const type = property.type;
+
+  // Common fields
+  const images = Array.isArray(property.images)
+    ? property.images
+    : [property.images];
+  const currentImage = images[currentImageIndex] ?? images[0];
   const hasMultipleImages = images.length > 1;
 
-  const modalScale = modalAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.8, 1],
-  });
+  // Render details based on type
+  let detailsSection = null;
+  if (type === "property") {
+    detailsSection = (
+      <View style={styles.modalContent}>
+        <View style={styles.modalTitleSection}>
+          <Text style={styles.modalTitle}>{property.title}</Text>
+          <Text style={styles.modalLocation}>{property.location}</Text>
+          <View style={styles.modalRatingContainer}>
+            <Ionicons name="star" size={18} color="#FFD700" />
+            <Text style={styles.modalRating}>{property.rating}</Text>
+          </View>
+          <Text style={styles.modalDetails}>
+            ${property.price}{" "}
+            {property.nights
+              ? `for ${property.nights} night${property.nights > 1 ? "s" : ""}`
+              : ""}
+          </Text>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Details</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="home"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Type: {property.propertyType}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="people"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Guests: {property.guests}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="bed"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Bedrooms: {property.bedrooms}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="bed-outline"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Beds: {property.beds}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="water"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Bathrooms: {property.bathrooms}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Amenities</Text>
+          {(property.amenities || []).map((amenity, idx) => (
+            <View key={idx} style={styles.amenityRow}>
+              <Ionicons
+                name={
+                  (amenityIconMap[amenity] || amenityIconMap.default) as any
+                }
+                size={20}
+                color="#007AFF"
+                style={{ marginRight: 10 }}
+              />
+              <Text>{amenity}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Highlights</Text>
+          <Text>{(property.highlights || []).join(", ")}</Text>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Host</Text>
+          {property.host && property.hostEmail && (
+            <TouchableOpacity
+              style={styles.hostProfileCard}
+              onPress={() => {
+                const hostProfile = getHostProfile(
+                  property.host,
+                  property.hostEmail
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.hostAvatarLarge}>
+                <Text style={styles.hostAvatarInitial}>
+                  {property.host?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <Text style={styles.hostNameLarge}>{property.host}</Text>
+              <Text style={styles.hostEmail}>{property.hostEmail}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        <View style={[styles.section, styles.createdSection]}>
+          <Ionicons
+            name="calendar"
+            size={18}
+            color="#007AFF"
+            style={styles.detailIcon}
+          />
+          <Text style={styles.createdText}>
+            Created:{" "}
+            {property.createdAt?.toLocaleString?.() ||
+              String(property.createdAt)}
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.reserveButton} onPress={handleReserve}>
+          <Text style={styles.reserveButtonText}>Reserve</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  } else if (type === "service") {
+    detailsSection = (
+      <View style={styles.modalContent}>
+        <View style={styles.modalTitleSection}>
+          <Text style={styles.modalTitle}>{property.title}</Text>
+          <Text style={styles.modalLocation}>{property.location}</Text>
+          <View style={styles.modalRatingContainer}>
+            <Ionicons name="star" size={18} color="#FFD700" />
+            <Text style={styles.modalRating}>{property.rating}</Text>
+          </View>
+          <Text style={styles.modalDetails}>
+            ${property.price} • {property.duration} hour(s)
+          </Text>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Provider</Text>
+          {property.provider && property.providerEmail && (
+            <TouchableOpacity
+              style={styles.hostProfileCard}
+              onPress={() => {
+                const hostProfile = getHostProfile(
+                  property.provider,
+                  property.providerEmail
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.hostAvatarLarge}>
+                <Text style={styles.hostAvatarInitial}>
+                  {property.provider?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <Text style={styles.hostNameLarge}>{property.provider}</Text>
+              <Text style={styles.hostEmail}>{property.providerEmail}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Type & Category</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="construct"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Type: {property.serviceType}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="pricetag"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Category: {property.category}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Included</Text>
+          {(property.included || []).map((item, idx) => (
+            <View key={idx} style={styles.amenityRow}>
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color="#34C759"
+                style={{ marginRight: 10 }}
+              />
+              <Text>{item}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Requirements</Text>
+          {(property.requirements || []).map((item, idx) => (
+            <View key={idx} style={styles.amenityRow}>
+              <Ionicons
+                name="alert-circle"
+                size={20}
+                color="#FF9500"
+                style={{ marginRight: 10 }}
+              />
+              <Text>{item}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Max Guests</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="people"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.maxGuests}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Availability</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="calendar"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.availability?.days?.join(", ")}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="time"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.availability?.timeSlots?.join(", ")}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.createdSection]}>
+          <Ionicons
+            name="calendar"
+            size={18}
+            color="#007AFF"
+            style={styles.detailIcon}
+          />
+          <Text style={styles.createdText}>
+            Created:{" "}
+            {property.createdAt?.toLocaleString?.() ||
+              String(property.createdAt)}
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.reserveButton} onPress={handleReserve}>
+          <Text style={styles.reserveButtonText}>Reserve</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  } else if (type === "experience") {
+    detailsSection = (
+      <View style={styles.modalContent}>
+        <View style={styles.modalTitleSection}>
+          <Text style={styles.modalTitle}>{property.title}</Text>
+          <Text style={styles.modalLocation}>{property.location}</Text>
+          <View style={styles.modalRatingContainer}>
+            <Ionicons name="star" size={18} color="#FFD700" />
+            <Text style={styles.modalRating}>{property.rating}</Text>
+          </View>
+          <Text style={styles.modalDetails}>
+            ${property.price} • {property.duration} hour(s)
+          </Text>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Host</Text>
+          {property.hostName && property.hostEmail && (
+            <TouchableOpacity
+              style={styles.hostProfileCard}
+              onPress={() => {
+                const hostProfile = getHostProfile(
+                  property.hostName,
+                  property.hostEmail
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.hostAvatarLarge}>
+                <Text style={styles.hostAvatarInitial}>
+                  {property.hostName?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <Text style={styles.hostNameLarge}>{property.hostName}</Text>
+              <Text style={styles.hostEmail}>{property.hostEmail}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Type & Category</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="construct"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Type: {property.experienceType}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="pricetag"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Category: {property.category}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="barbell"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>Difficulty: {property.difficulty}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Included</Text>
+          {(property.included || []).map((item, idx) => (
+            <View key={idx} style={styles.amenityRow}>
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color="#34C759"
+                style={{ marginRight: 10 }}
+              />
+              <Text>{item}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>To Bring</Text>
+          {(property.toBring || []).map((item, idx) => (
+            <View key={idx} style={styles.amenityRow}>
+              <Ionicons
+                name="briefcase"
+                size={20}
+                color="#FF9500"
+                style={{ marginRight: 10 }}
+              />
+              <Text>{item}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Meeting Point</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="navigate"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.meetingPoint}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Languages</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="language"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{(property.languages || []).join(", ")}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Max Participants</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="people"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.maxParticipants}</Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Age Restriction</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="alert"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>
+              {property.ageRestriction?.minimum}
+              {property.ageRestriction?.maximum
+                ? `-${property.ageRestriction.maximum}`
+                : "+"}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.section, styles.sectionCard]}>
+          <Text style={styles.sectionHeader}>Availability</Text>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="calendar"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.availability?.days?.join(", ")}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons
+              name="time"
+              size={18}
+              color="#007AFF"
+              style={styles.detailIcon}
+            />
+            <Text>{property.availability?.timeSlots?.join(", ")}</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.reserveButton} onPress={handleReserve}>
+          <Text style={styles.reserveButtonText}>Reserve</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  const modalTranslateY = modalAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [100, 0],
-  });
-
-  // Mock amenities data
   const amenities = [
     "Outdoor entertainment",
     "Home gym",
@@ -171,223 +616,108 @@ export default function PropertyCard({
     ? amenities
     : amenities.slice(0, 3);
 
+  const modalScale = modalAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1],
+  });
+
+  const modalTranslateY = modalAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [100, 0],
+  });
+
   return (
-    <Modal
-      visible={isVisible}
-      transparent={true}
-      animationType="none"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.modalOverlay}>
-        <Pressable style={styles.modalBackdrop} onPress={handleClose} />
-        <Animated.View
-          style={[
-            styles.modalContainer,
-            {
-              transform: [
-                { scale: modalScale },
-                { translateY: modalTranslateY },
-              ],
-              opacity: modalAnimation,
-            },
-          ]}
-        >
-          {/* Image Section */}
-          <View style={styles.modalImageContainer}>
-            <ImageBackground
-              source={{ uri: currentImage }}
-              style={styles.modalImage}
-              imageStyle={styles.modalImageStyle}
-            >
-              {/* Header Controls */}
-              <View style={styles.modalHeader}>
-                <TouchableOpacity
-                  style={styles.modalCloseButton}
-                  onPress={handleClose}
-                >
-                  <Ionicons name="close" size={24} color="#000" />
-                </TouchableOpacity>
-                <View style={styles.modalHeaderRight}>
-                  <TouchableOpacity
-                    style={styles.modalActionButton}
-                    onPress={handleShare}
-                  >
-                    <Ionicons name="share-outline" size={20} color="#000" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalActionButton}
-                    onPress={handleHeartPress}
-                  >
-                    <Ionicons
-                      name={
-                        likedItems.has(property.id) ? "heart" : "heart-outline"
-                      }
-                      size={20}
-                      color={likedItems.has(property.id) ? "#FF385C" : "#000"}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Image Navigation - Only show if multiple images */}
-              {hasMultipleImages && (
-                <>
-                  <TouchableOpacity
-                    style={[styles.imageNavButton, styles.imageNavLeft]}
-                    onPress={prevImage}
-                  >
-                    <Ionicons name="chevron-back" size={24} color="#000" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.imageNavButton, styles.imageNavRight]}
-                    onPress={nextImage}
-                  >
-                    <Ionicons name="chevron-forward" size={24} color="#000" />
-                  </TouchableOpacity>
-                  <View style={styles.imageCounter}>
-                    <Text style={styles.imageCounterText}>
-                      {currentImageIndex + 1} / {images.length}
-                    </Text>
-                  </View>
-                </>
-              )}
-
-              {/* Image dots indicator for multiple images */}
-              {hasMultipleImages && (
-                <View style={styles.imageDotsContainer}>
-                  {images.map((_, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={[
-                        styles.imageDot,
-                        index === currentImageIndex && styles.activeDot,
-                      ]}
-                      onPress={() => setCurrentImageIndex(index)}
-                    />
-                  ))}
-                </View>
-              )}
-            </ImageBackground>
-          </View>
-
-          {/* Content Section */}
-          <ScrollView
-            style={styles.modalContent}
-            showsVerticalScrollIndicator={false}
+    <>
+      <Modal
+        visible={isVisible}
+        transparent
+        animationType="none"
+        onRequestClose={handleClose}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={handleClose} />
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              {
+                transform: [
+                  { scale: modalScale },
+                  { translateY: modalTranslateY },
+                ],
+                opacity: modalAnimation,
+              },
+            ]}
           >
-            {/* Title and Rating */}
-            <View style={styles.modalTitleSection}>
-              <Text style={styles.modalTitle}>{property.title}</Text>
-              <Text style={styles.modalLocation}>Room in Accra, Ghana</Text>
-              <Text style={styles.modalDetails}>
-                1 bedroom • Private attached bathroom
-              </Text>
-              <View style={styles.modalRatingContainer}>
-                <Ionicons name="star" size={16} color="#FFD700" />
-                <Text style={styles.modalRating}>{property.rating}</Text>
-                <Text style={styles.modalReviews}>• 12 reviews</Text>
-              </View>
-
-              {/* Show total images count */}
-              {hasMultipleImages && (
-                <View style={styles.imageDotsContainer}>
-                  <Ionicons name="camera" size={16} color="#717171" />
-                  <Text style={styles.imageInfoText}>
-                    {images.length} photo{images.length > 1 ? "s" : ""}{" "}
-                    available
-                  </Text>
+            {/* Header + Image Section */}
+            <View style={styles.modalImageContainer}>
+              <ImageBackground
+                source={{ uri: currentImage }}
+                style={[styles.modalImage, { width: width, height: 300 }]}
+                imageStyle={styles.modalImageStyle}
+                resizeMode="cover"
+              >
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity
+                    onPress={handleClose}
+                    style={styles.modalCloseButton}
+                  >
+                    <Ionicons name="close" size={24} color="#000" />
+                  </TouchableOpacity>
+                  <View style={styles.modalHeaderRight}>
+                    <TouchableOpacity
+                      onPress={handleHeartPress}
+                      style={styles.modalActionButton}
+                    >
+                      <Ionicons
+                        name={
+                          likedItems.has(property.id)
+                            ? "heart"
+                            : "heart-outline"
+                        }
+                        size={20}
+                        color={likedItems.has(property.id) ? "#FF385C" : "#000"}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              )}
+
+                {/* Navigation Buttons */}
+                {hasMultipleImages && (
+                  <>
+                    <TouchableOpacity
+                      onPress={prevImage}
+                      style={[styles.imageNavButton, styles.imageNavLeft]}
+                    >
+                      <Ionicons name="chevron-back" size={24} color="#000" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={nextImage}
+                      style={[styles.imageNavButton, styles.imageNavRight]}
+                    >
+                      <Ionicons name="chevron-forward" size={24} color="#000" />
+                    </TouchableOpacity>
+                    <View style={styles.imageCounter}>
+                      <Text style={styles.imageCounterText}>
+                        {currentImageIndex + 1} / {images.length}
+                      </Text>
+                    </View>
+                  </>
+                )}
+              </ImageBackground>
             </View>
 
-            {/* Rest of your existing content remains the same */}
-            {/* Host Info */}
-            <View style={styles.hostContainer}>
-              <View style={styles.hostAvatar}>
-                <Text style={styles.hostAvatarText}>E</Text>
-                <View style={styles.superhostBadge}>
-                  <Ionicons name="star" size={8} color="white" />
-                </View>
-              </View>
-              <View style={styles.hostInfo}>
-                <Text style={styles.hostName}>Hosted by Emmanuel</Text>
-                <Text style={styles.hostDetails}>
-                  Superhost • 1 year hosting
-                </Text>
-              </View>
-            </View>
-
-            {/* Amenities */}
-            <View style={styles.amenitiesContainer}>
-              <Text style={styles.amenitiesTitle}>What this place offers</Text>
-              {displayedAmenities.map((amenity, index) => (
-                <View key={index} style={styles.amenityItem}>
-                  <Ionicons
-                    name={getAmenityIcon(amenity) as any}
-                    size={20}
-                    color="#222"
-                  />
-                  <Text style={styles.amenityText}>{amenity}</Text>
-                </View>
-              ))}
-              {amenities.length > 3 && (
-                <TouchableOpacity
-                  onPress={handleShowAmenities}
-                  style={styles.showMoreButton}
-                >
-                  <Text style={styles.showMoreText}>
-                    {showAllAmenities
-                      ? "Show less"
-                      : `Show all ${amenities.length} amenities`}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* Special Notice */}
-            <View style={styles.specialNotice}>
-              <Text style={styles.specialNoticeIcon}>💎</Text>
-              <Text style={styles.specialNoticeText}>
-                Rare find! This place is usually booked
-              </Text>
-            </View>
-
-            {/* Room Type */}
-            <View style={styles.roomTypeContainer}>
-              <View style={styles.roomTypeHeader}>
-                <Ionicons name="location" size={20} color="#222" />
-                <Text style={styles.roomTypeTitle}>Room in a rental unit</Text>
-              </View>
-              <Text style={styles.roomTypeDescription}>
-                The sunbeds and pool are great for summer trips. Perfect for
-                relaxing getaways with modern amenities.
-              </Text>
-            </View>
-          </ScrollView>
-
-          {/* Bottom Bar */}
-          <View style={styles.modalBottomBar}>
-            <View style={styles.priceContainer}>
-              <View style={styles.priceRow}>
-                <Text style={styles.modalPrice}>${property.price}</Text>
-                <Text style={styles.priceLabel}>night</Text>
-              </View>
-              <Text style={styles.priceDetails}>For 2 nights • Jun 20-22</Text>
-              <View style={styles.cancellationInfo}>
-                <Ionicons name="checkmark" size={14} color="#00A699" />
-                <Text style={styles.cancellationText}>Free cancellation</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={styles.reserveButton}
-              onPress={handleReserve}
+            {/* Scrollable Content */}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              <Text style={styles.reserveButtonText}>Reserve</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+              {detailsSection}
+            </ScrollView>
+            {/* Description */}
+          </Animated.View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -413,10 +743,12 @@ const styles = StyleSheet.create({
   },
   modalImageContainer: {
     height: 300,
+    width: "100%",
     position: "relative",
   },
   modalImage: {
-    flex: 1,
+    width: "100%",
+    height: 300,
     justifyContent: "space-between",
   },
   modalImageStyle: {
@@ -497,7 +829,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    padding: 24,
+    margin: 30,
+    paddingTop: 24,
+    paddingBottom: 24,
+    paddingHorizontal: 0,
   },
   modalTitleSection: {
     marginBottom: 24,
@@ -538,7 +873,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F9F9F9",
-    padding: 20,
+    padding: 0,
     borderRadius: 16,
     marginBottom: 24,
   },
@@ -737,5 +1072,86 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#717171",
     marginLeft: 6,
+  },
+  section: {
+    marginBottom: 18,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  sectionHeader: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#007AFF",
+    marginBottom: 4,
+    marginTop: 8,
+  },
+  sectionCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    marginBottom: 10,
+    marginHorizontal: 0,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  amenityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  detailIcon: {
+    marginRight: 8,
+  },
+  createdSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F7FF",
+    borderRadius: 12,
+    padding: 8,
+    marginTop: 8,
+    marginBottom: 14,
+    marginHorizontal: 0,
+  },
+  createdText: {
+    marginLeft: 8,
+    color: "#222",
+    fontSize: 15,
+  },
+  hostProfileCard: {
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  hostAvatarLarge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#007AFF22",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  hostAvatarInitial: {
+    fontSize: 36,
+    color: "#007AFF",
+    fontWeight: "bold",
+  },
+  hostNameLarge: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
+    marginBottom: 2,
+  },
+  hostEmail: {
+    fontSize: 15,
+    color: "#888",
   },
 });

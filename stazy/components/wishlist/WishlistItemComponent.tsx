@@ -70,19 +70,10 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
           style={styles.actionButton}
           onPress={(e) => {
             e.stopPropagation();
-            // Handle share functionality
-          }}
-        >
-          <Ionicons name="share-outline" size={20} color="#666" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={(e) => {
-            e.stopPropagation();
             onRemove();
           }}
         >
-          <Ionicons name="heart" size={20} color="#FF3B30" />
+          <Ionicons name="heart" size={30} color="#FF3B30" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

@@ -17,6 +17,7 @@ import { WishlistItem } from "../../types/WishlistTypes";
 import { useWishlist } from "../../hooks/UseWishlist";
 import { Property } from "../../data/mockProperties";
 import { onHeartClicked } from "../../data/wishlistUtils";
+import { HostProfile } from "@/data/hosts";
 
 // Extend the global object to include wishlistRefreshKey
 declare global {
@@ -46,23 +47,22 @@ export default function WishlistScreen() {
     wishlistItems,
     removeFromWishlist,
     triggerHaptic,
-    loadWishlistItems,
+    refreshWishlistState,
   } = useWishlist();
 
   // State for PropertyCard modal
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
-    null
-  );
+  const [selectedProperty, setSelectedProperty] = useState<
+    (Property & { type: "property" }) | null
+  >(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
 
   // Handle item click to open the PropertyCard modal
   const handleItemClick = (item: WishlistItem) => {
     triggerHaptic();
-    console.log("Item clicked:", item.title);
     // Only open modal for properties
     if (getItemType(item) === "property") {
-      setSelectedProperty(item as Property);
+      setSelectedProperty({ ...(item as Property), type: "property" });
       setModalVisible(true);
     }
   };
@@ -93,7 +93,7 @@ export default function WishlistScreen() {
           return newSet;
         });
         // Reload wishlist
-        loadWishlistItems();
+        refreshWishlistState();
         global.wishlistRefreshKey = Date.now();
       },
       (error: string) => {

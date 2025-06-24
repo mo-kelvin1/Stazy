@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -71,6 +72,7 @@ const MenuOption: React.FC<MenuOptionProps> = ({
 
 export default function Profile() {
   const { user, isAuthenticated } = useAuth();
+  const { logout } = useAuth();
 
   // Handler for switching to hosting
   const handleSwitchToHosting = () => {
@@ -80,6 +82,18 @@ export default function Profile() {
   // Get user's first name and first letter for avatar
   const firstName = user?.firstName || "Guest";
   const avatarLetter = firstName.charAt(0).toUpperCase();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      if (err instanceof Error) {
+        Alert.alert("Logout failed", err.message);
+      } else {
+        Alert.alert("Logout failed", "An unknown error occurred.");
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,7 +106,10 @@ export default function Profile() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity style={styles.notificationButton}>
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => router.push("/screens/NotificationScreen")}
+          >
             <Ionicons name="notifications-outline" size={24} color="#484848" />
           </TouchableOpacity>
         </View>
@@ -177,7 +194,7 @@ export default function Profile() {
             <MenuOption
               icon="log-out-outline"
               title="Log out"
-              onPress={() => {}}
+              onPress={() => handleLogout()}
               showChevron={false}
             />
           </View>

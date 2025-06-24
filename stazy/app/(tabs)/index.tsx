@@ -7,17 +7,18 @@ import {
   View,
   Text,
 } from "react-native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Property } from "../../data/mockProperties";
 import PropertyCard from "../../components/cards/PropertyCard";
 import FadeInView from "../../components/cards/FadeInView";
 import CategoryListingComponent from "../../components/cards/CategoryListingPage";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { CategorySection } from "../../components/home/CategorySection";
-import { useHomeData } from "../../hooks/useHomeData";
-import { useWishlist } from "../../hooks/useWishlist";
+import { useHomeData, HomeItem } from "../../hooks/useHomeData";
+import { useWishlist } from "../../hooks/UseWishlist";
 import { homeStyles } from "../../constants/homeStyles";
-
+import { HostProfile } from "@/data/hosts";
+import HostProfileCard from "../screens/HostProfileCard";
 export default function HomePage() {
   const {
     properties,
@@ -35,7 +36,7 @@ export default function HomePage() {
   } = useWishlist();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+  const [selectedProperty, setSelectedProperty] = useState<HomeItem | null>(
     null
   );
   const [showCategoryListing, setShowCategoryListing] = useState(false);
@@ -66,20 +67,18 @@ export default function HomePage() {
     }
   };
 
-  const handleItemPress = (item: Property) => {
-    console.log("HomePage: Property card clicked for:", item.id);
+  const handleItemPress = (item: any) => {
+    // Open modal for any HomeItem type
     setSelectedProperty(item);
     setModalVisible(true);
   };
 
   const closeModal = () => {
-    console.log("HomePage: Closing modal");
     setModalVisible(false);
     setSelectedProperty(null);
   };
 
   const handleTabPress = (tab: string) => {
-    console.log("HomePage: Tab pressed:", tab);
     setActiveTab(tab);
   };
 
@@ -95,7 +94,11 @@ export default function HomePage() {
   };
 
   const onHeartPress = (itemId: string) => {
-    handleHeartPress(itemId, properties);
+    const propertyItems = properties.filter(
+      (item): item is Property & { type: "property" } =>
+        item.type === "property"
+    );
+    handleHeartPress(itemId, propertyItems);
   };
 
   if (showCategoryListing) {
@@ -103,14 +106,13 @@ export default function HomePage() {
     return (
       <CategoryListingComponent
         category={selectedCategory}
-        properties={categoryProperties}
+        items={categoryProperties}
         onBackPress={handleBackFromCategoryListing}
         likedItems={likedItems}
         onHeartPress={onHeartPress}
       />
     );
   }
-
   return (
     <SafeAreaView style={homeStyles.container}>
       <FadeInView style={homeStyles.FadeInView}>
@@ -140,18 +142,23 @@ export default function HomePage() {
             <View style={homeStyles.loadingContainer}>
               <Text>Loading...</Text>
             </View>
-          ) : (
+          ) : categorizedProperties &&
+            Object.keys(categorizedProperties).length > 0 ? (
             Object.entries(categorizedProperties).map(([category, items]) => (
               <CategorySection
                 key={category}
                 category={category}
-                items={items as Property[]}
+                items={items}
                 likedItems={likedItems}
                 onCategoryPress={handleCategoryPress}
                 onItemPress={handleItemPress}
                 onHeartPress={onHeartPress}
               />
             ))
+          ) : (
+            <View style={homeStyles.loadingContainer}>
+              <Text>No properties available.</Text>
+            </View>
           )}
         </Animated.ScrollView>
 

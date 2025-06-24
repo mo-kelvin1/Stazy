@@ -19,9 +19,6 @@ type MessageItem = {
   email: string;
   lastMessage?: string;
   timestamp?: string;
-  status?: string;
-  location?: string;
-  bookingTime?: string;
 };
 
 export default function MessagesScreen() {
@@ -84,10 +81,6 @@ export default function MessagesScreen() {
           </View>
           <View style={styles.messageInfo}>
             <Text style={styles.name}>{item.fullName}</Text>
-            <Text style={styles.bookingMeta}>
-              {item.status ?? "No status"} • {item.bookingTime ?? "No time"} •{" "}
-              {item.location ?? "No location"}
-            </Text>
             <Text style={styles.lastMessage}>
               {item.lastMessage || "Say hello!"}
             </Text>
@@ -163,14 +156,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
     paddingVertical: 12,
   },
   messageRow: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    marginRight: 12,
+    borderRadius: 28,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   avatarPlaceholder: {
     width: 40,

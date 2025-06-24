@@ -1,73 +1,136 @@
-import { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
-import { WishlistItem } from '../types/WishlistTypes';
+import { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import { WishlistItem } from "../types/WishlistTypes";
 import {
-  getWishlistItems,
   onHeartClicked,
-} from '../data/wishlistUtils';
-import React from 'react';
+  isInWishlist,
+  initializeWishlist,
+  getWishlistItems,
+  getWishlistCount,
+} from "../data/wishlistUtils";
+import { mockProperties } from "../data/mockProperties";
+import { mockExperiences } from "../data/mockExperiences";
+import { mockServices } from "../data/mockServices";
+import { Property } from "../data/mockProperties";
 
 export const useWishlist = () => {
+  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [lastWishlistRefresh, setLastWishlistRefresh] = useState(0);
 
-  // Load wishlist items from the existing wishlist utility
-  const loadWishlistItems = () => {
+  const loadWishlistItems = useCallback(() => {
     const items = getWishlistItems();
-    console.log("Loaded wishlist items:", items);
     setWishlistItems(items);
-  };
-
-  useEffect(() => {
-    loadWishlistItems();
   }, []);
 
-  // Add focus listener to reload wishlist when screen is focused
-  useFocusEffect(
-    React.useCallback(() => {
-      loadWishlistItems();
-    }, [])
+  const refreshWishlistState = useCallback(() => {
+    const count = getWishlistCount();
+    setWishlistCount(count);
+    loadWishlistItems();
+
+    const updatedLikedItems = new Set<string>();
+    [mockProperties, mockExperiences, mockServices].forEach((items) => {
+      items.forEach((item) => {
+        if (isInWishlist(item.id)) {
+          updatedLikedItems.add(item.id);
+        }
+      });
+    });
+
+    setLikedItems(updatedLikedItems);
+  }, [loadWishlistItems]);
+
+  const initializeWishlistData = useCallback(async () => {
+    await initializeWishlist();
+    refreshWishlistState();
+  }, [refreshWishlistState]);
+
+  const handleHeartPress = useCallback(
+    async (itemId: string, properties: Property[]) => {
+      const item = properties.find((prop) => prop.id === itemId);
+      if (!item) {
+        console.error("Item not found for id:", itemId);
+        return;
+      }
+
+      await onHeartClicked(
+        item,
+        (isNowInWishlist: boolean) => {
+          setLikedItems((prev) => {
+            const newSet = new Set(prev);
+            if (isNowInWishlist) newSet.add(itemId);
+            else newSet.delete(itemId);
+            return newSet;
+          });
+
+          refreshWishlistState();
+          setRefreshKey((prev) => prev + 1);
+          (globalThis as any).wishlistRefreshKey = Date.now();
+
+          triggerHaptic();
+        },
+        (error: string) => {
+          console.error("Wishlist error:", error);
+        }
+      );
+    },
+    [refreshWishlistState]
   );
 
-  const removeFromWishlist = async (id: string) => {
-    console.log("Removing item from wishlist:", id);
-
-    // Find the item to remove
-    const itemToRemove = wishlistItems.find((item) => item.id === id);
-    if (!itemToRemove) {
-      console.error("Item not found for removal:", id);
-      return;
-    }
-
-    // Use the existing wishlist utility function
-    await onHeartClicked(
-      itemToRemove,
-      (isNowInWishlist: boolean) => {
-        console.log("Item removed from wishlist:", !isNowInWishlist);
-        // Reload the wishlist items
-        loadWishlistItems();
-
-        // Force a refresh to notify other components
-        setRefreshKey((prev) => prev + 1);
-
-        // Store the refresh key globally
-        global.wishlistRefreshKey = Date.now();
-      },
-      (error: string) => {
-        console.error("Error removing from wishlist:", error);
+  const removeFromWishlist = useCallback(
+    async (id: string) => {
+      const itemToRemove = wishlistItems.find((item) => item.id === id);
+      if (!itemToRemove) {
+        console.error("Item not found for removal:", id);
+        return;
       }
-    );
-  };
+
+      await onHeartClicked(
+        itemToRemove,
+        () => {
+          refreshWishlistState();
+          setRefreshKey((prev) => prev + 1);
+          (globalThis as any).wishlistRefreshKey = Date.now();
+          console.log(`${itemToRemove.title} removed from wishlist.`);
+        },
+        (error: string) => {
+          console.error("Error removing from wishlist:", error);
+        }
+      );
+    },
+    [wishlistItems, refreshWishlistState]
+  );
 
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
+  useEffect(() => {
+    initializeWishlistData();
+  }, [initializeWishlistData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const currentRefreshKey = (globalThis as any).wishlistRefreshKey || 0;
+      if (currentRefreshKey > lastWishlistRefresh) {
+        refreshWishlistState();
+        setLastWishlistRefresh(currentRefreshKey);
+      }
+    }, [lastWishlistRefresh, refreshWishlistState])
+  );
+
   return {
+    likedItems,
     wishlistItems,
-    loadWishlistItems,
+    wishlistCount,
+    refreshKey,
+    handleHeartPress,
     removeFromWishlist,
+    initializeWishlistData,
+    refreshWishlistState,
     triggerHaptic,
   };
 };

@@ -4,12 +4,12 @@
     "slug": "stazy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Stazy.png",
+    "icon": "./assets/images/stazylogo.png",
     "scheme": "stazy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/Stazy.png",
+      "image": "./assets/images/stazylogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/Stazy.png",
+        "foregroundImage": "./assets/images/stazylogo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -26,7 +26,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/Stazy.png"
+      "favicon": "./assets/images/stasylogo.png"
     },
     "plugins": [
       "expo-router"

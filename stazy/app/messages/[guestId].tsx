@@ -14,10 +14,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 export default function ChatWithGuest() {
-  const { guestId, fullName, email, status, placeName, bookingTime } =
-    useLocalSearchParams();
+  const {
+    guestId,
+    fullName,
+    email,
+    status,
+    placeName,
+    bookingTime,
+    bookingDate,
+    bookingDuration,
+  } = useLocalSearchParams();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -77,7 +87,33 @@ export default function ChatWithGuest() {
 
     await AsyncStorage.setItem("messageContacts", JSON.stringify(contacts));
   };
+  const handleAttachClicked = async () => {
+    // Request permission (especially for Android)
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "You need to allow access to photos to use this feature."
+      );
+      return;
+    }
 
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const image = result.assets[0];
+        console.log("Selected Image:", image);
+        // Now you can use image.uri (upload/send/display)
+      }
+    } catch (error) {
+      console.error("Image Picker Error:", error);
+    }
+  };
   const handleSend = () => {
     if (!input.trim()) return;
     const message: Message = {
@@ -147,12 +183,26 @@ export default function ChatWithGuest() {
       <View style={styles.header}>
         <Text style={styles.headerText}>{fullName}</Text>
 
-        {(status || bookingTime || placeName) && (
+        {(status ||
+          bookingTime ||
+          placeName ||
+          bookingDate ||
+          bookingDuration) && (
           <View style={styles.metaInfo}>
-            {status && <Text style={styles.metaText}>Status: {status}</Text>}
-            {bookingTime && (
-              <Text style={styles.metaText}>Time: {bookingTime}</Text>
-            )}
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {status && <Text style={styles.metaText}>Status: {status}</Text>}
+              {bookingTime && (
+                <Text style={styles.metaText}>Time: {bookingTime}</Text>
+              )}
+            </View>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {bookingDate && (
+                <Text style={styles.metaText}>Date: {bookingDate}</Text>
+              )}
+              {bookingDuration && (
+                <Text style={styles.metaText}>Duration: {bookingDuration}</Text>
+              )}
+            </View>
             {placeName && (
               <Text style={styles.metaText}>Location: {placeName}</Text>
             )}
@@ -174,6 +224,12 @@ export default function ChatWithGuest() {
         keyboardVerticalOffset={0}
       >
         <View style={styles.inputContainer}>
+          <TouchableOpacity
+            style={{ marginRight: 0 }}
+            onPress={handleAttachClicked}
+          >
+            <Ionicons name="attach" size={34} color="#007AFF" />
+          </TouchableOpacity>
           <TextInput
             value={input}
             onChangeText={setInput}
@@ -193,14 +249,14 @@ export default function ChatWithGuest() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: "#F2F2F2",
   },
   header: {
     marginHorizontal: 25,
     borderRadius: 35,
     paddingVertical: 11,
     paddingHorizontal: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#E5E5EA",
     shadowColor: "#000",

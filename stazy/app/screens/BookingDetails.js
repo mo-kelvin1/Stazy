@@ -32,6 +32,8 @@ const handleMessageGuest = () => {
       status: booking.status || "Pending",           // or actual field from your data
       bookingTime: booking.time || "Unknown time",   // adjust field name as needed
       placeName: booking.location || "Unknown location",   // adjust field name as needed
+      bookingDate: booking.date || "Unknown date",   // adjust field name as needed
+      bookingDuration: booking.duration || "Unknown duration", // adjust field name as needed
     },
   });
 };
