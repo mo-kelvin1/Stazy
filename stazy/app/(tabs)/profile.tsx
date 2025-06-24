@@ -12,6 +12,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
 import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
+import { router } from "expo-router";
+import { useAuth } from "../../hooks/useAuth"; // Adjust path as needed
+import FloatingButton from "@/components/ProfileMenu/FloatingButton";
 
 type FeatureCardProps = {
   title: string;
@@ -67,6 +70,17 @@ const MenuOption: React.FC<MenuOptionProps> = ({
 );
 
 export default function Profile() {
+  const { user, isAuthenticated } = useAuth();
+
+  // Handler for switching to hosting
+  const handleSwitchToHosting = () => {
+    router.replace("/(host)/today");
+  };
+
+  // Get user's first name and first letter for avatar
+  const firstName = user?.firstName || "Guest";
+  const avatarLetter = firstName.charAt(0).toUpperCase();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar
@@ -87,15 +101,18 @@ export default function Profile() {
           {/* Profile Card */}
           <View style={styles.profileCard}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>K</Text>
+              <Text style={styles.avatarText}>{avatarLetter}</Text>
             </View>
-            <Text style={styles.name}>Kelvin</Text>
-            <Text style={styles.status}>Guest</Text>
+            <Text style={styles.name}>{firstName}</Text>
+            <Text style={styles.status}>
+              {isAuthenticated ? "Member" : "Guest"}
+            </Text>
           </View>
 
           {/* Feature Cards Row */}
           <View style={styles.featureRow}>
             <FeatureCard
+              onPress={() => router.push("/(tabs)/trips?tab=past")}
               title="Past trips"
               isNew={true}
               icon={
@@ -103,9 +120,9 @@ export default function Profile() {
                   <Text style={styles.suitcaseEmoji}>🧳</Text>
                 </View>
               }
-              onPress={() => {}}
               subtitle={undefined}
             />
+
             <FeatureCard
               title="Connections"
               isNew={true}
@@ -120,7 +137,10 @@ export default function Profile() {
           </View>
 
           {/* Become a host section */}
-          <TouchableOpacity style={styles.hostCard}>
+          <TouchableOpacity
+            style={styles.hostCard}
+            onPress={() => router.replace("/(host)/today")}
+          >
             <View style={styles.hostIcon}>
               <Text style={styles.hostEmoji}>🏠</Text>
             </View>
@@ -142,12 +162,12 @@ export default function Profile() {
             <MenuOption
               icon="help-circle-outline"
               title="Get help"
-              onPress={() => {}}
+              onPress={() => router.push("../screens/GetHelpScreen")}
             />
             <MenuOption
               icon="person-outline"
               title="View profile"
-              onPress={() => {}}
+              onPress={() => router.push("/screens/PersonalInfoScreen")}
             />
             <MenuOption
               icon="hand-left-outline"
@@ -161,21 +181,14 @@ export default function Profile() {
               showChevron={false}
             />
           </View>
-
-          {/* Switch to hosting button */}
-          <TouchableOpacity style={styles.hostingButton}>
-            <Ionicons
-              name="repeat-outline"
-              size={20}
-              color="white"
-              style={styles.hostingButtonIcon}
-            />
-            <Text style={styles.hostingButtonText}>Switch to hosting</Text>
-          </TouchableOpacity>
-
-          {/* Bottom spacing */}
-          <View style={styles.bottomSpacing} />
+          <View style={{ height: 80 }} />
         </ScrollView>
+        {/* Switch to hosting button */}
+        <FloatingButton
+          onPress={handleSwitchToHosting}
+          text="Switch to Hosting"
+          icon="swap-horizontal"
+        />
       </FadeInView>
     </SafeAreaView>
   );
@@ -188,6 +201,7 @@ const styles = StyleSheet.create({
   },
   fadeInView: {
     flex: 1,
+    marginBottom: -34,
   },
   header: {
     flexDirection: "row",
@@ -416,6 +430,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomSpacing: {
-    height: 100,
+    height: 10,
   },
 });

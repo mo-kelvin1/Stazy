@@ -5,87 +5,22 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
+import { router } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
-const TripCard = ({ trip }: { trip: any }) => (
-  <TouchableOpacity style={styles.tripCard}>
-    <View style={styles.tripImageContainer}>
-      <View style={styles.tripImage}>
-        <Ionicons name="airplane" size={40} color="#007AFF" />
-      </View>
-      <View style={styles.tripStatus}>
-        <Text
-          style={[
-            styles.statusText,
-            { color: trip.status === "upcoming" ? "#007AFF" : "#666" },
-          ]}
-        >
-          {trip.status === "upcoming" ? "Upcoming" : "Completed"}
-        </Text>
-      </View>
-    </View>
+export default function Trips() {
+  const params = useLocalSearchParams();
+  const defaultTab = params.tab === "past" ? "past" : "upcoming";
+  const [selectedTab, setSelectedTab] = useState(defaultTab);
 
-    <View style={styles.tripDetails}>
-      <Text style={styles.tripDestination}>{trip.destination}</Text>
-      <Text style={styles.tripDates}>{trip.dates}</Text>
-      <View style={styles.tripInfo}>
-        <View style={styles.infoItem}>
-          <Ionicons name="calendar-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>{trip.duration}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="people-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>{trip.travelers} travelers</Text>
-        </View>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
-
-export default function trips() {
-  const [selectedTab, setSelectedTab] = useState("upcoming");
-
+  // ❌ No actual trips
   const trips = {
-    upcoming: [
-      {
-        id: 1,
-        destination: "Tokyo, Japan",
-        dates: "Dec 15 - Dec 25, 2024",
-        duration: "10 days",
-        travelers: 2,
-        status: "upcoming",
-      },
-      {
-        id: 2,
-        destination: "Barcelona, Spain",
-        dates: "Jan 20 - Jan 27, 2025",
-        duration: "7 days",
-        travelers: 1,
-        status: "upcoming",
-      },
-    ],
-    past: [
-      {
-        id: 3,
-        destination: "Paris, France",
-        dates: "Oct 5 - Oct 12, 2024",
-        duration: "7 days",
-        travelers: 2,
-        status: "completed",
-      },
-      {
-        id: 4,
-        destination: "Bali, Indonesia",
-        dates: "Aug 15 - Aug 25, 2024",
-        duration: "10 days",
-        travelers: 3,
-        status: "completed",
-      },
-    ],
+    upcoming: [],
+    past: [],
   };
 
   const currentTrips = selectedTab === "upcoming" ? trips.upcoming : trips.past;
@@ -111,7 +46,7 @@ export default function trips() {
                 selectedTab === "upcoming" && styles.activeTabText,
               ]}
             >
-              Upcoming ({trips.upcoming.length})
+              Upcoming
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -124,15 +59,13 @@ export default function trips() {
                 selectedTab === "past" && styles.activeTabText,
               ]}
             >
-              Past ({trips.past.length})
+              Past
             </Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.tripsList}>
-          {currentTrips.length > 0 ? (
-            currentTrips.map((trip) => <TripCard key={trip.id} trip={trip} />)
-          ) : (
+          {currentTrips.length === 0 && (
             <View style={styles.emptyState}>
               <Ionicons name="airplane-outline" size={64} color="#ccc" />
               <Text style={styles.emptyTitle}>
@@ -146,7 +79,10 @@ export default function trips() {
                   : "Your travel history will appear here."}
               </Text>
               {selectedTab === "upcoming" && (
-                <TouchableOpacity style={styles.planTripButton}>
+                <TouchableOpacity
+                  style={styles.planTripButton}
+                  onPress={() => router.push("/(tabs)")}
+                >
                   <Text style={styles.planTripText}>Plan a Trip</Text>
                 </TouchableOpacity>
               )}
@@ -207,67 +143,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  tripCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginVertical: 8,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  tripImageContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  tripImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: "#f0f8ff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tripStatus: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: "#f0f8ff",
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  tripDetails: {
-    flex: 1,
-  },
-  tripDestination: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  tripDates: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 12,
-  },
-  tripInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  infoText: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 4,
-  },
   emptyState: {
     alignItems: "center",
     paddingVertical: 60,
@@ -278,12 +153,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 16,
     marginBottom: 8,
+    color: "#444",
   },
   emptySubtitle: {
     fontSize: 16,
     color: "#666",
     textAlign: "center",
     marginBottom: 24,
+    lineHeight: 22,
   },
   planTripButton: {
     backgroundColor: "#007AFF",

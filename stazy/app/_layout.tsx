@@ -39,6 +39,7 @@ function RootLayoutNav() {
     >
       <Stack.Screen name="(auth)" options={{ presentation: "card" }} />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(host)" />
     </Stack>
   );
 }
