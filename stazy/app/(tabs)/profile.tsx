@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
-import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
+import { router } from "expo-router";
 
 type FeatureCardProps = {
   title: string;
@@ -67,6 +67,10 @@ const MenuOption: React.FC<MenuOptionProps> = ({
 );
 
 export default function Profile() {
+  function handleSwitchToHosting() {
+    router.replace("/(host)/today");
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar
@@ -163,7 +167,10 @@ export default function Profile() {
           </View>
 
           {/* Switch to hosting button */}
-          <TouchableOpacity style={styles.hostingButton}>
+          <TouchableOpacity
+            style={styles.hostingButton}
+            onPress={() => handleSwitchToHosting()}
+          >
             <Ionicons
               name="repeat-outline"
               size={20}
