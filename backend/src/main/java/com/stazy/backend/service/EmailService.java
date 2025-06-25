@@ -1,32 +1,34 @@
 package com.stazy.backend.service;
 
-import java.io.UnsupportedEncodingException;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
-    private final JavaMailSender mailSender;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    @Autowired
+    private JavaMailSender mailSender;
 
-    public void sendEmail(String email, String subject, String content)
-            throws MessagingException, UnsupportedEncodingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom("noreply@stazyapp.com");
-        helper.setTo(email);
-        helper.setSubject(subject);
-        helper.setText(content, true);
+    public void sendVerificationEmail(String to, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Email Verification - Your App Name");
+        message.setText("Your email verification code is: " + token +
+                "\nThis code will expire in 15 minutes.");
+
         mailSender.send(message);
-
     }
 
+    public void sendPasswordResetEmail(String to, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Password Reset - Your App Name");
+        message.setText("Your password reset code is: " + token +
+                "\nThis code will expire in 15 minutes." +
+                "\nIf you didn't request this, please ignore this email.");
+
+        mailSender.send(message);
+    }
 }
