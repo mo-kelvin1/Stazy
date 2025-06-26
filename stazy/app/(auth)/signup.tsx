@@ -46,10 +46,11 @@ const signup = () => {
       const result = await signup(email, password, confirmPassword);
 
       if (result.success) {
-        // Navigate to OTP screen with userId
+        // Optionally store token if you need it now
+        // Navigate to OTP screen — email is more stable than userId
         router.push({
           pathname: "/(auth)/otpscreen",
-          params: { userId: result.userId },
+          params: { email }, // or pass nothing if not needed
         });
       } else {
         Alert.alert(

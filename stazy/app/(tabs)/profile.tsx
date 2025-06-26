@@ -5,13 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   StatusBar,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import FadeInView from "../../components/cards/FadeInView";
 import { router } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
 
 type FeatureCardProps = {
   title: string;
@@ -67,9 +68,24 @@ const MenuOption: React.FC<MenuOptionProps> = ({
 );
 
 export default function Profile() {
+  const { user, logout } = useAuth();
+
   function handleSwitchToHosting() {
     router.replace("/(host)/today");
   }
+
+  async function handleLogout() {
+    try {
+      await logout();
+      router.replace("/(auth)/login"); // Navigate back to login screen after logout
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
+  }
+
+  const firstName = user?.firstName || "Guest";
+  const avatarLetter = firstName.charAt(0).toUpperCase();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,9 +107,9 @@ export default function Profile() {
           {/* Profile Card */}
           <View style={styles.profileCard}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>K</Text>
+              <Text style={styles.avatarText}>{avatarLetter}</Text>
             </View>
-            <Text style={styles.name}>Kelvin</Text>
+            <Text style={styles.name}>{firstName}</Text>
             <Text style={styles.status}>Guest</Text>
           </View>
 
@@ -161,7 +177,7 @@ export default function Profile() {
             <MenuOption
               icon="log-out-outline"
               title="Log out"
-              onPress={() => {}}
+              onPress={handleLogout}
               showChevron={false}
             />
           </View>
@@ -169,7 +185,7 @@ export default function Profile() {
           {/* Switch to hosting button */}
           <TouchableOpacity
             style={styles.hostingButton}
-            onPress={() => handleSwitchToHosting()}
+            onPress={handleSwitchToHosting}
           >
             <Ionicons
               name="repeat-outline"

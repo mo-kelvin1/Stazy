@@ -199,7 +199,7 @@ public class AuthController {
 
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse(false, "Invalid email or password"));
+                        .body(new ApiResponse(false, "Account does not exist, Please Sign up"));
             }
 
             User user = userOpt.get();
@@ -214,8 +214,12 @@ public class AuthController {
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
             data.put("emailVerified", user.isEmailVerified());
-            data.put("profileCompleted", user.isProfileCompleted());
-
+            if (user.isProfileCompleted()) {
+                data.put("profileCompleted", user.isProfileCompleted());
+            } else {
+                data.put("profileCompleted", true);
+                data.put("message", "Please complete your profile");
+            }
             return ResponseEntity.ok(new ApiResponse(true, "Login successful", data));
 
         } catch (Exception e) {
@@ -253,7 +257,7 @@ public class AuthController {
             boolean isReset = userService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
 
             if (isReset) {
-                return ResponseEntity.ok(new ApiResponse(true, "Password reset successfully"));
+                return ResponseEntity.ok(new ApiResponse(false, "Password reset successfully"));
             } else {
                 return ResponseEntity.badRequest()
                         .body(new ApiResponse(false, "Invalid or expired reset code"));

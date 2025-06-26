@@ -25,6 +25,8 @@ export default function Login() {
     router.back();
   };
 
+  // Make sure this is imported
+
   const handleContinue = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in both email and password");
@@ -34,22 +36,40 @@ export default function Login() {
     setIsLoading(true);
     try {
       const result = await login(email, password);
-
-      if (result.success) {
-        // Navigation will be handled by the root layout based on auth state
-        // The layout will automatically redirect to /(tabs) when isAuthenticated becomes true
+      if (result.message == "Please complete your profile") {
+        Alert.alert(
+          "Please complete your profile in the profile Section after Logging in"
+        );
+      } else if (result.success) {
+        // Authenticated: navigation handled by root layout
       } else {
         Alert.alert(
           "Login Failed",
-          result.message || "Please check your credentials and try again"
+          result.message || "Invalid email or password. Please try again."
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      Alert.alert(
-        "Login Failed",
-        "An unexpected error occurred. Please try again."
-      );
+
+      let message = "An unexpected error occurred. Please try again.";
+
+      if (error.response) {
+        const backendMessage = error.response.data?.message;
+
+        if (backendMessage === "Account does not exist, Please Sign up") {
+          // Redirect to signup screen and skip alert
+          router.push("/signup");
+          return;
+        }
+
+        if (error.response.status === 401) {
+          message = backendMessage || "Invalid email or password.";
+        } else if (backendMessage) {
+          message = backendMessage;
+        }
+      }
+
+      Alert.alert("Login Failed", message);
     } finally {
       setIsLoading(false);
     }

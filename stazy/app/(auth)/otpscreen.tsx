@@ -16,6 +16,7 @@ const OtpScreen = () => {
   const router = useRouter();
   const { userId } = useLocalSearchParams();
   const { verifyOTP } = useAuth();
+  const { resendVerification } = useAuth();
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,10 +52,16 @@ const OtpScreen = () => {
       setIsLoading(false);
     }
   };
-
   const handleResendOTP = async () => {
-    // You can implement this if your backend supports resending OTP
-    Alert.alert("Resend OTP", "Feature coming soon!");
+    const { resendVerification } = useAuth(); // get from context
+
+    const { success, message } = await resendVerification();
+
+    if (success) {
+      Alert.alert("Success", message || "Verification code resent.");
+    } else {
+      Alert.alert("Error", message || "Could not resend verification code.");
+    }
   };
 
   return (
