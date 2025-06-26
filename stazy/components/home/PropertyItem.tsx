@@ -23,7 +23,6 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
       style={homeStyles.propertyCard}
       onPress={() => {
         onPress(item);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }}
     >
       <View style={homeStyles.imageContainer}>

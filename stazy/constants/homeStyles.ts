@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const homeStyles = StyleSheet.create({
   container: {
@@ -17,9 +17,11 @@ export const homeStyles = StyleSheet.create({
     paddingBottom: 10,
   },
   searchContainer: {
+    marginTop: Platform.OS === 'android' ? 60 : 0,
     paddingBottom: 50,
   },
   searchBar: {
+    
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',

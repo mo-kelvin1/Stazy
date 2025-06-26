@@ -6,4 +6,6 @@ export interface User {
   phoneNumber?: string;
   isProfileComplete?: boolean;
   password?: string;
+  address?: string;
+  dateOfBirth?: string;
 }

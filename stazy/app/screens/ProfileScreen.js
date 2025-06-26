@@ -22,7 +22,6 @@ const ProfileScreen = () => {
     email: user?.email || null,
     phoneNumber: user?.phoneNumber || null,
     address: user?.address || null,
-    emergencyContact: user?.emergencyContact || null,
   });
 
   const [tempData, setTempData] = useState({ ...profileData });
@@ -119,15 +118,6 @@ const ProfileScreen = () => {
     },
   ];
 
-  const emergencyContactItems = [
-    {
-      label: 'Emergency contact',
-      value: isEditing ? tempData.emergencyContact : profileData.emergencyContact,
-      field: 'emergencyContact',
-      keyboardType: 'phone-pad',
-    },
-  ];
-
   return (
     <View style={styles.container}>
       <ProfileHeader
@@ -153,13 +143,6 @@ const ProfileScreen = () => {
         <ProfileSection
           title="Contact Information"
           items={contactInfoItems}
-          isEditing={isEditing}
-          onFieldChange={updateTempData}
-        />
-
-        <ProfileSection
-          title="Emergency Contact"
-          items={emergencyContactItems}
           isEditing={isEditing}
           onFieldChange={updateTempData}
         />
