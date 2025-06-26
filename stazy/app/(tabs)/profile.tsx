@@ -87,6 +87,10 @@ export default function Profile() {
   const firstName = user?.firstName || "Guest";
   const avatarLetter = firstName.charAt(0).toUpperCase();
 
+  function handleViewProfile(): void {
+    router.push("/screens/ProfileScreen");
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar
@@ -98,7 +102,12 @@ export default function Profile() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity style={styles.notificationButton}>
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => {
+              router.push("/screens/NotificationScreen");
+            }}
+          >
             <Ionicons name="notifications-outline" size={24} color="#484848" />
           </TouchableOpacity>
         </View>
@@ -162,12 +171,14 @@ export default function Profile() {
             <MenuOption
               icon="help-circle-outline"
               title="Get help"
-              onPress={() => {}}
+              onPress={() => {
+                router.push("/screens/GetHelpScreen");
+              }}
             />
             <MenuOption
               icon="person-outline"
               title="View profile"
-              onPress={() => {}}
+              onPress={() => handleViewProfile()}
             />
             <MenuOption
               icon="hand-left-outline"
@@ -263,7 +274,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#333333",
+    backgroundColor: "#4A90E2",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
