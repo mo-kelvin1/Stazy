@@ -13,12 +13,25 @@ import { useAuth } from "@/hooks/useAuth";
 const resetpassword = () => {
   const router = useRouter();
   const { email } = useLocalSearchParams(); // get email from query params
-
+  const { resetPassword } = useAuth();
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
   const handleResetPassword = async () => {
-    const auth = await resetpassword();
+    if (!email || !code || !newPassword) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    const result = await resetPassword(email as string, code, newPassword);
+    console.log("Reset Request:", email, code, newPassword);
+
+    if (!result.success && result.message === "Password reset successfully") {
+      Alert.alert("Success", result.message || "Password reset successfully");
+      router.replace("/(auth)/login"); // Redirect to login after successful reset
+    } else {
+      Alert.alert("Error", result.message || "Could not reset password");
+    }
   };
 
   return (

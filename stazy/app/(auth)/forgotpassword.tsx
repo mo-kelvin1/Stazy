@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { AuthContext } from "@/components/AuthProvider";
+import { AuthContext } from "@/context/AuthContext";
 
 const forgotpassword = () => {
   const [email, setEmail] = useState("");
