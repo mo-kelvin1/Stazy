@@ -12,7 +12,7 @@ export const createRefreshUserDataAction = (
       if (!token) return;
 
       const response = await axios.get(
-        "http://10.132.154.202:8080/api/auth/profile",
+        "http://100.66.107.9:8080/api/auth/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,6 +34,8 @@ export const createRefreshUserDataAction = (
         lastName: result.data.lastName,
         phoneNumber: result.data.phoneNumber,
         password: "", // Password is not sent by backend, so leave blank
+        address:result.data.address,
+        dateOfBirth:result.data.dateOfBirth,
         isProfileComplete: true, // Assume profile is complete if this endpoint returns data
       };
 

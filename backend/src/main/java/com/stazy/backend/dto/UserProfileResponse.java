@@ -10,11 +10,16 @@ public class UserProfileResponse {
     private String lastName;
     private String email;
     private String phoneNumber;
+    private String address;
+    private String dateOfBirth;
 
-    public UserProfileResponse(String firstName, String lastName, String email, String phoneNumber) {
+    public UserProfileResponse(String firstName, String lastName, String email, String phoneNumber, String address,
+            String dateOfBirth) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.dateOfBirth = dateOfBirth;
     }
 }

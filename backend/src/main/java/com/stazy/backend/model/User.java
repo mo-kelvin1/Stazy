@@ -33,6 +33,8 @@ public class User {
     private String emailVerificationToken;
     private LocalDateTime tokenExpiry;
     private boolean profileCompleted = false;
+    private String dateOfBirth;
+    private String address;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

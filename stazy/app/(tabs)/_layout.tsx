@@ -1,9 +1,14 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useAuth } from "@/hooks/useAuth";
 export default function TabLayout() {
+  const { refreshUserData } = useAuth();
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+  const handleProfilePress = () => {
+    refreshUserData();
   };
   return (
     <Tabs
@@ -70,7 +75,7 @@ export default function TabLayout() {
         name="profile"
         options={{ title: "Profile" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => handleProfilePress(),
         }}
       />
     </Tabs>
