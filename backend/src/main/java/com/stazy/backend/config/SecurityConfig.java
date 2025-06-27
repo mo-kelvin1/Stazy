@@ -30,8 +30,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/forgot-password",
-                                "/api/auth/reset-password")
+                                "/api/auth/reset-password", "/api/auth/verify-email", "/api/auth/resend-verification")
                         .permitAll()
+                        .requestMatchers("/api/properties/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
