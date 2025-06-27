@@ -10,9 +10,12 @@ import ProfileHeader from '../../components/profile/ProfileHeader';
 import ProfileAvatar from '../../components/profile/ProfileAvatar';
 import ProfileSection from '../../components/profile/ProfileSection';
 import CancelButton from '../../components/profile/CancelButton';
+import { router } from 'expo-router';
 
 const ProfileScreen = () => {
   const { user } = useAuth();
+  const { updateProfile } = useAuth();
+  const { refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
   const [profileData, setProfileData] = useState({
@@ -26,10 +29,16 @@ const ProfileScreen = () => {
 
   const [tempData, setTempData] = useState({ ...profileData });
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (isEditing) {
       setProfileData({ ...tempData });
-      Alert.alert('Success', 'Your profile has been updated successfully!');
+      const result = await updateProfile(tempData.firstName, tempData.lastName, tempData.phoneNumber, tempData.address, tempData.dateOfBirth);
+      if(result.success){
+        Alert.alert('Success', 'Your profile has been updated successfully!');
+        refreshUserData();
+      }else{
+        Alert.alert('Error', result.message);
+      }
     } else {
       setTempData({ ...profileData });
     }
@@ -42,8 +51,8 @@ const ProfileScreen = () => {
   };
 
   const handleBack = () => {
-    // Add navigation logic here
-    console.log('Navigate back');
+    refreshUserData();
+    router.back();
   };
 
   const handleCameraPress = () => {

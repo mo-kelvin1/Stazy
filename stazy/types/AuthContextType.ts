@@ -34,4 +34,11 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
   resendVerification: () => Promise<{ success: boolean; message: string }>;
+  updateProfile: (
+    firstName: string,
+    lastName: string,
+    phoneNumber: string,
+    address?: string,
+    dateOfBirth?: string
+  ) => Promise<{ success: boolean; message?: string }>;
 }

@@ -21,7 +21,7 @@ const ProfileItem = ({
             onChangeText={(text) => onChangeText(field, text)}
             keyboardType={keyboardType}
             multiline={field === 'address'}
-            placeholder={`Enter ${label.toLowerCase()}`}
+            placeholder={`${label === 'Date of birth' ? 'DD/MM/YYYY' : 'Enter ' + label.toLowerCase()}`}
             placeholderTextColor="#C7C7CC"
           />
         ) : (

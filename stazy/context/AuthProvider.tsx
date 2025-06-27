@@ -4,7 +4,7 @@ import { AuthContext } from "./AuthContext";
 import { AuthContextType } from "../types/AuthContextType";
 import { User } from "../types/User";
 import { SimulatedTokenStore } from "../services/SimulatedTokenStore";
-
+import { createUpdateProfileAction } from "./actions/updateProfile";
 // Import action creators
 import { createLoginAction } from "./actions/login";
 import { createSignupAction } from "./actions/signup";
@@ -40,7 +40,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const resendVerification = createResendVerificationAction(tokenStore);
   const logout = createLogoutAction(tokenStore, setUser, setIsAuthenticated);
   const refreshUserData = createRefreshUserDataAction(tokenStore, setUser);
-
+  const updateProfile = createUpdateProfileAction(
+    tokenStore,
+    setIsAuthenticated
+  );
   useEffect(() => {
     checkAuthStatus();
   }, []);
@@ -78,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     refreshUserData,
     resendVerification,
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

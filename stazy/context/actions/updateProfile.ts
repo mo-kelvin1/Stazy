@@ -1,7 +1,7 @@
 import axios from "axios";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 
-export const createCompleteProfileAction = (
+export const createUpdateProfileAction = (
   tokenStore: SimulatedTokenStore,
   setIsAuthenticated: (isAuth: boolean) => void
 ) => {
@@ -20,7 +20,7 @@ export const createCompleteProfileAction = (
       }
 
       const response = await axios.post(
-        "http://100.66.107.9:8080/api/auth/complete-profile",
+        "http://100.66.107.9:8080/update-profile",
         {
           firstName,
           lastName,
@@ -31,6 +31,7 @@ export const createCompleteProfileAction = (
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -43,13 +44,9 @@ export const createCompleteProfileAction = (
           message: result.message || "Profile update failed",
         };
       }
-
-      // Mark user as authenticated
-      setIsAuthenticated(true);
-
       return {
         success: true,
-        message: result.message || "Profile completed successfully",
+        message: result.message || "Profile updated successfully",
       };
     } catch (error: any) {
       console.error("Profile completion error:", error);
