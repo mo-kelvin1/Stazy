@@ -3,7 +3,6 @@ import { StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import FadeInView from "../../components/cards/FadeInView";
-import PropertyCard from "../../components/cards/PropertyCard";
 
 // Import broken down components
 import WishlistHeader from "../../components/wishlist/WishlistHeader";
@@ -14,8 +13,8 @@ import WishlistBottomActions from "../../components/wishlist/WishlistBottomActio
 
 // Import types and hooks
 import { WishlistItem } from "../../types/WishlistTypes";
-import { useWishlist } from "../../hooks/UseWishlist";
-import { Property } from "../../data/mockProperties";
+import { useWishlist } from "../../hooks/useWishlist";
+import { Property } from "../../types/Property";
 import { onHeartClicked } from "../../data/wishlistUtils";
 
 // Extend the global object to include wishlistRefreshKey
@@ -148,16 +147,6 @@ export default function WishlistScreen() {
             />
           )}
         </ScrollView>
-
-        {/* PropertyCard Modal for property items */}
-        <PropertyCard
-          property={selectedProperty}
-          isVisible={modalVisible}
-          onClose={closeModal}
-          likedItems={likedItems}
-          onHeartPress={handleHeartPress}
-        />
-
         <WishlistBottomActions
           onSharePress={handleSharePress}
           onPlanTripPress={handlePlanTripPress}

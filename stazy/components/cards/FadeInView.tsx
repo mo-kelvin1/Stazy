@@ -23,23 +23,23 @@ export default function FadeInView({ children, style }: Props) {
     useCallback(() => {
       // Reset values
       opacity.value = 0;
-      translateY.value = 30;
+      translateY.value = 0;
 
       // Trigger animation on focus
       opacity.value = withTiming(1, {
-        duration: 400,
+        duration: 10,
         easing: Easing.out(Easing.ease),
       });
 
       translateY.value = withSpring(0, {
-        damping: 10,
+        damping: 1,
         stiffness: 100,
       });
 
       return () => {
         // Optional: reset on blur if needed
         opacity.value = 0;
-        translateY.value = 30;
+        translateY.value = 0;
       };
     }, [])
   );

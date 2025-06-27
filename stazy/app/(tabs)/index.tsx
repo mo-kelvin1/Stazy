@@ -1,31 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  SafeAreaView,
-  StatusBar,
-  Animated,
-  Alert,
-  View,
-  Text,
-} from "react-native";
+import { SafeAreaView, StatusBar, Animated, View, Text } from "react-native";
 import { Stack } from "expo-router";
-import { Property } from "../../data/mockProperties";
-import PropertyCard from "../../components/cards/PropertyCard";
 import FadeInView from "../../components/cards/FadeInView";
 import CategoryListingComponent from "../../components/cards/CategoryListingPage";
 import { HomeHeader } from "../../components/home/HomeHeader";
 import { CategorySection } from "../../components/home/CategorySection";
-import { useHomeData } from "../../hooks/useHomeData";
 import { useWishlist } from "../../hooks/useWishlist";
 import { homeStyles } from "../../constants/homeStyles";
+import { mockProperties } from "../../data/mockProperties";
+import { mockExperiences } from "../../data/mockExperiences";
+import { mockServices } from "../../data/mockServices";
 
 export default function HomePage() {
-  const {
-    properties,
-    loading,
-    activeTab,
-    setActiveTab,
-    categorizedProperties,
-  } = useHomeData();
+  const [activeTab, setActiveTab] = useState("Homes");
+  const [loading, setLoading] = useState(false);
 
   const {
     likedItems,
@@ -34,10 +22,6 @@ export default function HomePage() {
     initializeWishlistData,
   } = useWishlist();
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
-    null
-  );
   const [showCategoryListing, setShowCategoryListing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,16 +50,31 @@ export default function HomePage() {
     }
   };
 
-  const handleItemPress = (item: Property) => {
-    console.log("HomePage: Property card clicked for:", item.id);
-    setSelectedProperty(item);
-    setModalVisible(true);
+  // Get the appropriate data based on active tab
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case "Homes":
+        return mockProperties;
+      case "Experiences":
+        return mockExperiences;
+      case "Services":
+        return mockServices;
+      default:
+        return mockProperties;
+    }
   };
 
-  const closeModal = () => {
-    console.log("HomePage: Closing modal");
-    setModalVisible(false);
-    setSelectedProperty(null);
+  // Categorize data based on active tab
+  const getCategorizedData = () => {
+    const currentData = getCurrentData();
+    return currentData.reduce((acc, item) => {
+      const category = item.category || "Other";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {} as Record<string, any[]>);
   };
 
   const handleTabPress = (tab: string) => {
@@ -95,21 +94,25 @@ export default function HomePage() {
   };
 
   const onHeartPress = (itemId: string) => {
-    handleHeartPress(itemId, properties);
+    const currentData = getCurrentData();
+    handleHeartPress(itemId, currentData);
   };
 
   if (showCategoryListing) {
-    const categoryProperties = categorizedProperties[selectedCategory] || [];
+    const categorizedData = getCategorizedData();
+    const categoryItems = categorizedData[selectedCategory] || [];
     return (
       <CategoryListingComponent
         category={selectedCategory}
-        properties={categoryProperties}
+        properties={categoryItems}
         onBackPress={handleBackFromCategoryListing}
         likedItems={likedItems}
         onHeartPress={onHeartPress}
       />
     );
   }
+
+  const categorizedData = getCategorizedData();
 
   return (
     <SafeAreaView style={homeStyles.container}>
@@ -141,27 +144,18 @@ export default function HomePage() {
               <Text>Loading...</Text>
             </View>
           ) : (
-            Object.entries(categorizedProperties).map(([category, items]) => (
+            Object.entries(categorizedData).map(([category, items]) => (
               <CategorySection
                 key={category}
                 category={category}
-                items={items as Property[]}
+                items={items}
                 likedItems={likedItems}
                 onCategoryPress={handleCategoryPress}
-                onItemPress={handleItemPress}
                 onHeartPress={onHeartPress}
               />
             ))
           )}
         </Animated.ScrollView>
-
-        <PropertyCard
-          property={selectedProperty}
-          isVisible={modalVisible}
-          onClose={closeModal}
-          likedItems={likedItems}
-          onHeartPress={onHeartPress}
-        />
       </FadeInView>
     </SafeAreaView>
   );

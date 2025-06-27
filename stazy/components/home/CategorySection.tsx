@@ -1,17 +1,14 @@
 import React from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { Property } from "../../data/mockProperties";
 import { PropertyItem } from "./PropertyItem";
 import { homeStyles } from "../../constants/homeStyles";
 
 interface CategorySectionProps {
   category: string;
-  items: Property[];
+  items: any[];
   likedItems: Set<string>;
   onCategoryPress: (category: string) => void;
-  onItemPress: (item: Property) => void;
   onHeartPress: (itemId: string) => void;
 }
 
@@ -20,14 +17,12 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   items,
   likedItems,
   onCategoryPress,
-  onItemPress,
   onHeartPress,
 }) => {
-  const renderProperty = ({ item }: { item: Property }) => (
+  const renderProperty = ({ item }: { item: any }) => (
     <PropertyItem
       item={item}
       likedItems={likedItems}
-      onPress={onItemPress}
       onHeartPress={onHeartPress}
     />
   );
@@ -38,7 +33,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
         style={homeStyles.categoryHeader}
         onPress={() => {
           onCategoryPress(category);
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }}
       >
         <Text style={homeStyles.categoryTitle}>{category}</Text>

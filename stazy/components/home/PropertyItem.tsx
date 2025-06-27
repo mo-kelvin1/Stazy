@@ -2,32 +2,38 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Property } from "../../data/mockProperties";
 import { homeStyles } from "../../constants/homeStyles";
+import { router } from "expo-router";
 
 interface PropertyItemProps {
-  item: Property;
+  item: any;
   likedItems: Set<string>;
-  onPress: (item: Property) => void;
   onHeartPress: (itemId: string) => void;
 }
 
 export const PropertyItem: React.FC<PropertyItemProps> = ({
   item,
   likedItems,
-  onPress,
   onHeartPress,
 }) => {
+  const handlePress = () => {
+    router.push({
+      pathname: "/render/[renderItem]",
+      params: { renderItem: item.id },
+    });
+  };
+
   return (
-    <TouchableOpacity
-      style={homeStyles.propertyCard}
-      onPress={() => {
-        onPress(item);
-      }}
-    >
+    <TouchableOpacity style={homeStyles.propertyCard} onPress={handlePress}>
       <View style={homeStyles.imageContainer}>
         <Image
-          source={{ uri: item.image[0] }}
+          source={{
+            uri: item.images
+              ? item.images[0]
+              : item.image
+              ? item.image[0]
+              : undefined,
+          }}
           style={homeStyles.propertyImage}
         />
         <TouchableOpacity
@@ -53,7 +59,12 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
           <Text style={homeStyles.rating}>{item.rating}</Text>
         </View>
         <Text style={homeStyles.price}>
-          ${item.price} for {item.nights} night{item.nights > 1 ? "s" : ""}
+          ${item.price}
+          {item.nights !== undefined
+            ? ` for ${item.nights} night${item.nights > 1 ? "s" : ""}`
+            : item.duration !== undefined
+            ? ` for ${item.duration} hour${item.duration > 1 ? "s" : ""}`
+            : ""}
         </Text>
       </View>
     </TouchableOpacity>

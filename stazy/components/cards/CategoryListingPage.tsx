@@ -10,13 +10,14 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Property } from "../../data/mockProperties";
-import PropertyCard from "../cards/PropertyCard";
 import * as Haptics from "expo-haptics";
+import { Experience } from "../../types/Experience";
+import { Service } from "../../types/Service";
+import { useRouter } from "expo-router";
 
 interface CategoryListingComponentProps {
   category: string;
-  properties: Property[];
+  properties: any[];
   onBackPress: () => void;
   likedItems: Set<string>;
   onHeartPress: (itemId: string) => void;
@@ -29,31 +30,35 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
   likedItems,
   onHeartPress,
 }) => {
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [selectedProperty, setSelectedProperty] =
-    React.useState<Property | null>(null);
+  const router = useRouter();
 
-  const handlePropertyPress = (property: Property) => {
-    console.log("CategoryListing: Property card clicked for:", property.id);
-    setSelectedProperty(property);
-    setModalVisible(true);
+  // Updated item press handler - always route to renderItem page
+  const handleItemPress = (item: any) => {
+    router.push({
+      pathname: "/render/[renderItem]",
+      params: { renderItem: item.id },
+    });
   };
 
-  const closeModal = () => {
-    console.log("CategoryListing: Closing modal");
-    setModalVisible(false);
-    setSelectedProperty(null);
-  };
-  const renderProperty = ({ item }: { item: Property }) => (
+  const renderProperty = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.propertyContainer}
       onPress={() => {
-        handlePropertyPress(item);
+        handleItemPress(item);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }}
     >
       <View style={styles.imageContainer}>
-        <Image source={{ uri: item.image[0] }} style={styles.propertyImage} />
+        <Image
+          source={{
+            uri: item.images
+              ? item.images[0]
+              : item.image
+              ? item.image[0]
+              : undefined,
+          }}
+          style={styles.propertyImage}
+        />
         <TouchableOpacity
           style={styles.heartIcon}
           onPress={() => {
@@ -91,9 +96,12 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
         <Text style={styles.availability}>{"Free cancellation"}</Text>
         <Text style={styles.dateRange}>{"4-6 Jul"}</Text>
         <View style={styles.priceRow}>
-          <Text style={styles.price}>${item.price} night</Text>
+          <Text style={styles.price}>
+            ${item.price}{" "}
+            {item.nights ? `night${item.nights > 1 ? "s" : ""}` : ""}
+          </Text>
           <Text style={styles.totalPrice}>
-            ${item.price * (item.nights || 1)} total
+            ${item.nights ? item.price * item.nights : item.price} total
           </Text>
         </View>
       </View>
@@ -131,15 +139,6 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
-      />
-
-      {/* Property Card Modal */}
-      <PropertyCard
-        property={selectedProperty}
-        isVisible={modalVisible}
-        onClose={closeModal}
-        likedItems={likedItems}
-        onHeartPress={onHeartPress}
       />
     </SafeAreaView>
   );

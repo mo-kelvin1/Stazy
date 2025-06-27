@@ -43,41 +43,11 @@ export default function TabLayout() {
         },
       })}
     >
-      <Tabs.Screen
-        name="index"
-        options={{ title: "Home" }}
-        listeners={{
-          tabPress: () => triggerHaptic(),
-        }}
-      />
-      <Tabs.Screen
-        name="wishlist"
-        options={{ title: "Wishlist" }}
-        listeners={{
-          tabPress: () => triggerHaptic(),
-        }}
-      />
-      <Tabs.Screen
-        name="trips"
-        options={{ title: "Trips" }}
-        listeners={{
-          tabPress: () => triggerHaptic(),
-        }}
-      />
-      <Tabs.Screen
-        name="messages"
-        options={{ title: "Messages" }}
-        listeners={{
-          tabPress: () => triggerHaptic(),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile" }}
-        listeners={{
-          tabPress: () => handleProfilePress(),
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: "Home" }} />
+      <Tabs.Screen name="wishlist" options={{ title: "Wishlist" }} />
+      <Tabs.Screen name="trips" options={{ title: "Trips" }} />
+      <Tabs.Screen name="messages" options={{ title: "Messages" }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );
 }
