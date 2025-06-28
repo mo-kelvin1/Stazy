@@ -10,7 +10,7 @@ export const createRefreshListingsAction = (tokenStore: SimulatedTokenStore) => 
         return { success: false, message: "No token found. Please log in." };
       }
       const response = await axios.get(
-        "http://172.20.10.11:8080/api/properties/my-properties",
+        "http://100.66.107.9:8080/api/properties/my-properties",
         {
           headers: {
             Authorization: `Bearer ${token}`,

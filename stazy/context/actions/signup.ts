@@ -13,7 +13,7 @@ export const createSignupAction = (tokenStore: SimulatedTokenStore) => {
       }
 
       const response = await axios.post(
-        "http://172.20.10.11:8080/api/auth/signup",
+        "http://100.66.107.9:8080/api/auth/signup",
         {
           email,
           password,

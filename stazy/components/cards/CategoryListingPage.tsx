@@ -21,6 +21,8 @@ interface CategoryListingComponentProps {
   onBackPress: () => void;
   likedItems: Set<string>;
   onHeartPress: (itemId: string) => void;
+  activeTab: string;
+  pageName: string;
 }
 
 const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
@@ -29,6 +31,8 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
   onBackPress,
   likedItems,
   onHeartPress,
+  activeTab,
+  pageName,
 }) => {
   const router = useRouter();
 
@@ -36,77 +40,80 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
   const handleItemPress = (item: any) => {
     router.push({
       pathname: "/render/[renderItem]",
-      params: { renderItem: item.id },
+      params: {
+        renderItem: item.id,
+        pageName: pageName,
+        activeTab: activeTab,
+      },
     });
   };
 
-  const renderProperty = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.propertyContainer}
-      onPress={() => {
-        handleItemPress(item);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      }}
-    >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri: item.images
-              ? item.images[0]
-              : item.image
-              ? item.image[0]
-              : undefined,
-          }}
-          style={styles.propertyImage}
-        />
-        <TouchableOpacity
-          style={styles.heartIcon}
-          onPress={() => {
-            onHeartPress(item.id);
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }}
-        >
-          <Ionicons
-            name={likedItems.has(item.id) ? "heart" : "heart-outline"}
-            size={24}
-            color={likedItems.has(item.id) ? "#FF385C" : "white"}
+  const renderProperty = ({ item }: { item: any }) => {
+    const priceText =
+      "$" +
+      item.price +
+      " " +
+      (item.nights ? "night" + (item.nights > 1 ? "s" : "") : "");
+    const totalPriceText =
+      "$" + (item.nights ? item.price * item.nights : item.price) + " total";
+
+    return (
+      <TouchableOpacity
+        style={styles.propertyContainer}
+        onPress={() => handleItemPress(item)}
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={{
+              uri: item.images
+                ? item.images[0]
+                : item.image
+                ? item.image[0]
+                : undefined,
+            }}
+            style={styles.propertyImage}
           />
-        </TouchableOpacity>
-        {item.isGuestFavorite && (
-          <View style={styles.guestFavoriteTag}>
-            <Text style={styles.guestFavoriteText}>Guest favourite</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.propertyInfo}>
-        <View style={styles.titleRow}>
-          <Text style={styles.propertyTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={12} color="#222222" />
-            <Text style={styles.rating}>
-              {item.rating} ({item.rating || 0})
+          <TouchableOpacity
+            style={styles.heartIcon}
+            onPress={() => onHeartPress(item.id)}
+          >
+            <Ionicons
+              name={likedItems.has(item.id) ? "heart" : "heart-outline"}
+              size={20}
+              color={likedItems.has(item.id) ? "#FF385C" : "white"}
+            />
+          </TouchableOpacity>
+          {item.isGuestFavorite && (
+            <View style={styles.guestFavoriteTag}>
+              <Text style={styles.guestFavoriteText}>Guest favourite</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.propertyInfo}>
+          <View style={styles.titleRow}>
+            <Text style={styles.propertyTitle} numberOfLines={2}>
+              {item.title}
             </Text>
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={12} color="#222222" />
+              <Text style={styles.rating}>
+                {item.rating} ({item.rating || 0})
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {item.location || item.category}
+          </Text>
+          <Text style={styles.availability}>{"Free cancellation"}</Text>
+          <Text style={styles.dateRange}>{"4-6 Jul"}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{priceText}</Text>
+            <Text style={styles.totalPrice}>{totalPriceText}</Text>
           </View>
         </View>
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {item.location || item.category}
-        </Text>
-        <Text style={styles.availability}>{"Free cancellation"}</Text>
-        <Text style={styles.dateRange}>{"4-6 Jul"}</Text>
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>
-            ${item.price}{" "}
-            {item.nights ? `night${item.nights > 1 ? "s" : ""}` : ""}
-          </Text>
-          <Text style={styles.totalPrice}>
-            ${item.nights ? item.price * item.nights : item.price} total
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>

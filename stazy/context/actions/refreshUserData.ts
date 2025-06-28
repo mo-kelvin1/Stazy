@@ -12,7 +12,7 @@ export const createRefreshUserDataAction = (
       if (!token) return;
 
       const response = await axios.get(
-        "http://172.20.10.11:8080/api/auth/profile",
+        "http://100.66.107.9:8080/api/auth/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,

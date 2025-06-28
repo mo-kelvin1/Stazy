@@ -10,25 +10,27 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { Property } from "../../types/Property";
+import { Service } from "../../types/Service";
 import { Ionicons } from "@expo/vector-icons";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 
-interface RenderListingContentProps {
+interface RenderHostServiceContentProps {
   itemId: string;
 }
 
 const tokenStore = new SimulatedTokenStore();
 
-export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
-  const [property, setProperty] = useState<Property | null>(null);
+export const renderHostServiceContent = ({
+  itemId,
+}: RenderHostServiceContentProps) => {
+  const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<Property>>({});
+  const [editData, setEditData] = useState<Partial<Service>>({});
 
   useEffect(() => {
-    const fetchProperty = async () => {
+    const fetchService = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -38,30 +40,57 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
         }
 
         const response = await fetch(
-          `http://100.66.107.9:8080/api/properties/${itemId}`,
+          `http://100.66.107.9:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch property");
+          throw new Error("Failed to fetch service");
         }
 
         const data = await response.json();
-        setProperty(data);
-        setEditData(data);
+
+        // Transform backend service data to match frontend Service interface
+        const transformedService: Service = {
+          id: data.id.toString(),
+          title: data.title || "",
+          description: data.description || "",
+          location: data.location || "",
+          price: data.price || 0,
+          duration: data.duration || 0,
+          rating: data.rating || 0,
+          images: data.images || [],
+          category: data.category || "other",
+          serviceType: data.serviceType || "one_time",
+          availability: {
+            days: data.availabilityDays || [],
+            timeSlots: data.availabilityTimeSlots || [],
+          },
+          requirements: data.requirements || [],
+          included: data.included || [],
+          maxGuests: data.maxGuests || 1,
+          createdAt: new Date(data.createdAt),
+          updatedAt: new Date(data.updatedAt),
+          isGuestFavorite: data.isGuestFavorite || false,
+          provider: data.provider || "",
+          providerEmail: data.providerEmail || "",
+        };
+
+        setService(transformedService);
+        setEditData(transformedService);
       } catch (err: any) {
-        setError(err.message || "Failed to fetch property");
+        setError(err.message || "Failed to fetch service");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProperty();
+    fetchService();
   }, [itemId]);
 
-  const handleFieldChange = (field: keyof Property, value: any) => {
+  const handleFieldChange = (field: keyof Service, value: any) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -73,7 +102,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
       }
 
       const response = await fetch(
-        `http://100.66.107.9:8080/api/properties/${itemId}`,
+        `http://100.66.107.9:8080/api/service-offers/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -85,15 +114,15 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update property");
+        throw new Error("Failed to update service");
       }
 
-      const updatedProperty = await response.json();
-      setProperty(updatedProperty);
+      const updatedService = await response.json();
+      setService(updatedService);
       setIsEditing(false);
-      Alert.alert("Success", "Listing updated successfully!");
+      Alert.alert("Success", "Service updated successfully!");
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to update listing");
+      Alert.alert("Error", err.message || "Failed to update service");
     }
   };
 
@@ -101,7 +130,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading listing...</Text>
+        <Text style={{ marginTop: 10 }}>Loading service...</Text>
       </View>
     );
   }
@@ -114,44 +143,43 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
     );
   }
 
-  if (!property) {
+  if (!service) {
     return (
       <View style={styles.centered}>
-        <Text>Listing not found.</Text>
+        <Text>Service not found.</Text>
       </View>
     );
   }
 
-  const propertyData = property as any;
-
-  // Create price text variable
-  const priceText = "$" + propertyData.price;
+  const priceText = "$" + service.price;
 
   return (
     <ScrollView style={styles.container}>
       <Image
-        source={{ uri: property.images[0] }}
+        source={{ uri: service.images[0] }}
         style={styles.image}
         resizeMode="stretch"
       />
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Listing Details</Text>
+        <Text style={styles.sectionTitle}>Service Details</Text>
         <TouchableOpacity
-          onPress={() => setIsEditing((v) => !v)}
           style={styles.editBtn}
+          onPress={() => setIsEditing(!isEditing)}
         >
           <Ionicons
-            name={isEditing ? "checkmark" : "create-outline"}
-            size={22}
+            name={isEditing ? "close" : "create-outline"}
+            size={20}
             color="#007AFF"
           />
-          <Text style={styles.editBtnText}>{isEditing ? "Save" : "Edit"}</Text>
+          <Text style={styles.editBtnText}>
+            {isEditing ? "Cancel" : "Edit"}
+          </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.fieldRow}>
         <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{property.id}</Text>
+        <Text style={styles.value}>{service.id}</Text>
       </View>
 
       <View style={styles.fieldRow}>
@@ -163,7 +191,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
             onChangeText={(v) => handleFieldChange("title", v)}
           />
         ) : (
-          <Text style={styles.value}>{property.title}</Text>
+          <Text style={styles.value}>{service.title}</Text>
         )}
       </View>
 
@@ -171,13 +199,13 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
         <Text style={styles.label}>Description:</Text>
         {isEditing ? (
           <TextInput
-            style={[styles.input, { height: 60 }]}
+            style={styles.input}
             value={editData.description || ""}
             onChangeText={(v) => handleFieldChange("description", v)}
             multiline
           />
         ) : (
-          <Text style={styles.value}>{property.description}</Text>
+          <Text style={styles.value}>{service.description}</Text>
         )}
       </View>
 
@@ -190,7 +218,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
             onChangeText={(v) => handleFieldChange("location", v)}
           />
         ) : (
-          <Text style={styles.value}>{property.location}</Text>
+          <Text style={styles.value}>{service.location}</Text>
         )}
       </View>
 
@@ -209,46 +237,16 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
       </View>
 
       <View style={styles.fieldRow}>
-        <Text style={styles.label}>Weekend Price:</Text>
+        <Text style={styles.label}>Duration:</Text>
         {isEditing ? (
           <TextInput
             style={styles.input}
-            value={editData.weekendPrice?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("weekendPrice", Number(v))}
+            value={editData.duration?.toString() || ""}
+            onChangeText={(v) => handleFieldChange("duration", Number(v))}
             keyboardType="numeric"
           />
         ) : (
-          <Text style={styles.value}>
-            {property.weekendPrice ? "$" + property.weekendPrice : "Not set"}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Rating:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.rating?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("rating", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.rating}/5</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Nights:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.nights?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("nights", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.nights}</Text>
+          <Text style={styles.value}>{service.duration} hours</Text>
         )}
       </View>
 
@@ -261,59 +259,20 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
             onChangeText={(v) => handleFieldChange("category", v)}
           />
         ) : (
-          <Text style={styles.value}>{property.category}</Text>
+          <Text style={styles.value}>{service.category}</Text>
         )}
       </View>
 
       <View style={styles.fieldRow}>
-        <Text style={styles.label}>Property Type:</Text>
+        <Text style={styles.label}>Service Type:</Text>
         {isEditing ? (
           <TextInput
             style={styles.input}
-            value={editData.propertyType || ""}
-            onChangeText={(v) => handleFieldChange("propertyType", v)}
+            value={editData.serviceType || ""}
+            onChangeText={(v) => handleFieldChange("serviceType", v)}
           />
         ) : (
-          <Text style={styles.value}>{property.propertyType}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Guest Favorite:</Text>
-        <Text style={styles.value}>
-          {property.isGuestFavorite ? "Yes" : "No"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Amenities:</Text>
-        <Text style={styles.value}>
-          {property.amenities.length > 0
-            ? property.amenities.join(", ")
-            : "No amenities listed"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Highlights:</Text>
-        <Text style={styles.value}>
-          {property.highlights.length > 0
-            ? property.highlights.join(", ")
-            : "No highlights listed"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Min Guests:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.minGuests?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("minGuests", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.minGuests}</Text>
+          <Text style={styles.value}>{service.serviceType}</Text>
         )}
       </View>
 
@@ -327,81 +286,38 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
             keyboardType="numeric"
           />
         ) : (
-          <Text style={styles.value}>{property.maxGuests}</Text>
+          <Text style={styles.value}>{service.maxGuests}</Text>
         )}
       </View>
 
       <View style={styles.fieldRow}>
-        <Text style={styles.label}>Bedrooms:</Text>
+        <Text style={styles.label}>Provider:</Text>
         {isEditing ? (
           <TextInput
             style={styles.input}
-            value={editData.bedrooms?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("bedrooms", Number(v))}
-            keyboardType="numeric"
+            value={editData.provider || ""}
+            onChangeText={(v) => handleFieldChange("provider", v)}
           />
         ) : (
-          <Text style={styles.value}>{property.bedrooms}</Text>
+          <Text style={styles.value}>{service.provider}</Text>
         )}
       </View>
 
       <View style={styles.fieldRow}>
-        <Text style={styles.label}>Beds:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.beds?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("beds", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.beds}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Bathrooms:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.bathrooms?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("bathrooms", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.bathrooms}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Available:</Text>
-        <Text style={styles.value}>{property.is_available ? "Yes" : "No"}</Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Created At:</Text>
+        <Text style={styles.label}>Requirements:</Text>
         <Text style={styles.value}>
-          {property.createdAt
-            ? new Date(property.createdAt).toLocaleDateString()
-            : "Not available"}
+          {service.requirements.length > 0
+            ? service.requirements.join(", ")
+            : "No requirements listed"}
         </Text>
       </View>
 
       <View style={styles.fieldRow}>
-        <Text style={styles.label}>Updated At:</Text>
+        <Text style={styles.label}>Included:</Text>
         <Text style={styles.value}>
-          {property.updatedAt
-            ? new Date(property.updatedAt).toLocaleDateString()
-            : "Not available"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Images:</Text>
-        <Text style={styles.value}>
-          {property.images.length > 0
-            ? property.images.length + " image(s)"
-            : "No images"}
+          {service.included.length > 0
+            ? service.included.join(", ")
+            : "No items included"}
         </Text>
       </View>
 
@@ -489,11 +405,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  },
-  imageContainer: {
-    width: "100%",
-    height: 200,
-    marginBottom: 20,
   },
   image: {
     width: "100%",

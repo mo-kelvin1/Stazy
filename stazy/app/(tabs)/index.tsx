@@ -15,8 +15,8 @@ import { CategorySection } from "../../components/home/CategorySection";
 import { useWishlist } from "../../hooks/useWishlist";
 import { homeStyles } from "../../constants/homeStyles";
 import { mockExperiences } from "../../data/mockExperiences";
-import { mockServices } from "../../data/mockServices";
 import { Property } from "../../types/Property";
+import { Service } from "../../types/Service";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 
 const tokenStore = new SimulatedTokenStore();
@@ -27,6 +27,11 @@ export default function HomePage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertiesLoading, setPropertiesLoading] = useState(true);
   const [propertiesError, setPropertiesError] = useState<string | null>(null);
+
+  // Services state
+  const [services, setServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [servicesError, setServicesError] = useState<string | null>(null);
 
   const {
     likedItems,
@@ -81,6 +86,31 @@ export default function HomePage() {
     fetchProperties();
   }, []);
 
+  // Fetch services from database
+  useEffect(() => {
+    const fetchServices = async () => {
+      setServicesLoading(true);
+      setServicesError(null);
+      try {
+        const { createRefreshServicesAction } = await import(
+          "../../context/actions/refreshServices"
+        );
+        const refreshServices = createRefreshServicesAction(tokenStore);
+        const result = await refreshServices();
+        if (result.success && result.services) {
+          setServices(result.services);
+        } else {
+          setServicesError(result.message || "Failed to fetch services");
+        }
+      } catch (err: any) {
+        setServicesError(err.message || "Failed to fetch services");
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+    fetchServices();
+  }, []);
+
   const handleSearchSubmit = () => {
     if (searchQuery.trim() !== "") {
       console.log("Search Submitted:", searchQuery);
@@ -95,9 +125,37 @@ export default function HomePage() {
       case "Experiences":
         return mockExperiences;
       case "Services":
-        return mockServices;
+        return services;
       default:
         return properties;
+    }
+  };
+
+  // Get loading state based on active tab
+  const getCurrentLoading = () => {
+    switch (activeTab) {
+      case "Homes":
+        return propertiesLoading;
+      case "Experiences":
+        return false; // Experiences are mock data, no loading needed
+      case "Services":
+        return servicesLoading;
+      default:
+        return propertiesLoading;
+    }
+  };
+
+  // Get error state based on active tab
+  const getCurrentError = () => {
+    switch (activeTab) {
+      case "Homes":
+        return propertiesError;
+      case "Experiences":
+        return null; // Experiences are mock data, no error possible
+      case "Services":
+        return servicesError;
+      default:
+        return propertiesError;
     }
   };
 
@@ -145,11 +203,15 @@ export default function HomePage() {
         onBackPress={handleBackFromCategoryListing}
         likedItems={likedItems}
         onHeartPress={onHeartPress}
+        activeTab={activeTab}
+        pageName="index"
       />
     );
   }
 
   const categorizedData = getCategorizedData();
+  const currentLoading = getCurrentLoading();
+  const currentError = getCurrentError();
 
   return (
     <SafeAreaView style={homeStyles.container}>
@@ -176,14 +238,14 @@ export default function HomePage() {
           )}
           scrollEventThrottle={16}
         >
-          {loading || propertiesLoading ? (
+          {loading || currentLoading ? (
             <View style={homeStyles.loadingContainer}>
               <ActivityIndicator size="large" color="#007AFF" />
               <Text style={{ marginTop: 10 }}>Loading...</Text>
             </View>
-          ) : propertiesError ? (
+          ) : currentError ? (
             <View style={homeStyles.loadingContainer}>
-              <Text style={{ color: "#FF385C" }}>{propertiesError}</Text>
+              <Text style={{ color: "#FF385C" }}>{currentError}</Text>
             </View>
           ) : (
             Object.entries(categorizedData).map(([category, items]) => (
@@ -194,6 +256,8 @@ export default function HomePage() {
                 likedItems={likedItems}
                 onCategoryPress={handleCategoryPress}
                 onHeartPress={onHeartPress}
+                activeTab={activeTab}
+                pageName="index"
               />
             ))
           )}

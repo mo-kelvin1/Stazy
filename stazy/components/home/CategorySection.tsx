@@ -10,6 +10,8 @@ interface CategorySectionProps {
   likedItems: Set<string>;
   onCategoryPress: (category: string) => void;
   onHeartPress: (itemId: string) => void;
+  activeTab: string;
+  pageName: string;
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -18,12 +20,16 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   likedItems,
   onCategoryPress,
   onHeartPress,
+  activeTab,
+  pageName,
 }) => {
   const renderProperty = ({ item }: { item: any }) => (
     <PropertyItem
       item={item}
       likedItems={likedItems}
       onHeartPress={onHeartPress}
+      activeTab={activeTab}
+      pageName={pageName}
     />
   );
 

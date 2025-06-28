@@ -9,19 +9,36 @@ interface PropertyItemProps {
   item: any;
   likedItems: Set<string>;
   onHeartPress: (itemId: string) => void;
+  activeTab: string;
+  pageName: string;
 }
 
 export const PropertyItem: React.FC<PropertyItemProps> = ({
   item,
   likedItems,
   onHeartPress,
+  activeTab,
+  pageName,
 }) => {
   const handlePress = () => {
     router.push({
       pathname: "/render/[renderItem]",
-      params: { renderItem: item.id },
+      params: {
+        renderItem: item.id,
+        pageName: pageName,
+        activeTab: activeTab,
+      },
     });
   };
+
+  const priceText =
+    "$" +
+    item.price +
+    (item.nights !== undefined
+      ? " for " + item.nights + " night" + (item.nights > 1 ? "s" : "")
+      : item.duration !== undefined
+      ? " for " + item.duration + " hour" + (item.duration > 1 ? "s" : "")
+      : "");
 
   return (
     <TouchableOpacity style={homeStyles.propertyCard} onPress={handlePress}>
@@ -58,14 +75,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
           <Ionicons name="star" size={12} color="#007AFF" />
           <Text style={homeStyles.rating}>{item.rating}</Text>
         </View>
-        <Text style={homeStyles.price}>
-          ${item.price}
-          {item.nights !== undefined
-            ? ` for ${item.nights} night${item.nights > 1 ? "s" : ""}`
-            : item.duration !== undefined
-            ? ` for ${item.duration} hour${item.duration > 1 ? "s" : ""}`
-            : ""}
-        </Text>
+        <Text style={homeStyles.price}>{priceText}</Text>
       </View>
     </TouchableOpacity>
   );

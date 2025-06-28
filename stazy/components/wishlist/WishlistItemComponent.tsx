@@ -26,6 +26,8 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
   onItemClick,
 }) => {
   const itemType = getItemType(item);
+  const priceText =
+    "$" + item.price + "/" + (itemType === "property" ? "night" : "person");
 
   return (
     <TouchableOpacity onPress={onItemClick} style={styles.wishlistItem}>
@@ -49,9 +51,7 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
             <Ionicons name="star" size={14} color="#FFD700" />
             <Text style={styles.rating}>{item.rating}</Text>
           </View>
-          <Text style={styles.price}>
-            ${item.price}/{itemType === "property" ? "night" : "person"}
-          </Text>
+          <Text style={styles.price}>{priceText}</Text>
         </View>
         {item.notes && (
           <Text style={styles.notes} numberOfLines={2}>

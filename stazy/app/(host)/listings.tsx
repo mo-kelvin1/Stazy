@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { Property } from "../../types/Property";
+import { Service } from "../../types/Service";
+import { Experience } from "../../types/Experience";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,42 +20,112 @@ import { Ionicons } from "@expo/vector-icons";
 const tokenStore = new SimulatedTokenStore();
 
 const listings = () => {
-  const [listings, setListings] = useState<Property[]>([]);
+  const [activeTab, setActiveTab] = useState("Homes");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchListings = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch properties (user's listings)
         const { createRefreshListingsAction } = await import(
           "../../context/actions/refreshListings"
         );
         const refreshListings = createRefreshListingsAction(tokenStore);
         const result = await refreshListings();
         if (result.success && result.listings) {
-          setListings(result.listings);
-        } else {
-          setError(result.message || "Failed to fetch listings");
+          setProperties(result.listings);
         }
+
+        // Fetch services (user's services)
+        const { createRefreshServicesAction } = await import(
+          "../../context/actions/refreshServices"
+        );
+        const refreshServices = createRefreshServicesAction(tokenStore);
+        const servicesResult = await refreshServices();
+        if (servicesResult.success && servicesResult.services) {
+          setServices(servicesResult.services);
+        }
+
+        // For experiences, we'll use mock data for now
+        const mockExperiences: Experience[] = [
+          {
+            id: "1",
+            title: "City Walking Tour",
+            description:
+              "Explore the historic downtown area with our expert guide",
+            location: "Downtown",
+            price: 25,
+            duration: 2,
+            rating: 4.8,
+            images: [
+              "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
+            ],
+            hostName: "Sarah Johnson",
+            hostEmail: "sarah@example.com",
+            category: "cultural",
+            experienceType: "group",
+            difficulty: "easy",
+            ageRestriction: {
+              minimum: 12,
+            },
+            maxParticipants: 15,
+            included: [
+              "Professional guide",
+              "Historical insights",
+              "Photo opportunities",
+            ],
+            toBring: ["Comfortable walking shoes", "Water bottle"],
+            meetingPoint: "Central Square",
+            languages: ["English", "Spanish"],
+            availability: {
+              days: ["Monday", "Wednesday", "Friday"],
+              timeSlots: ["09:00", "14:00"],
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+        setExperiences(mockExperiences);
       } catch (err: any) {
-        setError(err.message || "Failed to fetch listings");
+        setError(err.message || "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
-    fetchListings();
+    fetchData();
   }, []);
 
-  const renderListing = ({ item }: { item: Property }) => (
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case "Homes":
+        return properties;
+      case "Services":
+        return services;
+      case "Experiences":
+        return experiences;
+      default:
+        return properties;
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
         router.push({
           pathname: "/render/[renderItem]",
-          params: { renderItem: item.id },
+          params: {
+            renderItem: item.id,
+            pageName: "listings",
+            activeTab: activeTab,
+          },
         })
       }
     >
@@ -74,6 +146,19 @@ const listings = () => {
     </TouchableOpacity>
   );
 
+  const renderEmptyState = () => {
+    switch (activeTab) {
+      case "Homes":
+        return <Text style={styles.empty}>No properties found.</Text>;
+      case "Services":
+        return <Text style={styles.empty}>No services found.</Text>;
+      case "Experiences":
+        return <Text style={styles.empty}>No experiences found.</Text>;
+      default:
+        return <Text style={styles.empty}>No listings found.</Text>;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerRow}>
@@ -90,6 +175,40 @@ const listings = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
+        {["Homes", "Experiences", "Services"].map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <View style={styles.tabWithBadge}>
+              <Ionicons
+                name={
+                  tab === "Homes"
+                    ? "home"
+                    : tab === "Experiences"
+                    ? "balloon"
+                    : "restaurant"
+                }
+                size={20}
+                color={activeTab === tab ? "#222222" : "#717171"}
+              />
+            </View>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -98,12 +217,12 @@ const listings = () => {
         />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
-      ) : listings.length === 0 ? (
-        <Text style={styles.empty}>No listings found.</Text>
+      ) : getCurrentData().length === 0 ? (
+        renderEmptyState()
       ) : (
         <FlatList
-          data={listings}
-          renderItem={renderListing}
+          data={getCurrentData()}
+          renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
         />
@@ -143,6 +262,33 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 8,
     marginLeft: 8,
+  },
+  tabContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  activeTab: {
+    backgroundColor: "#f0f0f0",
+  },
+  tabWithBadge: {
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  tabText: {
+    fontSize: 12,
+    color: "#717171",
+    fontWeight: "500",
+  },
+  activeTabText: {
+    color: "#222222",
+    fontWeight: "600",
   },
   listContent: {
     paddingHorizontal: 24,
