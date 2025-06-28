@@ -20,7 +20,7 @@ export const createUpdateProfileAction = (
       }
 
       const response = await axios.post(
-        "http://100.66.107.9:8080/update-profile",
+        "http://172.20.10.11:8080/update-profile",
         {
           firstName,
           lastName,
@@ -53,8 +53,7 @@ export const createUpdateProfileAction = (
       return {
         success: false,
         message:
-          error?.response?.data?.message ||
-          "Network error. Please try again.",
+          error?.response?.data?.message || "Network error. Please try again.",
       };
     }
   };

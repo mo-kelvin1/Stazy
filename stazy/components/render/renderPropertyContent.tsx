@@ -8,46 +8,45 @@ interface RenderPropertyContentProps {
 
 export const renderPropertyContent = ({ item }: RenderPropertyContentProps) => {
   const prop = item as any;
+
+  // Helper function to render property value
+  const renderPropertyValue = (value: any): string => {
+    if (Array.isArray(value)) {
+      return value.join(", ");
+    }
+    if (typeof value === "object" && value !== null) {
+      return JSON.stringify(value, null, 2);
+    }
+    return String(value);
+  };
+
+  // Get all properties of the item
+  const allProperties = Object.keys(prop);
+
+  // Filter out properties we don't want to display
+  const propertiesToDisplay = allProperties.filter((propertyName) => {
+    const lowerPropertyName = propertyName.toLowerCase();
+    return (
+      !lowerPropertyName.includes("image") &&
+      !lowerPropertyName.includes("id") &&
+      !lowerPropertyName.includes("hostid")
+    );
+  });
+
   return (
     <>
       <View style={styles.propertyDetails}>
-        <Text style={styles.sectionTitle}>Property Details</Text>
-        <View style={styles.propertyDetailsRow}>
-          <Text>Type: {prop.propertyType}</Text>
-          <Text>Category: {prop.category}</Text>
-          <Text>Bedrooms: {prop.bedrooms}</Text>
-          <Text>Beds: {prop.beds}</Text>
-          <Text>Bathrooms: {prop.bathrooms}</Text>
-          <View style={styles.propertyDetailsRow}>
-            <Text>Nights: {prop.nights}</Text>
+        <Text style={styles.sectionTitle}>All Properties</Text>
+        {propertiesToDisplay.map((propertyName, index) => (
+          <View key={index} style={styles.propertyDetailsRow}>
+            <Text style={styles.propertyLabel}>
+              {propertyName.charAt(0).toUpperCase() + propertyName.slice(1)}:
+            </Text>
+            <Text style={styles.propertyValue}>
+              {renderPropertyValue(prop[propertyName])}
+            </Text>
           </View>
-          <View style={styles.propertyDetailsRow}>
-            <Ionicons name="star" size={24} color="black" />
-            <Text>Rating: {prop.rating}</Text>
-          </View>
-          <View style={styles.propertyDetailsRow}>
-            <Text>Price: {prop.price}</Text>
-          </View>
-          <View style={styles.propertyDetailsRow}>
-            <Text>Min Guests: {prop.minGuests}</Text>
-          </View>
-          <View style={styles.propertyDetailsRow}>
-            <Text>Max Guests: {prop.maxGuests}</Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.propertyDetails}>
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <Text>{prop.amenities.join("\n")}</Text>
-      </View>
-      <View style={styles.propertyDetails}>
-        <Text style={styles.sectionTitle}>Highlights</Text>
-        <Text>{prop.highlights.join("\n")}</Text>
-      </View>
-      <View style={styles.propertyDetails}>
-        <Text style={styles.sectionTitle}>Host</Text>
-        <Text>Host ID: {prop.hostId}</Text>
-        <Text>Email: {prop.hostEmail}</Text>
+        ))}
       </View>
     </>
   );
@@ -72,9 +71,23 @@ const styles = StyleSheet.create({
     color: "#222",
   },
   propertyDetailsRow: {
-    flexDirection: "column",
-    justifyContent: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
     flexWrap: "wrap",
-    gap: 10,
+  },
+  propertyLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    flex: 1,
+    marginRight: 8,
+  },
+  propertyValue: {
+    fontSize: 14,
+    color: "#666",
+    flex: 2,
+    textAlign: "right",
   },
 });

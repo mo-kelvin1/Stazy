@@ -35,4 +35,7 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 
     @Query("SELECT p FROM Property p WHERE p.location LIKE %:location% AND p.isAvailable = true")
     List<Property> findByLocationContaining(@Param("location") String location);
+
+    @Query("SELECT p FROM Property p WHERE p.isAvailable = true AND p.hostEmail != :excludeHostEmail ORDER BY p.createdAt DESC")
+    List<Property> findAllAvailablePropertiesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail);
 }

@@ -84,7 +84,7 @@ public class PropertyController {
             String token = authorization.replace("Bearer ", "");
             String userEmail = jwtUtil.getEmailFromToken(token);
 
-            List<Property> properties = propertyService.getAllProperties();
+            List<Property> properties = propertyService.getAllPropertiesExcludingUser(userEmail);
             List<PropertyResponse> responses = properties.stream()
                     .map(PropertyResponse::fromProperty)
                     .collect(Collectors.toList());

@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { SafeAreaView, StatusBar, Animated, View, Text } from "react-native";
+import {
+  SafeAreaView,
+  StatusBar,
+  Animated,
+  View,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import { Stack } from "expo-router";
 import FadeInView from "../../components/cards/FadeInView";
 import CategoryListingComponent from "../../components/cards/CategoryListingPage";
@@ -7,13 +14,19 @@ import { HomeHeader } from "../../components/home/HomeHeader";
 import { CategorySection } from "../../components/home/CategorySection";
 import { useWishlist } from "../../hooks/useWishlist";
 import { homeStyles } from "../../constants/homeStyles";
-import { mockProperties } from "../../data/mockProperties";
 import { mockExperiences } from "../../data/mockExperiences";
 import { mockServices } from "../../data/mockServices";
+import { Property } from "../../types/Property";
+import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
+
+const tokenStore = new SimulatedTokenStore();
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState("Homes");
   const [loading, setLoading] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [propertiesLoading, setPropertiesLoading] = useState(true);
+  const [propertiesError, setPropertiesError] = useState<string | null>(null);
 
   const {
     likedItems,
@@ -44,6 +57,30 @@ export default function HomePage() {
     initializeWishlistData();
   }, [initializeWishlistData]);
 
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setPropertiesLoading(true);
+      setPropertiesError(null);
+      try {
+        const { createRefreshPropertiesAction } = await import(
+          "../../context/actions/refreshProperties"
+        );
+        const refreshProperties = createRefreshPropertiesAction(tokenStore);
+        const result = await refreshProperties();
+        if (result.success && result.properties) {
+          setProperties(result.properties);
+        } else {
+          setPropertiesError(result.message || "Failed to fetch properties");
+        }
+      } catch (err: any) {
+        setPropertiesError(err.message || "Failed to fetch properties");
+      } finally {
+        setPropertiesLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
+
   const handleSearchSubmit = () => {
     if (searchQuery.trim() !== "") {
       console.log("Search Submitted:", searchQuery);
@@ -54,13 +91,13 @@ export default function HomePage() {
   const getCurrentData = () => {
     switch (activeTab) {
       case "Homes":
-        return mockProperties;
+        return properties;
       case "Experiences":
         return mockExperiences;
       case "Services":
         return mockServices;
       default:
-        return mockProperties;
+        return properties;
     }
   };
 
@@ -139,9 +176,14 @@ export default function HomePage() {
           )}
           scrollEventThrottle={16}
         >
-          {loading ? (
+          {loading || propertiesLoading ? (
             <View style={homeStyles.loadingContainer}>
-              <Text>Loading...</Text>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={{ marginTop: 10 }}>Loading...</Text>
+            </View>
+          ) : propertiesError ? (
+            <View style={homeStyles.loadingContainer}>
+              <Text style={{ color: "#FF385C" }}>{propertiesError}</Text>
             </View>
           ) : (
             Object.entries(categorizedData).map(([category, items]) => (

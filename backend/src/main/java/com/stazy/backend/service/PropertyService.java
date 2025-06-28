@@ -181,6 +181,10 @@ public class PropertyService {
         return propertyRepository.findAllAvailableProperties();
     }
 
+    public List<Property> getAllPropertiesExcludingUser(String userEmail) {
+        return propertyRepository.findAllAvailablePropertiesExcludingHost(userEmail);
+    }
+
     public List<Property> getPropertiesByHostEmail(String hostEmail) {
         return propertyRepository.findAvailablePropertiesByHostEmail(hostEmail);
     }
