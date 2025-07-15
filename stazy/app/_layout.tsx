@@ -8,7 +8,7 @@ function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
-
+  const { refreshUserData } = useAuth();
   useEffect(() => {
     if (isLoading) return;
 
@@ -20,6 +20,7 @@ function RootLayoutNav() {
     } else if (isAuthenticated && inAuthGroup) {
       // User is authenticated but still in auth screens, redirect to home
       router.replace("/(tabs)");
+      refreshUserData();
     }
   }, [isAuthenticated, segments, isLoading]);
 

@@ -11,13 +11,14 @@ interface WishlistItemComponentProps {
 
 // Helper function to get item type
 const getItemType = (item: WishlistItem): string => {
-  if ("image" in item && Array.isArray(item.image)) {
+  if ("propertyType" in item) {
     return "property";
-  } else if ("isOriginal" in item || "isPopular" in item) {
-    return "experience";
-  } else {
+  } else if ("serviceType" in item) {
     return "service";
+  } else if ("experienceType" in item) {
+    return "experience";
   }
+  return "property"; // default
 };
 
 const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
@@ -26,6 +27,8 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
   onItemClick,
 }) => {
   const itemType = getItemType(item);
+  const priceText =
+    "$" + item.price + "/" + (itemType === "property" ? "night" : "person");
 
   return (
     <TouchableOpacity onPress={onItemClick} style={styles.wishlistItem}>
@@ -49,9 +52,7 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
             <Ionicons name="star" size={14} color="#FFD700" />
             <Text style={styles.rating}>{item.rating}</Text>
           </View>
-          <Text style={styles.price}>
-            ${item.price}/{itemType === "property" ? "night" : "person"}
-          </Text>
+          <Text style={styles.price}>{priceText}</Text>
         </View>
         {item.notes && (
           <Text style={styles.notes} numberOfLines={2}>
@@ -60,7 +61,7 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
         )}
         {item.dateAdded && (
           <Text style={styles.dateAdded}>
-            Added {item.dateAdded.toLocaleDateString()}
+            Added {new Date(item.dateAdded).toLocaleDateString()}
           </Text>
         )}
       </View>

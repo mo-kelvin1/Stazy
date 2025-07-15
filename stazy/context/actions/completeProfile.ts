@@ -8,7 +8,9 @@ export const createCompleteProfileAction = (
   return async (
     firstName: string,
     lastName: string,
-    phoneNumber: string
+    phoneNumber: string,
+    address?: string,
+    dateOfBirth?: string
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       const token = await tokenStore.getToken();
@@ -18,11 +20,13 @@ export const createCompleteProfileAction = (
       }
 
       const response = await axios.post(
-        "http://10.30.25.113:8080/api/auth/complete-profile",
+        "http://10.30.22.153:8080/api/auth/complete-profile",
         {
           firstName,
           lastName,
           phoneNumber,
+          address,
+          dateOfBirth,
         },
         {
           headers: {
@@ -52,8 +56,7 @@ export const createCompleteProfileAction = (
       return {
         success: false,
         message:
-          error?.response?.data?.message ||
-          "Network error. Please try again.",
+          error?.response?.data?.message || "Network error. Please try again.",
       };
     }
   };

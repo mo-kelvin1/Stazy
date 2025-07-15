@@ -117,7 +117,9 @@ public class AuthController {
                     updatedUser.getFirstName(),
                     updatedUser.getLastName(),
                     updatedUser.getEmail(),
-                    updatedUser.getPhoneNumber());
+                    updatedUser.getPhoneNumber(),
+                    updatedUser.getAddress(),
+                    updatedUser.getDateOfBirth());
 
             return ResponseEntity.ok(new ApiResponse(true, "Profile completed successfully", profileData));
 
@@ -149,7 +151,9 @@ public class AuthController {
                     user.getFirstName(),
                     user.getLastName(),
                     user.getEmail(),
-                    user.getPhoneNumber());
+                    user.getPhoneNumber(),
+                    user.getAddress(),
+                    user.getDateOfBirth());
 
             return ResponseEntity.ok(new ApiResponse(true, "Profile retrieved successfully", profileData));
 

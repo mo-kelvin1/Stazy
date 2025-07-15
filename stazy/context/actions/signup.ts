@@ -12,10 +12,13 @@ export const createSignupAction = (tokenStore: SimulatedTokenStore) => {
         return { success: false, message: "Passwords do not match" };
       }
 
-      const response = await axios.post("http://10.30.25.113:8080/api/auth/signup", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://10.30.22.153:8080/api/auth/signup",
+        {
+          email,
+          password,
+        }
+      );
 
       const result = response.data;
 

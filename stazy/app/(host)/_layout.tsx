@@ -3,6 +3,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "react-native";
 
 export default function TabLayout() {
+  if (typeof globalThis.hostTabRefreshKeys === "undefined") {
+    globalThis.hostTabRefreshKeys = {
+      today: 0,
+      calendar: 0,
+      listings: 0,
+      messages: 0,
+      menu: 0,
+    };
+  }
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -32,11 +41,51 @@ export default function TabLayout() {
         ),
       })}
     >
-      <Tabs.Screen name="today" options={{ title: "Today" }} />
-      <Tabs.Screen name="calendar" options={{ title: "Calendar" }} />
-      <Tabs.Screen name="listings" options={{ title: "Listings" }} />
-      <Tabs.Screen name="messages" options={{ title: "Messages" }} />
-      <Tabs.Screen name="menu" options={{ title: "Menu" }} />
+      <Tabs.Screen
+        name="today"
+        options={{ title: "Today" }}
+        listeners={{
+          tabPress: () => {
+            globalThis.hostTabRefreshKeys.today++;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{ title: "Calendar" }}
+        listeners={{
+          tabPress: () => {
+            globalThis.hostTabRefreshKeys.calendar++;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="listings"
+        options={{ title: "Listings" }}
+        listeners={{
+          tabPress: () => {
+            globalThis.hostTabRefreshKeys.listings++;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{ title: "Messages" }}
+        listeners={{
+          tabPress: () => {
+            globalThis.hostTabRefreshKeys.messages++;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name="menu"
+        options={{ title: "Menu" }}
+        listeners={{
+          tabPress: () => {
+            globalThis.hostTabRefreshKeys.menu++;
+          },
+        }}
+      />
     </Tabs>
   );
 }

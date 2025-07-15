@@ -10,16 +10,19 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Property } from "../../data/mockProperties";
-import PropertyCard from "../cards/PropertyCard";
 import * as Haptics from "expo-haptics";
+import { Experience } from "../../types/Experience";
+import { Service } from "../../types/Service";
+import { useRouter } from "expo-router";
 
 interface CategoryListingComponentProps {
   category: string;
-  properties: Property[];
+  properties: any[];
   onBackPress: () => void;
   likedItems: Set<string>;
-  onHeartPress: (itemId: string) => void;
+  onHeartPress: (item: any) => void;
+  activeTab: string;
+  pageName: string;
 }
 
 const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
@@ -28,77 +31,89 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
   onBackPress,
   likedItems,
   onHeartPress,
+  activeTab,
+  pageName,
 }) => {
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [selectedProperty, setSelectedProperty] =
-    React.useState<Property | null>(null);
+  const router = useRouter();
 
-  const handlePropertyPress = (property: Property) => {
-    console.log("CategoryListing: Property card clicked for:", property.id);
-    setSelectedProperty(property);
-    setModalVisible(true);
+  // Updated item press handler - always route to renderItem page
+  const handleItemPress = (item: any) => {
+    router.push({
+      pathname: "/render/renderItem",
+      params: {
+        renderItem: item.id,
+        pageName: pageName,
+        activeTab: activeTab,
+      },
+    });
   };
 
-  const closeModal = () => {
-    console.log("CategoryListing: Closing modal");
-    setModalVisible(false);
-    setSelectedProperty(null);
-  };
-  const renderProperty = ({ item }: { item: Property }) => (
-    <TouchableOpacity
-      style={styles.propertyContainer}
-      onPress={() => {
-        handlePropertyPress(item);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      }}
-    >
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: item.image[0] }} style={styles.propertyImage} />
-        <TouchableOpacity
-          style={styles.heartIcon}
-          onPress={() => {
-            onHeartPress(item.id);
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }}
-        >
-          <Ionicons
-            name={likedItems.has(item.id) ? "heart" : "heart-outline"}
-            size={24}
-            color={likedItems.has(item.id) ? "#FF385C" : "white"}
+  const renderProperty = ({ item }: { item: any }) => {
+    const priceText =
+      "$" +
+      item.price +
+      " " +
+      (item.nights ? "night" + (item.nights > 1 ? "s" : "") : "");
+    const totalPriceText =
+      "$" + (item.nights ? item.price * item.nights : item.price) + " total";
+
+    return (
+      <TouchableOpacity
+        style={styles.propertyContainer}
+        onPress={() => handleItemPress(item)}
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={{
+              uri: item.images
+                ? item.images[0]
+                : item.image
+                ? item.image[0]
+                : undefined,
+            }}
+            style={styles.propertyImage}
           />
-        </TouchableOpacity>
-        {item.isGuestFavorite && (
-          <View style={styles.guestFavoriteTag}>
-            <Text style={styles.guestFavoriteText}>Guest favourite</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.propertyInfo}>
-        <View style={styles.titleRow}>
-          <Text style={styles.propertyTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={12} color="#222222" />
-            <Text style={styles.rating}>
-              {item.rating} ({item.rating || 0})
+          <TouchableOpacity
+            style={styles.heartIcon}
+            onPress={() => onHeartPress(item)}
+          >
+            <Ionicons
+              name={likedItems.has(item.id) ? "heart" : "heart-outline"}
+              size={20}
+              color={likedItems.has(item.id) ? "#FF385C" : "white"}
+            />
+          </TouchableOpacity>
+          {item.isGuestFavorite && (
+            <View style={styles.guestFavoriteTag}>
+              <Text style={styles.guestFavoriteText}>Guest favourite</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.propertyInfo}>
+          <View style={styles.titleRow}>
+            <Text style={styles.propertyTitle} numberOfLines={2}>
+              {item.title}
             </Text>
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={12} color="#222222" />
+              <Text style={styles.rating}>
+                {item.rating} ({item.rating || 0})
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {item.location || item.category}
+          </Text>
+          <Text style={styles.availability}>{"Free cancellation"}</Text>
+          <Text style={styles.dateRange}>{"4-6 Jul"}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{priceText}</Text>
+            <Text style={styles.totalPrice}>{totalPriceText}</Text>
           </View>
         </View>
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {item.location || item.category}
-        </Text>
-        <Text style={styles.availability}>{"Free cancellation"}</Text>
-        <Text style={styles.dateRange}>{"4-6 Jul"}</Text>
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>${item.price} night</Text>
-          <Text style={styles.totalPrice}>
-            ${item.price * (item.nights || 1)} total
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -131,15 +146,6 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
-      />
-
-      {/* Property Card Modal */}
-      <PropertyCard
-        property={selectedProperty}
-        isVisible={modalVisible}
-        onClose={closeModal}
-        likedItems={likedItems}
-        onHeartPress={onHeartPress}
       />
     </SafeAreaView>
   );

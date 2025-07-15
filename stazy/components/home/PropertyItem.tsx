@@ -2,38 +2,60 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Property } from "../../data/mockProperties";
 import { homeStyles } from "../../constants/homeStyles";
+import { router } from "expo-router";
 
 interface PropertyItemProps {
-  item: Property;
+  item: any;
   likedItems: Set<string>;
-  onPress: (item: Property) => void;
-  onHeartPress: (itemId: string) => void;
+  onHeartPress: (item: any) => void;
+  activeTab: string;
+  pageName: string;
 }
 
 export const PropertyItem: React.FC<PropertyItemProps> = ({
   item,
   likedItems,
-  onPress,
   onHeartPress,
+  activeTab,
+  pageName,
 }) => {
+  const handlePress = () => {
+    router.push({
+      pathname: "/render/renderItem",
+      params: {
+        renderItem: item.id,
+        pageName: pageName,
+        activeTab: activeTab,
+      },
+    });
+  };
+
+  const priceText =
+    "$" +
+    item.price +
+    (item.nights !== undefined
+      ? " for " + item.nights + " night" + (item.nights > 1 ? "s" : "")
+      : item.duration !== undefined
+      ? " for " + item.duration + " hour" + (item.duration > 1 ? "s" : "")
+      : "");
+
   return (
-    <TouchableOpacity
-      style={homeStyles.propertyCard}
-      onPress={() => {
-        onPress(item);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      }}
-    >
+    <TouchableOpacity style={homeStyles.propertyCard} onPress={handlePress}>
       <View style={homeStyles.imageContainer}>
         <Image
-          source={{ uri: item.image[0] }}
+          source={{
+            uri: item.images
+              ? item.images[0]
+              : item.image
+              ? item.image[0]
+              : undefined,
+          }}
           style={homeStyles.propertyImage}
         />
         <TouchableOpacity
           style={homeStyles.heartIcon}
-          onPress={() => onHeartPress(item.id)}
+          onPress={() => onHeartPress(item)}
         >
           <Ionicons
             name={likedItems.has(item.id) ? "heart" : "heart-outline"}
@@ -53,9 +75,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
           <Ionicons name="star" size={12} color="#007AFF" />
           <Text style={homeStyles.rating}>{item.rating}</Text>
         </View>
-        <Text style={homeStyles.price}>
-          ${item.price} for {item.nights} night{item.nights > 1 ? "s" : ""}
-        </Text>
+        <Text style={homeStyles.price}>{priceText}</Text>
       </View>
     </TouchableOpacity>
   );

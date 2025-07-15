@@ -1,9 +1,25 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useAuth } from "@/hooks/useAuth";
 export default function TabLayout() {
+  const { refreshUserData } = useAuth();
+
+  if (typeof globalThis.tabRefreshKeys === "undefined") {
+    globalThis.tabRefreshKeys = {
+      home: 0,
+      wishlist: 0,
+      trips: 0,
+      messages: 0,
+      profile: 0,
+    };
+  }
+
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+  const handleProfilePress = () => {
+    refreshUserData();
   };
   return (
     <Tabs
@@ -42,35 +58,46 @@ export default function TabLayout() {
         name="index"
         options={{ title: "Home" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => {
+            globalThis.tabRefreshKeys.home++;
+          },
         }}
       />
       <Tabs.Screen
         name="wishlist"
         options={{ title: "Wishlist" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => {
+            globalThis.tabRefreshKeys.wishlist++;
+          },
         }}
       />
       <Tabs.Screen
         name="trips"
         options={{ title: "Trips" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => {
+            globalThis.tabRefreshKeys.trips++;
+          },
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{ title: "Messages" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => {
+            globalThis.tabRefreshKeys.messages++;
+          },
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile" }}
         listeners={{
-          tabPress: () => triggerHaptic(),
+          tabPress: () => {
+            globalThis.tabRefreshKeys.profile++;
+            refreshUserData();
+          },
         }}
       />
     </Tabs>

@@ -1,4 +1,4 @@
-import { Property } from "@/data/mockProperties";
+import { Property } from "./Property";
 
 export interface HomeState {
   properties: Property[];

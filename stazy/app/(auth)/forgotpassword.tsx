@@ -16,7 +16,6 @@ const forgotpassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Get the auth context
   const authContext = useContext(AuthContext);
 
   if (!authContext) {
