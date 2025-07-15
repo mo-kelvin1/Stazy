@@ -3,7 +3,6 @@ package com.stazy.backend.controller;
 import com.stazy.backend.dto.*;
 import com.stazy.backend.model.User;
 import com.stazy.backend.service.UserService;
-import com.stazy.backend.util.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,9 +20,6 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse> signup(@Valid @RequestBody SignupRequest request) {

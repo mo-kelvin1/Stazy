@@ -64,10 +64,6 @@ public class PropertyController {
     public ResponseEntity<?> getPropertyById(@PathVariable Long propertyId,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Property property = propertyService.getPropertyById(propertyId);
             PropertyResponse response = PropertyResponse.fromProperty(property);
 
@@ -117,10 +113,6 @@ public class PropertyController {
     public ResponseEntity<?> getPropertiesByCategory(@PathVariable String category,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Property.PropertyCategory propertyCategory = Property.PropertyCategory.valueOf(category.toUpperCase());
             List<Property> properties = propertyService.getPropertiesByCategory(propertyCategory);
             List<PropertyResponse> responses = properties.stream()
@@ -137,10 +129,6 @@ public class PropertyController {
     public ResponseEntity<?> getPropertiesByType(@PathVariable String propertyType,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Property.PropertyType type = Property.PropertyType.valueOf(propertyType.toUpperCase());
             List<Property> properties = propertyService.getPropertiesByPropertyType(type);
             List<PropertyResponse> responses = properties.stream()
@@ -158,10 +146,6 @@ public class PropertyController {
             @RequestParam Double maxPrice,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<Property> properties = propertyService.getPropertiesByPriceRange(minPrice, maxPrice);
             List<PropertyResponse> responses = properties.stream()
                     .map(PropertyResponse::fromProperty)
@@ -177,10 +161,6 @@ public class PropertyController {
     public ResponseEntity<?> getPropertiesByLocation(@RequestParam String location,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<Property> properties = propertyService.getPropertiesByLocation(location);
             List<PropertyResponse> responses = properties.stream()
                     .map(PropertyResponse::fromProperty)

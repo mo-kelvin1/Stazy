@@ -65,10 +65,6 @@ public class ServiceOfferController {
     public ResponseEntity<?> getServiceOfferById(@PathVariable Long serviceId,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             ServiceOffer serviceOffer = serviceOfferService.getServiceOfferById(serviceId);
             ServiceOfferResponse response = ServiceOfferResponse.fromServiceOffer(serviceOffer);
 
@@ -118,10 +114,6 @@ public class ServiceOfferController {
     public ResponseEntity<?> getServiceOffersByCategory(@PathVariable String category,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             ServiceOffer.ServiceCategory serviceCategory = ServiceOffer.ServiceCategory.valueOf(category.toUpperCase());
             List<ServiceOffer> serviceOffers = serviceOfferService.getServiceOffersByCategory(serviceCategory);
             List<ServiceOfferResponse> responses = serviceOffers.stream()
@@ -138,10 +130,6 @@ public class ServiceOfferController {
     public ResponseEntity<?> getServiceOffersByType(@PathVariable String serviceType,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             ServiceOffer.ServiceType type = ServiceOffer.ServiceType.valueOf(serviceType.toUpperCase());
             List<ServiceOffer> serviceOffers = serviceOfferService.getServiceOffersByServiceType(type);
             List<ServiceOfferResponse> responses = serviceOffers.stream()
@@ -159,10 +147,6 @@ public class ServiceOfferController {
             @RequestParam Double maxPrice,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<ServiceOffer> serviceOffers = serviceOfferService.getServiceOffersByPriceRange(minPrice, maxPrice);
             List<ServiceOfferResponse> responses = serviceOffers.stream()
                     .map(ServiceOfferResponse::fromServiceOffer)
@@ -178,10 +162,6 @@ public class ServiceOfferController {
     public ResponseEntity<?> getServiceOffersByLocation(@RequestParam String location,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<ServiceOffer> serviceOffers = serviceOfferService.getServiceOffersByLocation(location);
             List<ServiceOfferResponse> responses = serviceOffers.stream()
                     .map(ServiceOfferResponse::fromServiceOffer)

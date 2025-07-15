@@ -64,10 +64,6 @@ public class ExperienceController {
     public ResponseEntity<?> getExperienceById(@PathVariable Long experienceId,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Experience experience = experienceService.getExperienceById(experienceId);
             ExperienceResponse response = ExperienceResponse.fromExperience(experience);
 
@@ -117,10 +113,6 @@ public class ExperienceController {
     public ResponseEntity<?> getExperiencesByCategory(@PathVariable String category,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Experience.ExperienceCategory experienceCategory = Experience.ExperienceCategory
                     .valueOf(category.toUpperCase());
             List<Experience> experiences = experienceService.getExperiencesByCategory(experienceCategory);
@@ -138,10 +130,6 @@ public class ExperienceController {
     public ResponseEntity<?> getExperiencesByType(@PathVariable String experienceType,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Experience.ExperienceType type = Experience.ExperienceType.valueOf(experienceType.toUpperCase());
             List<Experience> experiences = experienceService.getExperiencesByExperienceType(type);
             List<ExperienceResponse> responses = experiences.stream()
@@ -159,10 +147,6 @@ public class ExperienceController {
             @RequestParam Double maxPrice,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<Experience> experiences = experienceService.getExperiencesByPriceRange(minPrice, maxPrice);
             List<ExperienceResponse> responses = experiences.stream()
                     .map(ExperienceResponse::fromExperience)
@@ -178,10 +162,6 @@ public class ExperienceController {
     public ResponseEntity<?> getExperiencesByLocation(@RequestParam String location,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<Experience> experiences = experienceService.getExperiencesByLocation(location);
             List<ExperienceResponse> responses = experiences.stream()
                     .map(ExperienceResponse::fromExperience)
@@ -197,10 +177,6 @@ public class ExperienceController {
     public ResponseEntity<?> getExperiencesByDifficulty(@PathVariable String difficulty,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             Experience.Difficulty difficultyLevel = Experience.Difficulty.valueOf(difficulty.toUpperCase());
             List<Experience> experiences = experienceService.getExperiencesByDifficulty(difficultyLevel);
             List<ExperienceResponse> responses = experiences.stream()
@@ -218,10 +194,6 @@ public class ExperienceController {
             @RequestParam Integer maxDuration,
             @RequestHeader("Authorization") String authorization) {
         try {
-            // Extract token from Authorization header
-            String token = authorization.replace("Bearer ", "");
-            String userEmail = jwtUtil.getEmailFromToken(token);
-
             List<Experience> experiences = experienceService.getExperiencesByDurationRange(minDuration, maxDuration);
             List<ExperienceResponse> responses = experiences.stream()
                     .map(ExperienceResponse::fromExperience)
