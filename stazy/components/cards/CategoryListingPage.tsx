@@ -20,7 +20,7 @@ interface CategoryListingComponentProps {
   properties: any[];
   onBackPress: () => void;
   likedItems: Set<string>;
-  onHeartPress: (itemId: string) => void;
+  onHeartPress: (item: any) => void;
   activeTab: string;
   pageName: string;
 }
@@ -39,7 +39,7 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
   // Updated item press handler - always route to renderItem page
   const handleItemPress = (item: any) => {
     router.push({
-      pathname: "/render/[renderItem]",
+      pathname: "/render/renderItem",
       params: {
         renderItem: item.id,
         pageName: pageName,
@@ -75,7 +75,7 @@ const CategoryListingComponent: React.FC<CategoryListingComponentProps> = ({
           />
           <TouchableOpacity
             style={styles.heartIcon}
-            onPress={() => onHeartPress(item.id)}
+            onPress={() => onHeartPress(item)}
           >
             <Ionicons
               name={likedItems.has(item.id) ? "heart" : "heart-outline"}

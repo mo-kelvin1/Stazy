@@ -5,7 +5,7 @@ This document describes the REST API endpoints for property management in the St
 ## Base URL
 
 ```
-http://localhost:8080/api/properties
+http://10.30.22.153:8080/api/properties
 ```
 
 ## Authentication

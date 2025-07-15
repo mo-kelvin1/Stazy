@@ -7,9 +7,12 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Service } from "../../types/Service";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
+import { router } from "expo-router";
 
 interface RenderServiceContentProps {
   itemId: string;
@@ -33,7 +36,7 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
         }
 
         const response = await fetch(
-          `http://100.66.107.9:8080/api/service-offers/${itemId}`,
+          `http://10.30.22.153:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -86,7 +89,7 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading service...</Text>
+        <Text style={styles.loadingText}>Loading service details...</Text>
       </View>
     );
   }
@@ -94,7 +97,8 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <Ionicons name="alert-circle" size={48} color="#FF385C" />
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -102,7 +106,8 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
   if (!service) {
     return (
       <View style={styles.centered}>
-        <Text>Service not found.</Text>
+        <Ionicons name="construct-outline" size={48} color="#666" />
+        <Text style={styles.notFoundText}>Service not found</Text>
       </View>
     );
   }
@@ -111,142 +116,208 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
   const priceText = "$" + (service.price || 0);
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Main Image */}
-      {service.images && service.images.length > 0 && (
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <Image
           source={{ uri: service.images[0] }}
           style={styles.mainImage}
           resizeMode="cover"
         />
-      )}
-
-      {/* Basic Information */}
-      <View style={styles.basicInfo}>
-        <Text style={styles.title}>{service.title || "Untitled Service"}</Text>
-        <Text style={styles.location}>
-          {service.location || "Location not specified"}
-        </Text>
-        <Text style={styles.price}>{priceText}</Text>
-        {service.duration && (
-          <Text style={styles.duration}>
-            Duration: {service.duration} hours
-          </Text>
-        )}
-        <Text style={styles.description}>
-          {service.description || "No description available"}
-        </Text>
-      </View>
-
-      {/* Rating */}
-      {service.rating && (
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color="#FFD700" />
-          <Text style={styles.rating}>{service.rating}/5</Text>
-        </View>
-      )}
-
-      {/* Service Details */}
-      <View style={styles.serviceDetails}>
-        <Text style={styles.sectionTitle}>Service Details</Text>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Category:</Text>
-          <Text style={styles.detailValue}>{service.category}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Service Type:</Text>
-          <Text style={styles.detailValue}>{service.serviceType}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Max Guests:</Text>
-          <Text style={styles.detailValue}>{service.maxGuests}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Provider:</Text>
-          <Text style={styles.detailValue}>{service.provider}</Text>
-        </View>
-      </View>
-
-      {/* Availability */}
-      {service.availability && (
-        <View style={styles.availabilityContainer}>
-          <Text style={styles.sectionTitle}>Availability</Text>
-
-          {service.availability.days &&
-            service.availability.days.length > 0 && (
-              <View style={styles.availabilitySection}>
-                <Text style={styles.subsectionTitle}>Available Days:</Text>
-                <View style={styles.tagsList}>
-                  {service.availability.days.map(
-                    (day: string, index: number) => (
-                      <View key={index} style={styles.tag}>
-                        <Text style={styles.tagText}>{day}</Text>
-                      </View>
-                    )
-                  )}
-                </View>
+        <View style={styles.detailsContainer}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>
+              {service.title || "Untitled Service"}
+            </Text>
+            <View style={styles.locationRow}>
+              <Ionicons name="location" size={16} color="#007AFF" />
+              <Text style={styles.location}>
+                {service.location || "Location not specified"}
+              </Text>
+            </View>
+            <View style={styles.priceRow}>
+              <Ionicons name="card" size={20} color="#007AFF" />
+              <Text style={styles.price}>{priceText}</Text>
+            </View>
+            {service.duration && (
+              <View style={styles.durationRow}>
+                <Ionicons name="time" size={16} color="#666" />
+                <Text style={styles.duration}>
+                  Duration: {service.duration} hours
+                </Text>
               </View>
             )}
-
-          {service.availability.timeSlots &&
-            service.availability.timeSlots.length > 0 && (
-              <View style={styles.availabilitySection}>
-                <Text style={styles.subsectionTitle}>Time Slots:</Text>
-                <View style={styles.tagsList}>
-                  {service.availability.timeSlots.map(
-                    (slot: string, index: number) => (
-                      <View key={index} style={styles.tag}>
-                        <Text style={styles.tagText}>{slot}</Text>
-                      </View>
-                    )
-                  )}
-                </View>
-              </View>
-            )}
-        </View>
-      )}
-
-      {/* Requirements */}
-      {service.requirements && service.requirements.length > 0 && (
-        <View style={styles.requirementsContainer}>
-          <Text style={styles.sectionTitle}>Requirements</Text>
-          <View style={styles.list}>
-            {service.requirements.map((requirement: string, index: number) => (
-              <View key={index} style={styles.listItem}>
-                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                <Text style={styles.listText}>{requirement}</Text>
-              </View>
-            ))}
+            <Text style={styles.description}>
+              {service.description || "No description available"}
+            </Text>
           </View>
-        </View>
-      )}
 
-      {/* Included */}
-      {service.included && service.included.length > 0 && (
-        <View style={styles.includedContainer}>
-          <Text style={styles.sectionTitle}>What's Included</Text>
-          <View style={styles.list}>
-            {service.included.map((item: string, index: number) => (
-              <View key={index} style={styles.listItem}>
-                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                <Text style={styles.listText}>{item}</Text>
+          {/* Rating Section */}
+          {service.rating && (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingRow}>
+                <Ionicons name="star" size={20} color="#FFD700" />
+                <Text style={styles.rating}>{service.rating}/5</Text>
               </View>
-            ))}
+            </View>
+          )}
+
+          {/* Service Details */}
+          <View style={styles.detailsSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="information-circle" size={20} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Service Details</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Category:</Text>
+              </View>
+              <Text style={styles.detailValue}>{service.category}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Service Type:</Text>
+              </View>
+              <Text style={styles.detailValue}>{service.serviceType}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Max Guests:</Text>
+              </View>
+              <Text style={styles.detailValue}>{service.maxGuests}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Provider:</Text>
+              </View>
+              <Text style={styles.detailValue}>{service.provider}</Text>
+            </View>
           </View>
+
+          {/* Availability */}
+          {service.availability && (
+            <View style={styles.availabilitySection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="calendar" size={20} color="#4CAF50" />
+                <Text style={styles.sectionTitle}>Availability</Text>
+              </View>
+
+              {service.availability.days &&
+                service.availability.days.length > 0 && (
+                  <View style={styles.availabilitySubsection}>
+                    <Text style={styles.subsectionTitle}>Available Days:</Text>
+                    <View style={styles.tagsGrid}>
+                      {service.availability.days.map(
+                        (day: string, index: number) => (
+                          <View key={index} style={styles.tag}>
+                            <Ionicons
+                              name="checkmark"
+                              size={12}
+                              color="#4CAF50"
+                            />
+                            <Text style={styles.tagText}>{day}</Text>
+                          </View>
+                        )
+                      )}
+                    </View>
+                  </View>
+                )}
+
+              {service.availability.timeSlots &&
+                service.availability.timeSlots.length > 0 && (
+                  <View style={styles.availabilitySubsection}>
+                    <Text style={styles.subsectionTitle}>Time Slots:</Text>
+                    <View style={styles.tagsGrid}>
+                      {service.availability.timeSlots.map(
+                        (slot: string, index: number) => (
+                          <View key={index} style={styles.tag}>
+                            <Ionicons name="time" size={12} color="#007AFF" />
+                            <Text style={styles.tagText}>{slot}</Text>
+                          </View>
+                        )
+                      )}
+                    </View>
+                  </View>
+                )}
+            </View>
+          )}
+
+          {/* Requirements */}
+          {service.requirements && service.requirements.length > 0 && (
+            <View style={styles.requirementsSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="list" size={20} color="#FF9800" />
+                <Text style={styles.sectionTitle}>Requirements</Text>
+              </View>
+              <View style={styles.listGrid}>
+                {service.requirements.map(
+                  (requirement: string, index: number) => (
+                    <View key={index} style={styles.listItem}>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#4CAF50"
+                      />
+                      <Text style={styles.listText}>{requirement}</Text>
+                    </View>
+                  )
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Included */}
+          {service.included && service.included.length > 0 && (
+            <View style={styles.includedSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="gift" size={20} color="#E91E63" />
+                <Text style={styles.sectionTitle}>What's Included</Text>
+              </View>
+              <View style={styles.listGrid}>
+                {service.included.map((item: string, index: number) => (
+                  <View key={index} style={styles.listItem}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#4CAF50"
+                    />
+                    <Text style={styles.listText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.bottomSpacer} />
         </View>
-      )}
-    </ScrollView>
+      </ScrollView>
+      <TouchableOpacity
+        style={styles.reserveButton}
+        onPress={() =>
+          router.push({
+            pathname: "/screens/ReviewAndContinueScreen",
+            params: { item: JSON.stringify(service), type: "service" },
+          })
+        }
+      >
+        <Text style={styles.reserveButtonText}>Reserve</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -254,39 +325,77 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
   mainImage: {
     width: "100%",
     height: 300,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    borderRadius: 24,
+    marginBottom: 20,
   },
-  basicInfo: {
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 12,
     color: "#222",
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   location: {
     fontSize: 16,
     color: "#666",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
-    fontWeight: "600",
   },
   price: {
-    fontSize: 20,
+    fontSize: 24,
     color: "#007AFF",
-    marginBottom: 4,
+    marginLeft: 8,
     fontWeight: "700",
+  },
+  durationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   duration: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 12,
+    marginLeft: 8,
     fontStyle: "italic",
   },
   description: {
@@ -294,28 +403,37 @@ const styles = StyleSheet.create({
     color: "#444",
     lineHeight: 24,
   },
-  ratingContainer: {
+  ratingSection: {
+    backgroundColor: "#fff",
+    padding: 16,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  ratingRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: "#f8f9fa",
   },
   rating: {
-    marginLeft: 4,
-    fontSize: 16,
+    marginLeft: 8,
+    fontSize: 18,
     fontWeight: "600",
     color: "#333",
   },
-  serviceDetails: {
+  detailsSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 16,
+    marginLeft: 8,
     color: "#222",
   },
   detailRow: {
@@ -323,70 +441,105 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  detailLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   detailLabel: {
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
+    marginLeft: 8,
   },
   detailValue: {
     fontSize: 14,
     color: "#666",
     fontWeight: "600",
   },
-  availabilityContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
   availabilitySection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  availabilitySubsection: {
     marginBottom: 16,
   },
   subsectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 12,
     color: "#333",
   },
-  tagsList: {
+  tagsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   tag: {
-    backgroundColor: "#f0f0f0",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
     marginBottom: 8,
   },
   tagText: {
+    marginLeft: 6,
     fontSize: 12,
     color: "#333",
     fontWeight: "500",
   },
-  requirementsContainer: {
+  requirementsSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  includedContainer: {
+  includedSection: {
+    backgroundColor: "#fff",
     padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  list: {
+  listGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
     marginBottom: 8,
-    width: "48%",
+    minWidth: "45%",
   },
   listText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#333",
+    fontWeight: "500",
   },
+  bottomSpacer: {
+    height: 20,
+  },
+  reserveButton: {
+    backgroundColor: "#222",
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 18,
+    alignItems: "center",
+    marginBottom: 60,
+  },
+  reserveButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });

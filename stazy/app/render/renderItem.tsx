@@ -19,13 +19,7 @@ export default function UniversalDetailPage() {
   const { renderItem: itemId, pageName, activeTab } = useLocalSearchParams();
   const router = useRouter();
 
-  console.log("🔍 [DEBUG] renderItem.tsx - Initial render");
-  console.log("🔍 [DEBUG] itemId:", itemId);
-  console.log("🔍 [DEBUG] pageName:", pageName);
-  console.log("🔍 [DEBUG] activeTab:", activeTab);
-
   if (!itemId) {
-    console.log("🔍 [DEBUG] No itemId provided");
     return (
       <View style={styles.centered}>
         <Text>No item ID provided.</Text>
@@ -37,69 +31,37 @@ export default function UniversalDetailPage() {
     );
   }
 
-  // Determine which render component to use based on page and tab
   const getRenderComponent = () => {
-    console.log("🔍 [DEBUG] getRenderComponent() called");
-    console.log("🔍 [DEBUG] pageName:", pageName, "activeTab:", activeTab);
-
     if (pageName === "index") {
-      // Home page - use regular render components
       switch (activeTab) {
         case "Homes":
-          console.log("🔍 [DEBUG] Using renderPropertyContent for index/Homes");
           return renderPropertyContent({ itemId: String(itemId) });
         case "Services":
-          console.log(
-            "🔍 [DEBUG] Using renderServiceContent for index/Services"
-          );
           return renderServiceContent({ itemId: String(itemId) });
         case "Experiences":
-          console.log(
-            "🔍 [DEBUG] Using renderExperienceContent for index/Experiences"
-          );
           return renderExperienceContent({ itemId: String(itemId) });
         default:
-          console.log(
-            "🔍 [DEBUG] Defaulting to renderPropertyContent for index"
-          );
           return renderPropertyContent({ itemId: String(itemId) });
       }
     } else if (pageName === "listings") {
-      // Listings page - use host render components
       switch (activeTab) {
         case "Homes":
-          console.log(
-            "🔍 [DEBUG] Using renderListingContent for listings/Homes"
-          );
           return renderListingContent({ itemId: String(itemId) });
         case "Services":
-          console.log(
-            "🔍 [DEBUG] Using renderHostServiceContent for listings/Services"
-          );
           return renderHostServiceContent({ itemId: String(itemId) });
         case "Experiences":
-          console.log(
-            "🔍 [DEBUG] Using renderHostExperienceContent for listings/Experiences"
-          );
           return renderHostExperienceContent({ itemId: String(itemId) });
         default:
-          console.log(
-            "🔍 [DEBUG] Defaulting to renderListingContent for listings"
-          );
           return renderListingContent({ itemId: String(itemId) });
       }
     } else {
-      console.log(
-        "🔍 [DEBUG] Unknown pageName, defaulting to renderPropertyContent"
-      );
       return renderPropertyContent({ itemId: String(itemId) });
     }
   };
 
-  console.log("🔍 [DEBUG] About to render content");
-  return (
-    <ScrollView style={styles.container}>{getRenderComponent()}</ScrollView>
-  );
+  const renderContent = getRenderComponent();
+
+  return <ScrollView style={styles.container}>{renderContent}</ScrollView>;
 }
 
 const styles = StyleSheet.create({

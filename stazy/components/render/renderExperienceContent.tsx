@@ -7,9 +7,12 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Experience } from "../../types/Experience";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
+import { useRouter } from "expo-router";
 
 interface RenderExperienceContentProps {
   itemId: string;
@@ -23,79 +26,71 @@ export const renderExperienceContent = ({
   const [experience, setExperience] = useState<Experience | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchExperience = async () => {
       setLoading(true);
       setError(null);
       try {
-        // For now, we'll use mock data since experiences don't have a backend endpoint yet
-        // This can be updated when the backend endpoint is available
-        const mockExperiences = [
-          {
-            id: "1",
-            title: "City Walking Tour",
-            description:
-              "Explore the historic downtown area with our expert guide",
-            location: "Downtown",
-            price: 25,
-            duration: 2,
-            rating: 4.8,
-            images: [
-              "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
-            ],
-            category: "Cultural",
-            maxGuests: 15,
-            guide: "Sarah Johnson",
-            meetingPoint: "Central Square",
-            included: [
-              "Professional guide",
-              "Historical insights",
-              "Photo opportunities",
-            ],
-            requirements: ["Comfortable walking shoes", "Water bottle"],
-            highlights: ["Historic landmarks", "Local stories", "Hidden gems"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isGuestFavorite: true,
-          },
-          {
-            id: "2",
-            title: "Cooking Class",
-            description: "Learn to cook authentic local cuisine",
-            location: "Culinary District",
-            price: 75,
-            duration: 3,
-            rating: 4.9,
-            images: [
-              "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136",
-            ],
-            category: "Culinary",
-            maxGuests: 8,
-            guide: "Chef Maria",
-            meetingPoint: "Cooking Studio",
-            included: ["All ingredients", "Recipe book", "Meal to enjoy"],
-            requirements: [
-              "No cooking experience needed",
-              "Appetite for learning",
-            ],
-            highlights: [
-              "Hands-on cooking",
-              "Local ingredients",
-              "Cultural exchange",
-            ],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isGuestFavorite: true,
-          },
-        ];
-
-        const foundExperience = mockExperiences.find((e) => e.id === itemId);
-        if (foundExperience) {
-          setExperience(foundExperience as unknown as Experience);
-        } else {
-          throw new Error("Experience not found");
+        const token = await tokenStore.getToken();
+        if (!token) {
+          throw new Error("No authentication token found");
         }
+
+        const response = await fetch(
+          `http://10.30.22.153:8080/api/experiences/${itemId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `HTTP error! status: ${response.status}`
+          );
+        }
+
+        const experienceData = await response.json();
+
+        // Transform the backend data to match the frontend Experience interface
+        const transformedExperience: Experience = {
+          id: experienceData.id.toString(),
+          title: experienceData.title || "",
+          description: experienceData.description || "",
+          location: experienceData.location || "",
+          price: experienceData.price || 0,
+          duration: experienceData.duration || 0,
+          rating: experienceData.rating || 0,
+          images: experienceData.images || [],
+          hostName: experienceData.hostName || "",
+          hostEmail: experienceData.hostEmail || "",
+          category: experienceData.category || "adventure",
+          experienceType: experienceData.experienceType || "group",
+          difficulty: experienceData.difficulty || "easy",
+          ageRestriction: {
+            minimum: experienceData.minimumAge || 0,
+            maximum: experienceData.maximumAge,
+          },
+          maxParticipants: experienceData.maxParticipants || 1,
+          included: experienceData.included || [],
+          toBring: experienceData.toBring || [],
+          meetingPoint: experienceData.meetingPoint || "",
+          languages: experienceData.languages || [],
+          availability: {
+            days: experienceData.availabilityDays || [],
+            timeSlots: experienceData.availabilityTimeSlots || [],
+          },
+          createdAt: new Date(experienceData.createdAt),
+          updatedAt: new Date(experienceData.updatedAt),
+        };
+
+        setExperience(transformedExperience);
       } catch (err: any) {
         setError(err.message || "Failed to fetch experience");
       } finally {
@@ -110,7 +105,7 @@ export const renderExperienceContent = ({
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading experience...</Text>
+        <Text style={styles.loadingText}>Loading experience details...</Text>
       </View>
     );
   }
@@ -118,7 +113,8 @@ export const renderExperienceContent = ({
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <Ionicons name="alert-circle" size={48} color="#FF385C" />
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -126,139 +122,242 @@ export const renderExperienceContent = ({
   if (!experience) {
     return (
       <View style={styles.centered}>
-        <Text>Experience not found.</Text>
+        <Ionicons name="compass-outline" size={48} color="#666" />
+        <Text style={styles.notFoundText}>Experience not found</Text>
       </View>
     );
   }
 
-  const experienceData = experience as any;
-
   // Create price text variable
-  const priceText = "$" + (experienceData.price || 0);
+  const priceText = "$" + (experience.price || 0);
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Main Image */}
-      {experienceData.images && experienceData.images.length > 0 && (
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <Image
-          source={{ uri: experienceData.images[0] }}
+          source={{ uri: experience.images[0] }}
           style={styles.mainImage}
           resizeMode="cover"
         />
-      )}
+        <View style={styles.detailsContainer}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>
+              {experience.title || "Untitled Experience"}
+            </Text>
+            <View style={styles.locationRow}>
+              <Ionicons name="location" size={16} color="#007AFF" />
+              <Text style={styles.location}>
+                {experience.location || "Location not specified"}
+              </Text>
+            </View>
+            <View style={styles.priceRow}>
+              <Ionicons name="card" size={20} color="#007AFF" />
+              <Text style={styles.price}>{priceText}</Text>
+            </View>
+            {experience.duration && (
+              <View style={styles.durationRow}>
+                <Ionicons name="time" size={16} color="#666" />
+                <Text style={styles.duration}>
+                  Duration: {experience.duration} hours
+                </Text>
+              </View>
+            )}
+            <Text style={styles.description}>
+              {experience.description || "No description available"}
+            </Text>
+          </View>
 
-      {/* Basic Information */}
-      <View style={styles.basicInfo}>
-        <Text style={styles.title}>
-          {experienceData.title || "Untitled Experience"}
-        </Text>
-        <Text style={styles.location}>
-          {experienceData.location || "Location not specified"}
-        </Text>
-        <Text style={styles.price}>{priceText}</Text>
-        {experienceData.duration && (
-          <Text style={styles.duration}>
-            Duration: {experienceData.duration} hours
-          </Text>
-        )}
-        <Text style={styles.description}>
-          {experienceData.description || "No description available"}
-        </Text>
-      </View>
+          {/* Rating Section */}
+          {experience.rating && (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingRow}>
+                <Ionicons name="star" size={20} color="#FFD700" />
+                <Text style={styles.rating}>{experience.rating}/5</Text>
+              </View>
+            </View>
+          )}
 
-      {/* Rating */}
-      {experienceData.rating && (
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color="#FFD700" />
-          <Text style={styles.rating}>{experienceData.rating}/5</Text>
-        </View>
-      )}
+          {/* Experience Details */}
+          <View style={styles.detailsSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="information-circle" size={20} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Experience Details</Text>
+            </View>
 
-      {/* Experience Details */}
-      <View style={styles.experienceDetails}>
-        <Text style={styles.sectionTitle}>Experience Details</Text>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Category:</Text>
+              </View>
+              <Text style={styles.detailValue}>{experience.category}</Text>
+            </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Category:</Text>
-          <Text style={styles.detailValue}>{experienceData.category}</Text>
-        </View>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Host:</Text>
+              </View>
+              <Text style={styles.detailValue}>{experience.hostName}</Text>
+            </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Guide:</Text>
-          <Text style={styles.detailValue}>{experienceData.guide}</Text>
-        </View>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Experience Type:</Text>
+              </View>
+              <Text style={styles.detailValue}>
+                {experience.experienceType}
+              </Text>
+            </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Max Guests:</Text>
-          <Text style={styles.detailValue}>{experienceData.maxGuests}</Text>
-        </View>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Difficulty:</Text>
+              </View>
+              <Text style={styles.detailValue}>{experience.difficulty}</Text>
+            </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Meeting Point:</Text>
-          <Text style={styles.detailValue}>{experienceData.meetingPoint}</Text>
-        </View>
-      </View>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Max Participants:</Text>
+              </View>
+              <Text style={styles.detailValue}>
+                {experience.maxParticipants}
+              </Text>
+            </View>
 
-      {/* Highlights */}
-      {experienceData.highlights && experienceData.highlights.length > 0 && (
-        <View style={styles.highlightsContainer}>
-          <Text style={styles.sectionTitle}>Highlights</Text>
-          <View style={styles.tagsList}>
-            {experienceData.highlights.map(
-              (highlight: string, index: number) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{highlight}</Text>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#007AFF" />
+                <Text style={styles.detailLabel}>Meeting Point:</Text>
+              </View>
+              <Text style={styles.detailValue}>{experience.meetingPoint}</Text>
+            </View>
+
+            {experience.ageRestriction && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Age Range:</Text>
                 </View>
-              )
+                <Text style={styles.detailValue}>
+                  {experience.ageRestriction.minimum}+
+                  {experience.ageRestriction.maximum
+                    ? ` - ${experience.ageRestriction.maximum}`
+                    : ""}
+                </Text>
+              </View>
+            )}
+
+            {experience.languages && experience.languages.length > 0 && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Languages:</Text>
+                </View>
+                <Text style={styles.detailValue}>
+                  {experience.languages.join(", ")}
+                </Text>
+              </View>
             )}
           </View>
-        </View>
-      )}
 
-      {/* Requirements */}
-      {experienceData.requirements &&
-        experienceData.requirements.length > 0 && (
-          <View style={styles.requirementsContainer}>
-            <Text style={styles.sectionTitle}>Requirements</Text>
-            <View style={styles.list}>
-              {experienceData.requirements.map(
-                (requirement: string, index: number) => (
+          {/* Availability */}
+          {experience.availability &&
+            experience.availability.days &&
+            experience.availability.days.length > 0 && (
+              <View style={styles.availabilitySection}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="calendar" size={20} color="#4CAF50" />
+                  <Text style={styles.sectionTitle}>Availability</Text>
+                </View>
+                <View style={styles.availabilityDetails}>
+                  <Text style={styles.availabilityLabel}>Days:</Text>
+                  <Text style={styles.availabilityValue}>
+                    {experience.availability.days.join(", ")}
+                  </Text>
+                </View>
+                {experience.availability.timeSlots &&
+                  experience.availability.timeSlots.length > 0 && (
+                    <View style={styles.availabilityDetails}>
+                      <Text style={styles.availabilityLabel}>Time Slots:</Text>
+                      <Text style={styles.availabilityValue}>
+                        {experience.availability.timeSlots.join(", ")}
+                      </Text>
+                    </View>
+                  )}
+              </View>
+            )}
+
+          {/* What to Bring */}
+          {experience.toBring && experience.toBring.length > 0 && (
+            <View style={styles.requirementsSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="bag" size={20} color="#FF9800" />
+                <Text style={styles.sectionTitle}>What to Bring</Text>
+              </View>
+              <View style={styles.listGrid}>
+                {experience.toBring.map((item: string, index: number) => (
                   <View key={index} style={styles.listItem}>
                     <Ionicons
                       name="checkmark-circle"
                       size={16}
                       color="#4CAF50"
                     />
-                    <Text style={styles.listText}>{requirement}</Text>
+                    <Text style={styles.listText}>{item}</Text>
                   </View>
-                )
-              )}
-            </View>
-          </View>
-        )}
-
-      {/* Included */}
-      {experienceData.included && experienceData.included.length > 0 && (
-        <View style={styles.includedContainer}>
-          <Text style={styles.sectionTitle}>What's Included</Text>
-          <View style={styles.list}>
-            {experienceData.included.map((item: string, index: number) => (
-              <View key={index} style={styles.listItem}>
-                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                <Text style={styles.listText}>{item}</Text>
+                ))}
               </View>
-            ))}
-          </View>
+            </View>
+          )}
+
+          {/* Included */}
+          {experience.included && experience.included.length > 0 && (
+            <View style={styles.includedSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="gift" size={20} color="#E91E63" />
+                <Text style={styles.sectionTitle}>What's Included</Text>
+              </View>
+              <View style={styles.listGrid}>
+                {experience.included.map((item: string, index: number) => (
+                  <View key={index} style={styles.listItem}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#4CAF50"
+                    />
+                    <Text style={styles.listText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.bottomSpacer} />
         </View>
-      )}
-    </ScrollView>
+      </ScrollView>
+      <TouchableOpacity
+        style={styles.requestButton}
+        onPress={() =>
+          router.push({
+            pathname: "/screens/ReviewAndContinueScreen",
+            params: { item: JSON.stringify(experience), type: "request" },
+          })
+        }
+      >
+        <Text style={styles.requestButtonText}>Request</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -266,39 +365,77 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
   mainImage: {
     width: "100%",
     height: 300,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    borderRadius: 24,
+    marginBottom: 20,
   },
-  basicInfo: {
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 12,
     color: "#222",
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   location: {
     fontSize: 16,
     color: "#666",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
-    fontWeight: "600",
   },
   price: {
-    fontSize: 20,
+    fontSize: 24,
     color: "#007AFF",
-    marginBottom: 4,
+    marginLeft: 8,
     fontWeight: "700",
+  },
+  durationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   duration: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 12,
+    marginLeft: 8,
     fontStyle: "italic",
   },
   description: {
@@ -306,28 +443,37 @@ const styles = StyleSheet.create({
     color: "#444",
     lineHeight: 24,
   },
-  ratingContainer: {
+  ratingSection: {
+    backgroundColor: "#fff",
+    padding: 16,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  ratingRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: "#f8f9fa",
   },
   rating: {
-    marginLeft: 4,
-    fontSize: 16,
+    marginLeft: 8,
+    fontSize: 18,
     fontWeight: "600",
     color: "#333",
   },
-  experienceDetails: {
+  detailsSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 16,
+    marginLeft: 8,
     color: "#222",
   },
   detailRow: {
@@ -335,61 +481,92 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  detailLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   detailLabel: {
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
+    marginLeft: 8,
   },
   detailValue: {
     fontSize: 14,
     color: "#666",
     fontWeight: "600",
   },
-  highlightsContainer: {
+  availabilitySection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  tagsList: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  tag: {
-    backgroundColor: "#f0f0f0",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    marginBottom: 20,
     borderRadius: 16,
-    marginRight: 8,
+  },
+  availabilityDetails: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
-  tagText: {
-    fontSize: 12,
-    color: "#333",
+  availabilityLabel: {
+    fontSize: 14,
     fontWeight: "500",
+    color: "#333",
   },
-  requirementsContainer: {
+  availabilityValue: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "600",
+  },
+  requirementsSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  includedContainer: {
+  includedSection: {
+    backgroundColor: "#fff",
     padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  list: {
+  listGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
     marginBottom: 8,
-    width: "48%",
+    minWidth: "45%",
   },
   listText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#333",
+    fontWeight: "500",
   },
+  bottomSpacer: {
+    height: 20,
+  },
+  requestButton: {
+    backgroundColor: "#222",
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 18,
+    alignItems: "center",
+    marginBottom: 60,
+  },
+  requestButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });

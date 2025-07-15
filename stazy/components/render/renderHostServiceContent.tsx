@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from "react-native";
 import { Service } from "../../types/Service";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,7 +41,7 @@ export const renderHostServiceContent = ({
         }
 
         const response = await fetch(
-          `http://100.66.107.9:8080/api/service-offers/${itemId}`,
+          `http://10.30.22.153:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -102,7 +103,7 @@ export const renderHostServiceContent = ({
       }
 
       const response = await fetch(
-        `http://100.66.107.9:8080/api/service-offers/${itemId}`,
+        `http://10.30.22.153:8080/api/service-offers/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -130,7 +131,7 @@ export const renderHostServiceContent = ({
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading service...</Text>
+        <Text style={styles.loadingText}>Loading service details...</Text>
       </View>
     );
   }
@@ -138,7 +139,8 @@ export const renderHostServiceContent = ({
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <Ionicons name="alert-circle" size={48} color="#FF385C" />
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -146,7 +148,8 @@ export const renderHostServiceContent = ({
   if (!service) {
     return (
       <View style={styles.centered}>
-        <Text>Service not found.</Text>
+        <Ionicons name="construct-outline" size={48} color="#666" />
+        <Text style={styles.notFoundText}>Service not found</Text>
       </View>
     );
   }
@@ -154,178 +157,262 @@ export const renderHostServiceContent = ({
   const priceText = "$" + service.price;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Image
         source={{ uri: service.images[0] }}
-        style={styles.image}
-        resizeMode="stretch"
+        style={styles.mainImage}
+        resizeMode="cover"
       />
-      <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Service Details</Text>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => setIsEditing(!isEditing)}
-        >
-          <Ionicons
-            name={isEditing ? "close" : "create-outline"}
-            size={20}
-            color="#007AFF"
-          />
-          <Text style={styles.editBtnText}>
-            {isEditing ? "Cancel" : "Edit"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.detailsContainer}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <View style={styles.headerRow}>
+            <View style={styles.titleContainer}>
+              <Ionicons name="construct" size={24} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Service Details</Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.editBtn, isEditing && styles.editBtnActive]}
+              onPress={() => setIsEditing(!isEditing)}
+            >
+              <Ionicons
+                name={isEditing ? "close" : "create-outline"}
+                size={20}
+                color={isEditing ? "#fff" : "#007AFF"}
+              />
+              <Text
+                style={[
+                  styles.editBtnText,
+                  isEditing && styles.editBtnTextActive,
+                ]}
+              >
+                {isEditing ? "Cancel" : "Edit"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{service.id}</Text>
-      </View>
+        {/* Basic Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.subsectionTitle}>Basic Information</Text>
+          </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Title:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.title || ""}
-            onChangeText={(v) => handleFieldChange("title", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{service.title}</Text>
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>ID:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{service.id}</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Title:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.title || ""}
+                onChangeText={(v) => handleFieldChange("title", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.title}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Description:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { height: 60 }]}
+                value={editData.description || ""}
+                onChangeText={(v) => handleFieldChange("description", v)}
+                multiline
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.description}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Location:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.location || ""}
+                onChangeText={(v) => handleFieldChange("location", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.location}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Pricing Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="card" size={20} color="#4CAF50" />
+            <Text style={styles.subsectionTitle}>Pricing & Duration</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Price:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.price?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("price", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{priceText}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Duration:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.duration?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("duration", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.duration} hours</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Service Details */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="settings" size={20} color="#FF9800" />
+            <Text style={styles.subsectionTitle}>Service Details</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Category:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.category || ""}
+                onChangeText={(v) => handleFieldChange("category", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.category}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Service Type:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.serviceType || ""}
+                onChangeText={(v) => handleFieldChange("serviceType", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.serviceType}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Max Guests:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.maxGuests?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("maxGuests", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.maxGuests}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Provider:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.provider || ""}
+                onChangeText={(v) => handleFieldChange("provider", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{service.provider}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Requirements & Included */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="list" size={20} color="#E91E63" />
+            <Text style={styles.subsectionTitle}>Requirements & Included</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Requirements:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {service.requirements.length > 0
+                ? service.requirements.join(", ")
+                : "No requirements listed"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Included:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {service.included.length > 0
+                ? service.included.join(", ")
+                : "No items included"}
+            </Text>
+          </View>
+        </View>
+
+        {isEditing && (
+          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+            <Ionicons name="checkmark-circle" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
         )}
-      </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Description:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.description || ""}
-            onChangeText={(v) => handleFieldChange("description", v)}
-            multiline
-          />
-        ) : (
-          <Text style={styles.value}>{service.description}</Text>
-        )}
+        <View style={styles.bottomSpacer} />
       </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Location:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.location || ""}
-            onChangeText={(v) => handleFieldChange("location", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{service.location}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Price:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.price?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("price", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{priceText}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Duration:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.duration?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("duration", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{service.duration} hours</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Category:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.category || ""}
-            onChangeText={(v) => handleFieldChange("category", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{service.category}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Service Type:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.serviceType || ""}
-            onChangeText={(v) => handleFieldChange("serviceType", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{service.serviceType}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Max Guests:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.maxGuests?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("maxGuests", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{service.maxGuests}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Provider:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.provider || ""}
-            onChangeText={(v) => handleFieldChange("provider", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{service.provider}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Requirements:</Text>
-        <Text style={styles.value}>
-          {service.requirements.length > 0
-            ? service.requirements.join(", ")
-            : "No requirements listed"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Included:</Text>
-        <Text style={styles.value}>
-          {service.included.length > 0
-            ? service.included.join(", ")
-            : "No items included"}
-        </Text>
-      </View>
-
-      {isEditing && (
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 };
@@ -333,7 +420,7 @@ export const renderHostServiceContent = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -341,74 +428,148 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  mainImage: {
+    width: "100%",
+    height: 300,
+    borderRadius: 24,
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    marginLeft: 8,
     color: "#222",
   },
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  editBtnActive: {
+    backgroundColor: "#FF385C",
   },
   editBtnText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#007AFF",
     fontWeight: "600",
   },
-  fieldRow: {
+  editBtnTextActive: {
+    color: "#fff",
+  },
+  infoSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
-  label: {
-    fontSize: 14,
+  subsectionTitle: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
+    marginLeft: 8,
+    color: "#222",
   },
-  value: {
-    fontSize: 16,
+  fieldRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  fieldLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    marginLeft: 8,
+  },
+  fieldValue: {
+    fontSize: 14,
     color: "#666",
+    flex: 2,
+    textAlign: "right",
+    fontWeight: "500",
+  },
+  input: {
+    fontSize: 14,
+    color: "#333",
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-  },
-  input: {
-    fontSize: 16,
-    color: "#333",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
+    flex: 2,
+    textAlign: "right",
   },
   saveButton: {
     backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
     marginTop: 20,
   },
   saveButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
-  image: {
-    width: "100%",
-    height: "30%",
-    marginBottom: 20,
+  bottomSpacer: {
+    height: 20,
   },
 });

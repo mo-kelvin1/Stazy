@@ -72,6 +72,9 @@ public class Property {
 
     private Boolean isAvailable = true;
 
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Booking> bookings;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

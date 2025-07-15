@@ -8,6 +8,8 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Dimensions,
+  Image,
 } from "react-native";
 import { Experience } from "../../types/Experience";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +20,7 @@ interface RenderHostExperienceContentProps {
 }
 
 const tokenStore = new SimulatedTokenStore();
+const { width } = Dimensions.get("window");
 
 export const renderHostExperienceContent = ({
   itemId,
@@ -33,85 +36,65 @@ export const renderHostExperienceContent = ({
       setLoading(true);
       setError(null);
       try {
-        // For now, we'll use mock data since experiences don't have a backend endpoint yet
-        // This can be updated when the backend endpoint is available
-        const mockExperiences: Experience[] = [
-          {
-            id: "1",
-            title: "City Walking Tour",
-            description:
-              "Explore the historic downtown area with our expert guide",
-            location: "Downtown",
-            price: 25,
-            duration: 2,
-            rating: 4.8,
-            images: [
-              "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
-            ],
-            hostName: "Sarah Johnson",
-            hostEmail: "sarah@example.com",
-            category: "cultural",
-            experienceType: "group",
-            difficulty: "easy",
-            ageRestriction: {
-              minimum: 12,
-            },
-            maxParticipants: 15,
-            included: [
-              "Professional guide",
-              "Historical insights",
-              "Photo opportunities",
-            ],
-            toBring: ["Comfortable walking shoes", "Water bottle"],
-            meetingPoint: "Central Square",
-            languages: ["English", "Spanish"],
-            availability: {
-              days: ["Monday", "Wednesday", "Friday"],
-              timeSlots: ["09:00", "14:00"],
-            },
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: "2",
-            title: "Cooking Class",
-            description: "Learn to cook authentic local cuisine",
-            location: "Culinary District",
-            price: 75,
-            duration: 3,
-            rating: 4.9,
-            images: [
-              "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136",
-            ],
-            hostName: "Chef Maria",
-            hostEmail: "maria@example.com",
-            category: "food_drink",
-            experienceType: "group",
-            difficulty: "moderate",
-            ageRestriction: {
-              minimum: 16,
-            },
-            maxParticipants: 8,
-            included: ["All ingredients", "Recipe book", "Meal to enjoy"],
-            toBring: ["No cooking experience needed", "Appetite for learning"],
-            meetingPoint: "Cooking Studio",
-            languages: ["English", "Italian"],
-            availability: {
-              days: ["Tuesday", "Thursday", "Saturday"],
-              timeSlots: ["10:00", "15:00"],
-            },
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ];
-
-        const foundExperience = mockExperiences.find((e) => e.id === itemId);
-        if (foundExperience) {
-          setExperience(foundExperience);
-          setEditData(foundExperience);
-        } else {
-          throw new Error("Experience not found");
+        const token = await tokenStore.getToken();
+        if (!token) {
+          throw new Error("No authentication token found");
         }
+
+        const response = await fetch(
+          `http://10.30.22.153:8080/api/experiences/${itemId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `HTTP error! status: ${response.status}`
+          );
+        }
+
+        const experienceData = await response.json();
+
+        // Transform the backend data to match the frontend Experience interface
+        const transformedExperience: Experience = {
+          id: experienceData.id.toString(),
+          title: experienceData.title || "",
+          description: experienceData.description || "",
+          location: experienceData.location || "",
+          price: experienceData.price || 0,
+          duration: experienceData.duration || 0,
+          rating: experienceData.rating || 0,
+          images: experienceData.images || [],
+          hostName: experienceData.hostName || "",
+          hostEmail: experienceData.hostEmail || "",
+          category: experienceData.category || "adventure",
+          experienceType: experienceData.experienceType || "group",
+          difficulty: experienceData.difficulty || "easy",
+          ageRestriction: {
+            minimum: experienceData.minimumAge || 0,
+            maximum: experienceData.maximumAge,
+          },
+          maxParticipants: experienceData.maxParticipants || 1,
+          included: experienceData.included || [],
+          toBring: experienceData.toBring || [],
+          meetingPoint: experienceData.meetingPoint || "",
+          languages: experienceData.languages || [],
+          availability: {
+            days: experienceData.availabilityDays || [],
+            timeSlots: experienceData.availabilityTimeSlots || [],
+          },
+          createdAt: new Date(experienceData.createdAt),
+          updatedAt: new Date(experienceData.updatedAt),
+        };
+
+        setExperience(transformedExperience);
+        setEditData(transformedExperience);
       } catch (err: any) {
         setError(err.message || "Failed to fetch experience");
       } finally {
@@ -128,8 +111,30 @@ export const renderHostExperienceContent = ({
 
   const handleSave = async () => {
     try {
-      // For now, just update the local state since there's no backend endpoint
-      // This can be updated when the backend endpoint is available
+      const token = await tokenStore.getToken();
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(
+        `http://10.30.22.153:8080/api/experiences/${itemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(editData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
       setExperience(editData as Experience);
       setIsEditing(false);
       Alert.alert("Success", "Experience updated successfully!");
@@ -141,8 +146,10 @@ export const renderHostExperienceContent = ({
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading experience...</Text>
+        <View style={styles.loadingCard}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading experience...</Text>
+        </View>
       </View>
     );
   }
@@ -150,7 +157,10 @@ export const renderHostExperienceContent = ({
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <View style={styles.errorCard}>
+          <Ionicons name="alert-circle" size={48} color="#FF385C" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       </View>
     );
   }
@@ -158,186 +168,396 @@ export const renderHostExperienceContent = ({
   if (!experience) {
     return (
       <View style={styles.centered}>
-        <Text>Experience not found.</Text>
+        <View style={styles.errorCard}>
+          <Ionicons name="search" size={48} color="#007AFF" />
+          <Text style={styles.notFoundText}>Experience not found.</Text>
+        </View>
       </View>
     );
   }
 
-  const experienceData = experience as any;
-
-  // Create price text variable
-  const priceText = "$" + experienceData.price;
+  const priceText = "$" + (experience.price || 0);
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Experience Details</Text>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => setIsEditing(!isEditing)}
-        >
-          <Ionicons
-            name={isEditing ? "close" : "create-outline"}
-            size={20}
-            color="#007AFF"
-          />
-          <Text style={styles.editBtnText}>
-            {isEditing ? "Cancel" : "Edit"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Image
+        source={{ uri: experience.images[0] }}
+        style={styles.mainImage}
+        resizeMode="cover"
+      />
+      <View style={styles.detailsContainer}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <View style={styles.headerRow}>
+            <View style={styles.titleContainer}>
+              <Ionicons name="compass" size={24} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Experience Details</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsEditing((v) => !v)}
+              style={[styles.editBtn, isEditing && styles.editBtnActive]}
+            >
+              <Ionicons
+                name={isEditing ? "checkmark" : "create-outline"}
+                size={20}
+                color={isEditing ? "#fff" : "#007AFF"}
+              />
+              <Text
+                style={[
+                  styles.editBtnText,
+                  isEditing && styles.editBtnTextActive,
+                ]}
+              >
+                {isEditing ? "Save" : "Edit"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{experienceData.id}</Text>
-      </View>
+        {/* Basic Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.subsectionTitle}>Basic Information</Text>
+          </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Title:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.title || ""}
-            onChangeText={(v) => handleFieldChange("title", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.title}</Text>
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>ID:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{experience.id}</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Title:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.title || ""}
+                onChangeText={(v) => handleFieldChange("title", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.title}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Description:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { height: 60 }]}
+                value={editData.description || ""}
+                onChangeText={(v) => handleFieldChange("description", v)}
+                multiline
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.description}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Location:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.location || ""}
+                onChangeText={(v) => handleFieldChange("location", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.location}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Pricing & Duration */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="card" size={20} color="#4CAF50" />
+            <Text style={styles.subsectionTitle}>Pricing & Duration</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Price:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.price?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("price", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{priceText}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Duration:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.duration?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("duration", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.duration} hours</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Experience Details */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="settings" size={20} color="#FF9800" />
+            <Text style={styles.subsectionTitle}>Experience Details</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Category:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.category || ""}
+                onChangeText={(v) => handleFieldChange("category", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.category}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Experience Type:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{experience.experienceType}</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Difficulty:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{experience.difficulty}</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Host:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.hostName || ""}
+                onChangeText={(v) => handleFieldChange("hostName", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.hostName}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Meeting Point:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.meetingPoint || ""}
+                onChangeText={(v) => handleFieldChange("meetingPoint", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{experience.meetingPoint}</Text>
+            )}
+          </View>
+
+          {experience.ageRestriction && (
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#FF9800" />
+                <Text style={styles.fieldLabel}>Age Range:</Text>
+              </View>
+              <Text style={styles.fieldValue}>
+                {experience.ageRestriction.minimum}+
+                {experience.ageRestriction.maximum
+                  ? ` - ${experience.ageRestriction.maximum}`
+                  : ""}
+              </Text>
+            </View>
+          )}
+
+          {experience.languages && experience.languages.length > 0 && (
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#FF9800" />
+                <Text style={styles.fieldLabel}>Languages:</Text>
+              </View>
+              <Text style={styles.fieldValue}>
+                {experience.languages.join(", ")}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Capacity */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="people" size={20} color="#E91E63" />
+            <Text style={styles.subsectionTitle}>Capacity</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Max Participants:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.maxParticipants?.toString() || ""}
+                onChangeText={(v) =>
+                  handleFieldChange("maxParticipants", Number(v))
+                }
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>
+                {experience.maxParticipants}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Additional Info */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="settings" size={20} color="#9C27B0" />
+            <Text style={styles.subsectionTitle}>Additional Info</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Rating:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{experience.rating}/5</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Created At:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {experience.createdAt
+                ? new Date(experience.createdAt).toLocaleDateString()
+                : "Not available"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Updated At:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {experience.updatedAt
+                ? new Date(experience.updatedAt).toLocaleDateString()
+                : "Not available"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Images:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {experience.images.length > 0
+                ? experience.images.length + " image(s)"
+                : "No images"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>To Bring:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {experience.toBring.length > 0
+                ? experience.toBring.join(", ")
+                : "No items to bring"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Included:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {experience.included.length > 0
+                ? experience.included.join(", ")
+                : "No items included"}
+            </Text>
+          </View>
+
+          {experience.availability && experience.availability.days && (
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#9C27B0" />
+                <Text style={styles.fieldLabel}>Available Days:</Text>
+              </View>
+              <Text style={styles.fieldValue}>
+                {experience.availability.days.join(", ")}
+              </Text>
+            </View>
+          )}
+
+          {experience.availability && experience.availability.timeSlots && (
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldLabelContainer}>
+                <Ionicons name="ellipse" size={8} color="#9C27B0" />
+                <Text style={styles.fieldLabel}>Time Slots:</Text>
+              </View>
+              <Text style={styles.fieldValue}>
+                {experience.availability.timeSlots.join(", ")}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {isEditing && (
+          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+            <Ionicons name="checkmark-circle" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
         )}
-      </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Description:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.description || ""}
-            onChangeText={(v) => handleFieldChange("description", v)}
-            multiline
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.description}</Text>
-        )}
+        <View style={styles.bottomSpacer} />
       </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Location:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.location || ""}
-            onChangeText={(v) => handleFieldChange("location", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.location}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Price:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.price?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("price", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{priceText}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Duration:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.duration?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("duration", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.duration} hours</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Category:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.category || ""}
-            onChangeText={(v) => handleFieldChange("category", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.category}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Guide:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.hostName || ""}
-            onChangeText={(v) => handleFieldChange("hostName", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.hostName}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Max Participants:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.maxParticipants?.toString() || ""}
-            onChangeText={(v) =>
-              handleFieldChange("maxParticipants", Number(v))
-            }
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.maxParticipants}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Meeting Point:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.meetingPoint || ""}
-            onChangeText={(v) => handleFieldChange("meetingPoint", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{experienceData.meetingPoint}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>To Bring:</Text>
-        <Text style={styles.value}>
-          {experienceData.toBring.length > 0
-            ? experienceData.toBring.join(", ")
-            : "No items to bring"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Included:</Text>
-        <Text style={styles.value}>
-          {experienceData.included.length > 0
-            ? experienceData.included.join(", ")
-            : "No items included"}
-        </Text>
-      </View>
-
-      {isEditing && (
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 };
@@ -345,8 +565,7 @@ export const renderHostExperienceContent = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -354,69 +573,160 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingCard: {
+    padding: 40,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorCard: {
+    padding: 40,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  mainImage: {
+    width: "100%",
+    height: 300,
+    borderRadius: 24,
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    marginLeft: 8,
     color: "#222",
   },
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  editBtnActive: {
+    backgroundColor: "#007AFF",
   },
   editBtnText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#007AFF",
     fontWeight: "600",
   },
-  fieldRow: {
+  editBtnTextActive: {
+    color: "#fff",
+  },
+  infoSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
-  label: {
-    fontSize: 14,
+  subsectionTitle: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
+    marginLeft: 8,
+    color: "#222",
   },
-  value: {
-    fontSize: 16,
+  fieldRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  fieldLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    marginLeft: 8,
+  },
+  fieldValue: {
+    fontSize: 14,
     color: "#666",
+    flex: 2,
+    textAlign: "right",
+    fontWeight: "500",
+  },
+  input: {
+    fontSize: 14,
+    color: "#333",
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-  },
-  input: {
-    fontSize: 16,
-    color: "#333",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
+    flex: 2,
+    textAlign: "right",
   },
   saveButton: {
     backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
     marginTop: 20,
   },
   saveButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
+  },
+  bottomSpacer: {
+    height: 20,
   },
 });

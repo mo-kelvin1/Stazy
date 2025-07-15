@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Property } from "../../types/Property";
@@ -40,7 +41,7 @@ export const renderPropertyContent = ({
         }
 
         const response = await fetch(
-          `http://100.66.107.9:8080/api/properties/${itemId}`,
+          `http://10.30.22.153:8080/api/properties/${itemId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
@@ -70,7 +71,7 @@ export const renderPropertyContent = ({
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading property...</Text>
+        <Text style={styles.loadingText}>Loading property details...</Text>
       </View>
     );
   }
@@ -78,7 +79,8 @@ export const renderPropertyContent = ({
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <Ionicons name="alert-circle" size={48} color="#FF385C" />
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -86,7 +88,8 @@ export const renderPropertyContent = ({
   if (!property) {
     return (
       <View style={styles.centered}>
-        <Text>Property not found.</Text>
+        <Ionicons name="home-outline" size={48} color="#666" />
+        <Text style={styles.notFoundText}>Property not found</Text>
       </View>
     );
   }
@@ -99,7 +102,9 @@ export const renderPropertyContent = ({
       return value.join(", ");
     }
     if (typeof value === "object" && value !== null) {
-      return JSON.stringify(value).replace(/[{}"]/g, "").replace(/,/g, ", ");
+      return JSON.stringify(value)
+        .replace(/[{}\"]+/g, "")
+        .replace(/,/g, ", ");
     }
     return String(value);
   };
@@ -124,91 +129,374 @@ export const renderPropertyContent = ({
   });
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Main Image */}
-      {prop.images && prop.images.length > 0 && (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <Image
           source={{ uri: prop.images[0] }}
           style={styles.mainImage}
           resizeMode="cover"
         />
-      )}
-
-      {/* Basic Information */}
-      <View style={styles.basicInfo}>
-        <Text style={styles.title}>{prop.title || "Untitled Property"}</Text>
-        <Text style={styles.location}>
-          {prop.location || "Location not specified"}
-        </Text>
-        <Text style={styles.price}>{priceText}</Text>
-        {prop.weekendPrice && (
-          <Text style={styles.weekendPrice}>{weekendPriceText}</Text>
-        )}
-        <Text style={styles.description}>
-          {prop.description || "No description available"}
-        </Text>
-      </View>
-
-      {/* Rating */}
-      {prop.rating && (
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={16} color="#FFD700" />
-          <Text style={styles.rating}>{prop.rating}/5</Text>
-        </View>
-      )}
-
-      {/* Property Details */}
-      <View style={styles.propertyDetails}>
-        <Text style={styles.sectionTitle}>Property Details</Text>
-        {propertiesToDisplay.map((propertyName, index) => (
-          <View key={index} style={styles.propertyDetailsRow}>
-            <Text style={styles.propertyLabel}>
-              {propertyName.charAt(0).toUpperCase() + propertyName.slice(1)}:
+        <View style={styles.detailsContainer}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>
+              {prop.title || "Untitled Property"}
             </Text>
-            <Text style={styles.propertyValue}>
-              {renderPropertyValue(prop[propertyName])}
+            <View style={styles.locationRow}>
+              <Ionicons name="location" size={16} color="#007AFF" />
+              <Text style={styles.location}>
+                {prop.location || "Location not specified"}
+              </Text>
+            </View>
+            <View style={styles.priceRow}>
+              <Ionicons name="card" size={20} color="#007AFF" />
+              <Text style={styles.price}>{priceText}</Text>
+            </View>
+            {prop.weekendPrice && (
+              <View style={styles.weekendPriceRow}>
+                <Ionicons name="calendar" size={16} color="#666" />
+                <Text style={styles.weekendPrice}>{weekendPriceText}</Text>
+              </View>
+            )}
+            <Text style={styles.description}>
+              {prop.description || "No description available"}
             </Text>
           </View>
-        ))}
-      </View>
 
-      {/* Amenities */}
-      {prop.amenities && prop.amenities.length > 0 && (
-        <View style={styles.amenitiesContainer}>
-          <Text style={styles.sectionTitle}>Amenities</Text>
-          <View style={styles.amenitiesList}>
-            {prop.amenities.map((amenity: string, index: number) => (
-              <View key={index} style={styles.amenityItem}>
-                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                <Text style={styles.amenityText}>{amenity}</Text>
+          {/* Rating Section */}
+          {prop.rating && (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingRow}>
+                <Ionicons name="star" size={20} color="#FFD700" />
+                <Text style={styles.rating}>{prop.rating}/5</Text>
               </View>
-            ))}
-          </View>
-        </View>
-      )}
+            </View>
+          )}
 
-      {/* Highlights */}
-      {prop.highlights && prop.highlights.length > 0 && (
-        <View style={styles.highlightsContainer}>
-          <Text style={styles.sectionTitle}>Highlights</Text>
-          <View style={styles.highlightsList}>
-            {prop.highlights.map((highlight: string, index: number) => (
-              <View key={index} style={styles.highlightItem}>
-                <Ionicons name="star" size={16} color="#FFD700" />
-                <Text style={styles.highlightText}>{highlight}</Text>
+          {/* Property Details */}
+          <View style={styles.detailsSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="information-circle" size={20} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Property Details</Text>
+            </View>
+
+            {prop.propertyType && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Property Type:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.propertyType}</Text>
               </View>
-            ))}
+            )}
+
+            {prop.bedrooms && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Bedrooms:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.bedrooms}</Text>
+              </View>
+            )}
+
+            {prop.bathrooms && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Bathrooms:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.bathrooms}</Text>
+              </View>
+            )}
+
+            {prop.maxGuests && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Max Guests:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.maxGuests}</Text>
+              </View>
+            )}
+
+            {prop.squareFootage && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#007AFF" />
+                  <Text style={styles.detailLabel}>Square Footage:</Text>
+                </View>
+                <Text style={styles.detailValue}>
+                  {prop.squareFootage} sq ft
+                </Text>
+              </View>
+            )}
           </View>
+
+          {/* Location & Pricing */}
+          <View style={styles.locationSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="location" size={20} color="#4CAF50" />
+              <Text style={styles.sectionTitle}>Location & Pricing</Text>
+            </View>
+
+            {prop.location && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#4CAF50" />
+                  <Text style={styles.detailLabel}>Address:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.location}</Text>
+              </View>
+            )}
+
+            {prop.price && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#4CAF50" />
+                  <Text style={styles.detailLabel}>Nightly Rate:</Text>
+                </View>
+                <Text style={styles.detailValue}>${prop.price}</Text>
+              </View>
+            )}
+
+            {prop.weekendPrice && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#4CAF50" />
+                  <Text style={styles.detailLabel}>Weekend Rate:</Text>
+                </View>
+                <Text style={styles.detailValue}>${prop.weekendPrice}</Text>
+              </View>
+            )}
+
+            {prop.cleaningFee && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#4CAF50" />
+                  <Text style={styles.detailLabel}>Cleaning Fee:</Text>
+                </View>
+                <Text style={styles.detailValue}>${prop.cleaningFee}</Text>
+              </View>
+            )}
+
+            {prop.securityDeposit && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#4CAF50" />
+                  <Text style={styles.detailLabel}>Security Deposit:</Text>
+                </View>
+                <Text style={styles.detailValue}>${prop.securityDeposit}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Host Information */}
+          <View style={styles.hostSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="person" size={20} color="#FF9800" />
+              <Text style={styles.sectionTitle}>Host Information</Text>
+            </View>
+
+            {prop.hostName && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#FF9800" />
+                  <Text style={styles.detailLabel}>Host:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.hostName}</Text>
+              </View>
+            )}
+
+            {prop.hostEmail && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#FF9800" />
+                  <Text style={styles.detailLabel}>Contact:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.hostEmail}</Text>
+              </View>
+            )}
+
+            {prop.hostPhone && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#FF9800" />
+                  <Text style={styles.detailLabel}>Phone:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.hostPhone}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Policies & Rules */}
+          <View style={styles.policiesSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="document-text" size={20} color="#E91E63" />
+              <Text style={styles.sectionTitle}>Policies & Rules</Text>
+            </View>
+
+            {prop.checkInTime && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#E91E63" />
+                  <Text style={styles.detailLabel}>Check-in Time:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.checkInTime}</Text>
+              </View>
+            )}
+
+            {prop.checkOutTime && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#E91E63" />
+                  <Text style={styles.detailLabel}>Check-out Time:</Text>
+                </View>
+                <Text style={styles.detailValue}>{prop.checkOutTime}</Text>
+              </View>
+            )}
+
+            {prop.cancellationPolicy && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#E91E63" />
+                  <Text style={styles.detailLabel}>Cancellation Policy:</Text>
+                </View>
+                <Text style={styles.detailValue}>
+                  {prop.cancellationPolicy}
+                </Text>
+              </View>
+            )}
+
+            {prop.houseRules && prop.houseRules.length > 0 && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailLabelContainer}>
+                  <Ionicons name="ellipse" size={8} color="#E91E63" />
+                  <Text style={styles.detailLabel}>House Rules:</Text>
+                </View>
+                <Text style={styles.detailValue}>
+                  {prop.houseRules.join(", ")}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Additional Details */}
+          {(() => {
+            const additionalProps = propertiesToDisplay.filter(
+              (propertyName) =>
+                ![
+                  "title",
+                  "description",
+                  "location",
+                  "price",
+                  "weekendPrice",
+                  "rating",
+                  "images",
+                  "amenities",
+                  "highlights",
+                  "propertyType",
+                  "bedrooms",
+                  "bathrooms",
+                  "maxGuests",
+                  "squareFootage",
+                  "cleaningFee",
+                  "securityDeposit",
+                  "hostName",
+                  "hostEmail",
+                  "hostPhone",
+                  "checkInTime",
+                  "checkOutTime",
+                  "cancellationPolicy",
+                  "houseRules",
+                ].includes(propertyName)
+            );
+
+            if (additionalProps.length === 0) return null;
+
+            return (
+              <View style={styles.additionalSection}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="ellipsis-horizontal" size={20} color="#666" />
+                  <Text style={styles.sectionTitle}>Additional Details</Text>
+                </View>
+                {additionalProps.map((propertyName, index) => (
+                  <View key={index} style={styles.detailRow}>
+                    <View style={styles.detailLabelContainer}>
+                      <Ionicons name="ellipse" size={8} color="#666" />
+                      <Text style={styles.detailLabel}>
+                        {propertyName.charAt(0).toUpperCase() +
+                          propertyName.slice(1)}
+                        :
+                      </Text>
+                    </View>
+                    <Text style={styles.detailValue}>
+                      {renderPropertyValue(prop[propertyName])}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })()}
+
+          {/* Amenities */}
+          {prop.amenities && prop.amenities.length > 0 && (
+            <View style={styles.amenitiesSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                <Text style={styles.sectionTitle}>Amenities</Text>
+              </View>
+              <View style={styles.amenitiesGrid}>
+                {prop.amenities.map((amenity: string, index: number) => (
+                  <View key={index} style={styles.amenityItem}>
+                    <Ionicons name="checkmark" size={16} color="#4CAF50" />
+                    <Text style={styles.amenityText}>{amenity}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Highlights */}
+          {prop.highlights && prop.highlights.length > 0 && (
+            <View style={styles.highlightsSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="star" size={20} color="#FFD700" />
+                <Text style={styles.sectionTitle}>Highlights</Text>
+              </View>
+              <View style={styles.highlightsGrid}>
+                {prop.highlights.map((highlight: string, index: number) => (
+                  <View key={index} style={styles.highlightItem}>
+                    <Ionicons name="star" size={16} color="#FFD700" />
+                    <Text style={styles.highlightText}>{highlight}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.bottomSpacer} />
         </View>
-      )}
-    </ScrollView>
+      </ScrollView>
+      <TouchableOpacity
+        style={styles.reserveButton}
+        onPress={() =>
+          router.push({
+            pathname: "/screens/ReviewAndContinueScreen",
+            params: { item: JSON.stringify(property), type: "reserve" },
+          })
+        }
+      >
+        <Text style={styles.reserveButtonText}>Reserve</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    flexGrow: 1,
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -216,39 +504,77 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
   mainImage: {
     width: "100%",
     height: 300,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    borderRadius: 24,
+    marginBottom: 20,
   },
-  basicInfo: {
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 12,
     color: "#222",
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   location: {
     fontSize: 16,
     color: "#666",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
-    fontWeight: "600",
   },
   price: {
-    fontSize: 20,
+    fontSize: 24,
     color: "#007AFF",
-    marginBottom: 4,
+    marginLeft: 8,
     fontWeight: "700",
+  },
+  weekendPriceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   weekendPrice: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 12,
+    marginLeft: 8,
     fontStyle: "italic",
   },
   description: {
@@ -256,85 +582,152 @@ const styles = StyleSheet.create({
     color: "#444",
     lineHeight: 24,
   },
-  ratingContainer: {
+  ratingSection: {
+    backgroundColor: "#fff",
+    padding: 16,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  ratingRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: "#f8f9fa",
   },
   rating: {
-    marginLeft: 4,
-    fontSize: 16,
+    marginLeft: 8,
+    fontSize: 18,
     fontWeight: "600",
     color: "#333",
   },
-  propertyDetails: {
+  detailsSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 16,
+    marginLeft: 8,
     color: "#222",
   },
-  propertyDetailsRow: {
+  detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 12,
-    flexWrap: "wrap",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  propertyLabel: {
+  detailLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  detailLabel: {
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
-    flex: 1,
+    marginLeft: 8,
   },
-  propertyValue: {
+  detailValue: {
     fontSize: 14,
     color: "#666",
     flex: 2,
     textAlign: "right",
+    fontWeight: "500",
   },
-  amenitiesContainer: {
+  locationSection: {
+    backgroundColor: "#fff",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  amenitiesList: {
+  hostSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  policiesSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  amenitiesSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  amenitiesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   amenityItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
     marginBottom: 8,
   },
   amenityText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#333",
+    fontWeight: "500",
   },
-  highlightsContainer: {
+  highlightsSection: {
+    backgroundColor: "#fff",
     padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
   },
-  highlightsList: {
+  highlightsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
   highlightItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    backgroundColor: "#fff8e1",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
     marginBottom: 8,
   },
   highlightText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#333",
+    fontWeight: "500",
   },
+  bottomSpacer: {
+    height: 20,
+  },
+  additionalSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 16,
+  },
+  reserveButton: {
+    backgroundColor: "#222",
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 18,
+    alignItems: "center",
+    marginBottom: 60,
+  },
+  reserveButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });

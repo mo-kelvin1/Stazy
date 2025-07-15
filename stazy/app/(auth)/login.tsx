@@ -25,8 +25,6 @@ export default function Login() {
     router.back();
   };
 
-  // Make sure this is imported
-
   const handleContinue = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in both email and password");

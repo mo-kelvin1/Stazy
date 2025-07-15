@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const resetpassword = () => {
   const router = useRouter();
-  const { email } = useLocalSearchParams(); // get email from query params
+  const { email } = useLocalSearchParams();
   const { resetPassword } = useAuth();
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -24,11 +24,10 @@ const resetpassword = () => {
     }
 
     const result = await resetPassword(email as string, code, newPassword);
-    console.log("Reset Request:", email, code, newPassword);
 
     if (!result.success && result.message === "Password reset successfully") {
       Alert.alert("Success", result.message || "Password reset successfully");
-      router.replace("/(auth)/login"); // Redirect to login after successful reset
+      router.replace("/(auth)/login");
     } else {
       Alert.alert("Error", result.message || "Could not reset password");
     }

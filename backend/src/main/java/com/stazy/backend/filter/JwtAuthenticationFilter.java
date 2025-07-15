@@ -33,12 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             try {
                 email = jwtUtil.getEmailFromToken(token);
-                System.out.println("Extracted email from token: " + email); // Debug log
             } catch (Exception e) {
-                System.out.println("Error extracting email from token: " + e.getMessage()); // Debug log
+                // Token extraction failed, continue without authentication
             }
-        } else {
-            System.out.println("No Authorization header or invalid format"); // Debug log
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -48,12 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             new ArrayList<>());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println("Authentication set for email: " + email); // Debug log
-                } else {
-                    System.out.println("Token validation failed for email: " + email); // Debug log
                 }
             } catch (Exception e) {
-                System.out.println("Error validating token: " + e.getMessage()); // Debug log
+                // Token validation failed, continue without authentication
             }
         }
 

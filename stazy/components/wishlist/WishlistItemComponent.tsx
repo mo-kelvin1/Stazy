@@ -11,13 +11,14 @@ interface WishlistItemComponentProps {
 
 // Helper function to get item type
 const getItemType = (item: WishlistItem): string => {
-  if ("image" in item && Array.isArray(item.image)) {
+  if ("propertyType" in item) {
     return "property";
-  } else if ("isOriginal" in item || "isPopular" in item) {
-    return "experience";
-  } else {
+  } else if ("serviceType" in item) {
     return "service";
+  } else if ("experienceType" in item) {
+    return "experience";
   }
+  return "property"; // default
 };
 
 const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
@@ -60,7 +61,7 @@ const WishlistItemComponent: React.FC<WishlistItemComponentProps> = ({
         )}
         {item.dateAdded && (
           <Text style={styles.dateAdded}>
-            Added {item.dateAdded.toLocaleDateString()}
+            Added {new Date(item.dateAdded).toLocaleDateString()}
           </Text>
         )}
       </View>

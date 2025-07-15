@@ -1,107 +1,217 @@
 // utils/wishlistUtils.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Property } from './mockProperties';
-import { Experience } from './mockExperiences';
-import { Service } from './mockServices';
+import { SimulatedTokenStore } from '../services/SimulatedTokenStore';
+import { Property } from '../types/Property';
+import { Experience } from '../types/Experience';
+import { Service } from '../types/Service';
 
 // Union type for wishlist items
 export type WishlistItem = (Property | Experience | Service) & {
-  dateAdded: Date;
+  dateAdded?: Date;
   notes?: string;
 };
 
-const WISHLIST_STORAGE_KEY = '@wishlist_items';
+const tokenStore = new SimulatedTokenStore();
 
-// In-memory storage for immediate access
-let wishlistCache: WishlistItem[] = [];
-
-// Initialize wishlist from storage
+// Initialize wishlist from backend
 export const initializeWishlist = async (): Promise<void> => {
-  try {
-    const storedWishlist = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
-    if (storedWishlist) {
-      wishlistCache = JSON.parse(storedWishlist).map((item: any) => ({
-        ...item,
-        dateAdded: new Date(item.dateAdded),
-      }));
-    }
-  } catch (error) {
-    console.error('Error loading wishlist from storage:', error);
-  }
+  // This is now handled by the backend, no local initialization needed
+  console.log('Wishlist initialized with backend');
 };
 
-// Save wishlist to storage
-const saveWishlistToStorage = async (wishlist: WishlistItem[]): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
-  } catch (error) {
-    console.error('Error saving wishlist to storage:', error);
-  }
-};
-
-// Add item to wishlist
+// Add item to wishlist via backend
 export const addToWishlist = async (item: Property | Experience | Service): Promise<boolean> => {
   try {
-    const wishlistItem: WishlistItem = {
-      ...item,
-      dateAdded: new Date(),
-    };
-    
-    // Check if item already exists
-    const existingIndex = wishlistCache.findIndex(existing => existing.id === item.id);
-    
-    if (existingIndex === -1) {
-      wishlistCache.push(wishlistItem);
-      await saveWishlistToStorage(wishlistCache);
-      return true; // Added successfully
+    const token = await tokenStore.getToken();
+    if (!token) {
+      throw new Error('User not authenticated');
     }
+
+    const itemType = getItemType(item).toUpperCase();
     
-    return false; // Already exists
+    const response = await fetch('http://10.30.22.153:8080/api/wishlist/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        entityId: item.id,
+        itemType: itemType,
+        notes: '',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to add to wishlist');
+    }
+
+    return true;
   } catch (error) {
     console.error('Error adding to wishlist:', error);
     return false;
   }
 };
 
-// Remove item from wishlist
-export const removeFromWishlist = async (id: string): Promise<boolean> => {
+// Remove item from wishlist by entity ID (for toggling from home page)
+export const removeFromWishlistByEntityId = async (entityId: string, itemType: string): Promise<boolean> => {
   try {
-    const initialLength = wishlistCache.length;
-    wishlistCache = wishlistCache.filter(item => item.id !== id);
-    
-    if (wishlistCache.length < initialLength) {
-      await saveWishlistToStorage(wishlistCache);
-      return true; // Removed successfully
+    const token = await tokenStore.getToken();
+    if (!token) {
+      throw new Error('User not authenticated');
     }
     
-    return false; // Item not found
+    const response = await fetch(`http://10.30.22.153:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType.toUpperCase()}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to remove from wishlist');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error removing from wishlist by entity ID:', error);
+    return false;
+  }
+};
+
+// Remove item from wishlist by wishlist entry ID (for wishlist page)
+export const removeFromWishlist = async (wishlistId: string): Promise<boolean> => {
+  try {
+    const token = await tokenStore.getToken();
+    if (!token) {
+      throw new Error('User not authenticated');
+    }
+
+    // We need to determine the item type from the wishlist items
+    const wishlistItems = await getWishlistItems();
+    const item = wishlistItems.find(item => item.id === wishlistId);
+    
+    if (!item) {
+      throw new Error('Item not found in wishlist');
+    }
+
+    // The backend response has entityId (the actual property/service/experience ID)
+    // and itemType from the backend response
+    const entityId = (item as any).entityId;
+    const itemType = (item as any).itemType || getItemType(item).toUpperCase();
+    
+    if (!entityId) {
+      throw new Error('Entity ID not found for wishlist item');
+    }
+    
+    const response = await fetch(`http://10.30.22.153:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to remove from wishlist');
+    }
+
+    return true;
   } catch (error) {
     console.error('Error removing from wishlist:', error);
     return false;
   }
 };
 
-// Check if item is in wishlist
-export const isInWishlist = (id: string): boolean => {
-  return wishlistCache.some(item => item.id === id);
+// Check if item is in wishlist via backend
+export const isInWishlist = async (id: string, itemType: string): Promise<boolean> => {
+  try {
+    const token = await tokenStore.getToken();
+    if (!token) {
+      return false;
+    }
+
+    const response = await fetch(`http://10.30.22.153:8080/api/wishlist/check?entityId=${id}&itemType=${itemType.toUpperCase()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    return data.data || false;
+  } catch (error) {
+    console.error('Error checking wishlist status:', error);
+    return false;
+  }
 };
 
-// Get all wishlist items
-export const getWishlistItems = (): WishlistItem[] => {
-  return [...wishlistCache];
+// Get all wishlist items from backend
+export const getWishlistItems = async (): Promise<WishlistItem[]> => {
+  try {
+    const token = await tokenStore.getToken();
+    if (!token) {
+      return [];
+    }
+
+    const response = await fetch('http://10.30.22.153:8080/api/wishlist/items', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch wishlist items');
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching wishlist items:', error);
+    return [];
+  }
 };
 
-// Get wishlist count
-export const getWishlistCount = (): number => {
-  return wishlistCache.length;
+// Get wishlist count from backend
+export const getWishlistCount = async (): Promise<number> => {
+  try {
+    const token = await tokenStore.getToken();
+    if (!token) {
+      return 0;
+    }
+
+    const response = await fetch('http://10.30.22.153:8080/api/wishlist/count', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return 0;
+    }
+
+    const data = await response.json();
+    return data.data || 0;
+  } catch (error) {
+    console.error('Error fetching wishlist count:', error);
+    return 0;
+  }
 };
 
 // Toggle wishlist status (add if not present, remove if present)
 export const toggleWishlist = async (item: Property | Experience | Service): Promise<boolean> => {
-  const isCurrentlyInWishlist = isInWishlist(item.id);
+  const itemType = getItemType(item);
+  const isCurrentlyInWishlist = await isInWishlist(item.id, itemType);
   
   if (isCurrentlyInWishlist) {
-    await removeFromWishlist(item.id);
+    await removeFromWishlistByEntityId(item.id, itemType);
     return false; // Removed from wishlist
   } else {
     await addToWishlist(item);
@@ -133,33 +243,23 @@ export const onHeartClicked = async (
 // Clear entire wishlist
 export const clearWishlist = async (): Promise<void> => {
   try {
-    wishlistCache = [];
-    await AsyncStorage.removeItem(WISHLIST_STORAGE_KEY);
+    const wishlistItems = await getWishlistItems();
+    for (const item of wishlistItems) {
+      await removeFromWishlist(item.id);
+    }
   } catch (error) {
     console.error('Error clearing wishlist:', error);
   }
 };
 
-// Get items by category
-export const getWishlistItemsByCategory = (category: string): WishlistItem[] => {
-  return wishlistCache.filter(item => item.category === category);
-};
-
-// Helper function to get item type
-export const getItemType = (item: WishlistItem): 'property' | 'experience' | 'service' => {
-  if ('image' in item && Array.isArray(item.image)) {
+// Helper function to determine item type
+export const getItemType = (item: Property | Experience | Service): string => {
+  if ('propertyType' in item) {
     return 'property';
-  } else if ('isOriginal' in item || 'isPopular' in item) {
-    return 'experience';
-  } else {
+  } else if ('serviceType' in item) {
     return 'service';
+  } else if ('experienceType' in item) {
+    return 'experience';
   }
-};
-
-// Helper function to get item image
-export const getItemImage = (item: WishlistItem): string => {
-  if ('image' in item) {
-    return Array.isArray(item.image) ? item.image[0] : item.image;
-  }
-  return '';
+  return 'property'; // default
 };

@@ -8,7 +8,7 @@ import { router } from "expo-router";
 interface PropertyItemProps {
   item: any;
   likedItems: Set<string>;
-  onHeartPress: (itemId: string) => void;
+  onHeartPress: (item: any) => void;
   activeTab: string;
   pageName: string;
 }
@@ -22,7 +22,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
 }) => {
   const handlePress = () => {
     router.push({
-      pathname: "/render/[renderItem]",
+      pathname: "/render/renderItem",
       params: {
         renderItem: item.id,
         pageName: pageName,
@@ -55,7 +55,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({
         />
         <TouchableOpacity
           style={homeStyles.heartIcon}
-          onPress={() => onHeartPress(item.id)}
+          onPress={() => onHeartPress(item)}
         >
           <Ionicons
             name={likedItems.has(item.id) ? "heart" : "heart-outline"}

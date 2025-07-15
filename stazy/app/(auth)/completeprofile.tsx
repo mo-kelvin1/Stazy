@@ -15,7 +15,6 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 
-// Common country codes
 const COUNTRY_CODES = [
   { code: "+1", country: "US", flag: "🇺🇸" },
   { code: "+44", country: "UK", flag: "🇬🇧" },

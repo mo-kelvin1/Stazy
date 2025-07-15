@@ -10,7 +10,7 @@ export const createRefreshPropertiesAction = (tokenStore: SimulatedTokenStore) =
         return { success: false, message: "No token found. Please log in." };
       }
       const response = await axios.get(
-        "http://100.66.107.9:8080/api/properties",
+        "http://10.30.22.153:8080/api/properties",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -18,7 +18,14 @@ export const createRefreshPropertiesAction = (tokenStore: SimulatedTokenStore) =
         }
       );
       // The backend returns an array of properties (excluding user's own properties)
-      const properties: Property[] = response.data;
+      const rawProperties = response.data;
+      
+      // Convert Long IDs to strings for frontend compatibility
+      const properties: Property[] = rawProperties.map((prop: any) => ({
+        ...prop,
+        id: prop.id.toString(), // Convert Long to string
+      }));
+      
       return { success: true, properties };
     } catch (error: any) {
       console.error("Error fetching properties:", error);

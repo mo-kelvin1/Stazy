@@ -5,7 +5,7 @@ This document describes the REST API endpoints for managing service offers in th
 ## Base URL
 
 ```
-http://localhost:8080/api/service-offers
+http://10.30.22.153:8080/api/service-offers
 ```
 
 ## Authentication

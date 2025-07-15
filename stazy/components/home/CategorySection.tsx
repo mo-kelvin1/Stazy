@@ -9,7 +9,7 @@ interface CategorySectionProps {
   items: any[];
   likedItems: Set<string>;
   onCategoryPress: (category: string) => void;
-  onHeartPress: (itemId: string) => void;
+  onHeartPress: (item: any) => void;
   activeTab: string;
   pageName: string;
 }
@@ -27,7 +27,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
     <PropertyItem
       item={item}
       likedItems={likedItems}
-      onHeartPress={onHeartPress}
+      onHeartPress={() => onHeartPress(item)}
       activeTab={activeTab}
       pageName={pageName}
     />

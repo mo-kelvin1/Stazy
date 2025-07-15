@@ -11,6 +11,7 @@ export const defaultStyles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     backgroundColor: "#fff",
+    color: "#000",
 },  
   header: {
     flexDirection: "row",

@@ -10,7 +10,7 @@
     hostName:string;
     hostEmail: string;
     category: 'adventure' | 'cultural' | 'food_drink' | 'nature' | 'sports' | 'wellness' | 'entertainment' | 'art' | 'history';
-    experienceType: 'group' | 'private' | 'online';
+    experienceType: 'group' | 'private_experience' | 'online';
     difficulty: 'easy' | 'moderate' | 'challenging';
     ageRestriction: {
       minimum: number;

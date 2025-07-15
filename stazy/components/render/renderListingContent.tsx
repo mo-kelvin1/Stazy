@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from "react-native";
 import { Property } from "../../types/Property";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,7 +39,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
         }
 
         const response = await fetch(
-          `http://100.66.107.9:8080/api/properties/${itemId}`,
+          `http://10.30.22.153:8080/api/properties/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -73,7 +74,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
       }
 
       const response = await fetch(
-        `http://100.66.107.9:8080/api/properties/${itemId}`,
+        `http://10.30.22.153:8080/api/properties/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -101,7 +102,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 10 }}>Loading listing...</Text>
+        <Text style={styles.loadingText}>Loading listing details...</Text>
       </View>
     );
   }
@@ -109,7 +110,8 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "#FF385C", textAlign: "center" }}>{error}</Text>
+        <Ionicons name="alert-circle" size={48} color="#FF385C" />
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -117,7 +119,8 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
   if (!property) {
     return (
       <View style={styles.centered}>
-        <Text>Listing not found.</Text>
+        <Ionicons name="home-outline" size={48} color="#666" />
+        <Text style={styles.notFoundText}>Listing not found</Text>
       </View>
     );
   }
@@ -128,288 +131,418 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
   const priceText = "$" + propertyData.price;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Image
         source={{ uri: property.images[0] }}
-        style={styles.image}
-        resizeMode="stretch"
+        style={styles.mainImage}
+        resizeMode="cover"
       />
-      <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Listing Details</Text>
-        <TouchableOpacity
-          onPress={() => setIsEditing((v) => !v)}
-          style={styles.editBtn}
-        >
-          <Ionicons
-            name={isEditing ? "checkmark" : "create-outline"}
-            size={22}
-            color="#007AFF"
-          />
-          <Text style={styles.editBtnText}>{isEditing ? "Save" : "Edit"}</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.detailsContainer}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <View style={styles.headerRow}>
+            <View style={styles.titleContainer}>
+              <Ionicons name="home" size={24} color="#007AFF" />
+              <Text style={styles.sectionTitle}>Listing Details</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsEditing((v) => !v)}
+              style={[styles.editBtn, isEditing && styles.editBtnActive]}
+            >
+              <Ionicons
+                name={isEditing ? "checkmark" : "create-outline"}
+                size={20}
+                color={isEditing ? "#fff" : "#007AFF"}
+              />
+              <Text
+                style={[
+                  styles.editBtnText,
+                  isEditing && styles.editBtnTextActive,
+                ]}
+              >
+                {isEditing ? "Save" : "Edit"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{property.id}</Text>
-      </View>
+        {/* Basic Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.subsectionTitle}>Basic Information</Text>
+          </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Title:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.title || ""}
-            onChangeText={(v) => handleFieldChange("title", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{property.title}</Text>
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>ID:</Text>
+            </View>
+            <Text style={styles.fieldValue}>{property.id}</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Title:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.title || ""}
+                onChangeText={(v) => handleFieldChange("title", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.title}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Description:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={[styles.input, { height: 60 }]}
+                value={editData.description || ""}
+                onChangeText={(v) => handleFieldChange("description", v)}
+                multiline
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.description}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#007AFF" />
+              <Text style={styles.fieldLabel}>Location:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.location || ""}
+                onChangeText={(v) => handleFieldChange("location", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.location}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Pricing Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="card" size={20} color="#4CAF50" />
+            <Text style={styles.subsectionTitle}>Pricing</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Price:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.price?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("price", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{priceText}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#4CAF50" />
+              <Text style={styles.fieldLabel}>Weekend Price:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.weekendPrice?.toString() || ""}
+                onChangeText={(v) =>
+                  handleFieldChange("weekendPrice", Number(v))
+                }
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>
+                {property.weekendPrice
+                  ? "$" + property.weekendPrice
+                  : "Not set"}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Property Details */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="home" size={20} color="#FF9800" />
+            <Text style={styles.subsectionTitle}>Property Details</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Rating:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.rating?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("rating", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.rating}/5</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Nights:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.nights?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("nights", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.nights}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Category:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.category || ""}
+                onChangeText={(v) => handleFieldChange("category", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.category}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Property Type:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.propertyType || ""}
+                onChangeText={(v) => handleFieldChange("propertyType", v)}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.propertyType}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#FF9800" />
+              <Text style={styles.fieldLabel}>Guest Favorite:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.isGuestFavorite ? "Yes" : "No"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Capacity Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="people" size={20} color="#E91E63" />
+            <Text style={styles.subsectionTitle}>Capacity</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Min Guests:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.minGuests?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("minGuests", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.minGuests}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Max Guests:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.maxGuests?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("maxGuests", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.maxGuests}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Bedrooms:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.bedrooms?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("bedrooms", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.bedrooms}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Beds:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.beds?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("beds", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.beds}</Text>
+            )}
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#E91E63" />
+              <Text style={styles.fieldLabel}>Bathrooms:</Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                style={styles.input}
+                value={editData.bathrooms?.toString() || ""}
+                onChangeText={(v) => handleFieldChange("bathrooms", Number(v))}
+                keyboardType="numeric"
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{property.bathrooms}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Additional Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="settings" size={20} color="#9C27B0" />
+            <Text style={styles.subsectionTitle}>Additional Info</Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Available:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.is_available ? "Yes" : "No"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Created At:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.createdAt
+                ? new Date(property.createdAt).toLocaleDateString()
+                : "Not available"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Updated At:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.updatedAt
+                ? new Date(property.updatedAt).toLocaleDateString()
+                : "Not available"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Images:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.images.length > 0
+                ? property.images.length + " image(s)"
+                : "No images"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Amenities:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.amenities.length > 0
+                ? property.amenities.join(", ")
+                : "No amenities listed"}
+            </Text>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={styles.fieldLabelContainer}>
+              <Ionicons name="ellipse" size={8} color="#9C27B0" />
+              <Text style={styles.fieldLabel}>Highlights:</Text>
+            </View>
+            <Text style={styles.fieldValue}>
+              {property.highlights.length > 0
+                ? property.highlights.join(", ")
+                : "No highlights listed"}
+            </Text>
+          </View>
+        </View>
+
+        {isEditing && (
+          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+            <Ionicons name="checkmark-circle" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
         )}
-      </View>
 
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Description:</Text>
-        {isEditing ? (
-          <TextInput
-            style={[styles.input, { height: 60 }]}
-            value={editData.description || ""}
-            onChangeText={(v) => handleFieldChange("description", v)}
-            multiline
-          />
-        ) : (
-          <Text style={styles.value}>{property.description}</Text>
-        )}
+        <View style={styles.bottomSpacer} />
       </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Location:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.location || ""}
-            onChangeText={(v) => handleFieldChange("location", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{property.location}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Price:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.price?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("price", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{priceText}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Weekend Price:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.weekendPrice?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("weekendPrice", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>
-            {property.weekendPrice ? "$" + property.weekendPrice : "Not set"}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Rating:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.rating?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("rating", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.rating}/5</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Nights:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.nights?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("nights", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.nights}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Category:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.category || ""}
-            onChangeText={(v) => handleFieldChange("category", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{property.category}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Property Type:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.propertyType || ""}
-            onChangeText={(v) => handleFieldChange("propertyType", v)}
-          />
-        ) : (
-          <Text style={styles.value}>{property.propertyType}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Guest Favorite:</Text>
-        <Text style={styles.value}>
-          {property.isGuestFavorite ? "Yes" : "No"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Amenities:</Text>
-        <Text style={styles.value}>
-          {property.amenities.length > 0
-            ? property.amenities.join(", ")
-            : "No amenities listed"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Highlights:</Text>
-        <Text style={styles.value}>
-          {property.highlights.length > 0
-            ? property.highlights.join(", ")
-            : "No highlights listed"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Min Guests:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.minGuests?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("minGuests", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.minGuests}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Max Guests:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.maxGuests?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("maxGuests", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.maxGuests}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Bedrooms:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.bedrooms?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("bedrooms", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.bedrooms}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Beds:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.beds?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("beds", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.beds}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Bathrooms:</Text>
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.bathrooms?.toString() || ""}
-            onChangeText={(v) => handleFieldChange("bathrooms", Number(v))}
-            keyboardType="numeric"
-          />
-        ) : (
-          <Text style={styles.value}>{property.bathrooms}</Text>
-        )}
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Available:</Text>
-        <Text style={styles.value}>{property.is_available ? "Yes" : "No"}</Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Created At:</Text>
-        <Text style={styles.value}>
-          {property.createdAt
-            ? new Date(property.createdAt).toLocaleDateString()
-            : "Not available"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Updated At:</Text>
-        <Text style={styles.value}>
-          {property.updatedAt
-            ? new Date(property.updatedAt).toLocaleDateString()
-            : "Not available"}
-        </Text>
-      </View>
-
-      <View style={styles.fieldRow}>
-        <Text style={styles.label}>Images:</Text>
-        <Text style={styles.value}>
-          {property.images.length > 0
-            ? property.images.length + " image(s)"
-            : "No images"}
-        </Text>
-      </View>
-
-      {isEditing && (
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 };
@@ -417,7 +550,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f9fa",
   },
   centered: {
     flex: 1,
@@ -425,79 +558,148 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 40,
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#FF385C",
+    textAlign: "center",
+  },
+  notFoundText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  mainImage: {
+    width: "100%",
+    height: 300,
+    borderRadius: 24,
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 15,
+  },
+  headerSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    marginLeft: 8,
     color: "#222",
   },
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  editBtnActive: {
+    backgroundColor: "#007AFF",
   },
   editBtnText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#007AFF",
     fontWeight: "600",
   },
-  fieldRow: {
+  editBtnTextActive: {
+    color: "#fff",
+  },
+  infoSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
-  label: {
-    fontSize: 14,
+  subsectionTitle: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
+    marginLeft: 8,
+    color: "#222",
   },
-  value: {
-    fontSize: 16,
+  fieldRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  fieldLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    marginLeft: 8,
+  },
+  fieldValue: {
+    fontSize: 14,
     color: "#666",
+    flex: 2,
+    textAlign: "right",
+    fontWeight: "500",
+  },
+  input: {
+    fontSize: 14,
+    color: "#333",
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-  },
-  input: {
-    fontSize: 16,
-    color: "#333",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
+    flex: 2,
+    textAlign: "right",
   },
   saveButton: {
     backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
     marginTop: 20,
   },
   saveButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
-  imageContainer: {
-    width: "100%",
-    height: 200,
-    marginBottom: 20,
-  },
-  image: {
-    width: "100%",
-    height: "30%",
-    marginBottom: 20,
+  bottomSpacer: {
+    height: 20,
   },
 });

@@ -34,7 +34,6 @@ public class JwtUtil {
         try {
             return getClaims(token).getSubject();
         } catch (Exception e) {
-            System.out.println("Error getting email from token: " + e.getMessage());
             throw e;
         }
     }
@@ -47,11 +46,8 @@ public class JwtUtil {
         try {
             String tokenEmail = getEmailFromToken(token);
             boolean isValid = email.equals(tokenEmail) && !isTokenExpired(token);
-            System.out.println("Token validation - Email match: " + email.equals(tokenEmail) + ", Not expired: "
-                    + !isTokenExpired(token));
             return isValid;
         } catch (Exception e) {
-            System.out.println("Token validation error: " + e.getMessage());
             return false;
         }
     }
@@ -64,7 +60,6 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            System.out.println("Error parsing JWT claims: " + e.getMessage());
             throw e;
         }
     }
