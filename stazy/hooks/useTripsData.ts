@@ -71,7 +71,7 @@ export function useTripsData() {
       setLoading(true);
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.133.134.146:8080/api/bookings/${selectedBooking.id}`,
+        `http://10.132.119.88:8080/api/bookings/${selectedBooking.id}`,
         {
           method: "DELETE",
           headers: {

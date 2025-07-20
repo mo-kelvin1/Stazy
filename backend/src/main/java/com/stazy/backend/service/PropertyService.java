@@ -204,6 +204,10 @@ public class PropertyService {
         return propertyRepository.findByLocationContaining(location);
     }
 
+    public List<Property> getPropertiesByTitle(String title) {
+        return propertyRepository.findByTitleContainingIgnoreCase(title);
+    }
+
     public boolean isPropertyOwner(Long propertyId, String hostEmail) {
         Optional<Property> propertyOpt = propertyRepository.findByIdAndHostEmail(propertyId, hostEmail);
         return propertyOpt.isPresent();

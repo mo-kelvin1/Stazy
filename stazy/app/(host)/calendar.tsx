@@ -50,7 +50,7 @@ const CalendarScreen = () => {
       const token = await tokenStore.getToken();
       if (!token) return;
       const response = await fetch(
-        "http://10.133.134.146:8080/api/bookings/host-bookings",
+        "http://10.132.119.88:8080/api/bookings/host-bookings",
         {
           method: "GET",
           headers: {

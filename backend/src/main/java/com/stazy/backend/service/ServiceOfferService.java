@@ -186,6 +186,10 @@ public class ServiceOfferService {
         return serviceOfferRepository.findByLocationContaining(location);
     }
 
+    public List<ServiceOffer> getServiceOffersByTitle(String title) {
+        return serviceOfferRepository.findByTitleContainingIgnoreCase(title);
+    }
+
     public boolean isServiceOfferOwner(Long serviceId, String providerEmail) {
         Optional<ServiceOffer> serviceOpt = serviceOfferRepository.findByIdAndProviderEmail(serviceId, providerEmail);
         return serviceOpt.isPresent();

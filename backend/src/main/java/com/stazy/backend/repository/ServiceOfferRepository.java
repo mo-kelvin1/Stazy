@@ -36,6 +36,9 @@ public interface ServiceOfferRepository extends JpaRepository<ServiceOffer, Long
     @Query("SELECT s FROM ServiceOffer s WHERE s.location LIKE %:location% AND s.isAvailable = true")
     List<ServiceOffer> findByLocationContaining(@Param("location") String location);
 
+    @Query("SELECT s FROM ServiceOffer s WHERE LOWER(s.title) LIKE LOWER(CONCAT('%', :title, '%')) AND s.isAvailable = true")
+    List<ServiceOffer> findByTitleContainingIgnoreCase(@Param("title") String title);
+
     @Query("SELECT s FROM ServiceOffer s WHERE s.isAvailable = true AND s.providerEmail != :excludeProviderEmail ORDER BY s.createdAt DESC")
     List<ServiceOffer> findAllAvailableServiceOffersExcludingProvider(
             @Param("excludeProviderEmail") String excludeProviderEmail);

@@ -40,7 +40,7 @@ export const createRefreshBookingsAction = (tokenStore: SimulatedTokenStore) => 
         };
       }
 
-      const response = await fetch("http://10.133.134.146:8080/api/bookings/my-bookings", {
+      const response = await fetch("http://10.132.119.88:8080/api/bookings/my-bookings", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

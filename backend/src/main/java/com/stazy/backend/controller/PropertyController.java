@@ -172,6 +172,20 @@ public class PropertyController {
         }
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<?> getPropertiesByTitle(@RequestParam String name,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            List<Property> properties = propertyService.getPropertiesByTitle(name);
+            List<PropertyResponse> responses = properties.stream()
+                    .map(PropertyResponse::fromProperty)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<?> deleteProperty(@PathVariable Long propertyId,
             @RequestHeader("Authorization") String authorization) {

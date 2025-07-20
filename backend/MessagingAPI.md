@@ -118,6 +118,55 @@ Authorization: Bearer <JWT_TOKEN>
 
 ---
 
+## Property Search API
+
+### Search Properties by Title
+
+- **Endpoint:** `GET /api/properties/search/name`
+- **Description:** Returns a list of available properties whose title contains the search query (case-insensitive, partial match).
+- **Authentication:** Requires JWT Bearer token in the `Authorization` header.
+
+#### Query Parameters
+
+| Name | Type   | Required | Description                         |
+| ---- | ------ | -------- | ----------------------------------- |
+| name | string | Yes      | The search query for property title |
+
+#### Request Example
+
+```
+GET /api/properties/search/name?name=pool
+Authorization: Bearer <your_jwt_token>
+```
+
+#### Response Example
+
+```
+HTTP/1.1 200 OK
+[
+  {
+    "id": 1,
+    "title": "Luxury Pool Villa",
+    "description": "A beautiful villa with a private pool...",
+    "location": "Miami",
+    ...
+  },
+  {
+    "id": 2,
+    "title": "Cozy Apartment with Pool Access",
+    "description": "Enjoy the shared pool in this modern apartment...",
+    "location": "Los Angeles",
+    ...
+  }
+]
+```
+
+- The search is case-insensitive and will match any property whose title contains the search query as a substring.
+- Only available properties are returned.
+- If no properties match, an empty array is returned.
+
+---
+
 ## 3. Error Handling
 
 - **WebSocket:**  

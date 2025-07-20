@@ -23,7 +23,7 @@ import ListingsLoading from "../../components/host/listings/ListingsLoading";
 const tokenStore = new SimulatedTokenStore();
 
 const ListingsScreen = () => {
-  const [activeTab, setActiveTab] = useState("Homes");
+  const [activeTab, setActiveTab] = useState("home");
   const [properties, setProperties] = useState<Property[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -74,11 +74,11 @@ const ListingsScreen = () => {
 
   const getCurrentData = () => {
     switch (activeTab) {
-      case "Homes":
+      case "home":
         return properties;
-      case "Services":
+      case "service":
         return services;
-      case "Experiences":
+      case "experience":
         return experiences;
       default:
         return properties;
@@ -116,11 +116,11 @@ const ListingsScreen = () => {
       ) : getCurrentData().length === 0 ? (
         <ListingsEmptyState
           message={
-            activeTab === "Homes"
+            activeTab === "home"
               ? "No properties found."
-              : activeTab === "Services"
+              : activeTab === "service"
               ? "No services found."
-              : activeTab === "Experiences"
+              : activeTab === "experience"
               ? "No experiences found."
               : "No listings found."
           }

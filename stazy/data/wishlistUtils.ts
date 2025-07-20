@@ -28,7 +28,7 @@ export const addToWishlist = async (item: Property | Experience | Service): Prom
 
     const itemType = getItemType(item).toUpperCase();
     
-    const response = await fetch('http://10.133.134.146:8080/api/wishlist/add', {
+    const response = await fetch('http://10.132.119.88:8080/api/wishlist/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export const removeFromWishlistByEntityId = async (entityId: string, itemType: s
       throw new Error('User not authenticated');
     }
     
-    const response = await fetch(`http://10.133.134.146:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType.toUpperCase()}`, {
+    const response = await fetch(`http://10.132.119.88:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType.toUpperCase()}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -105,7 +105,7 @@ export const removeFromWishlist = async (wishlistId: string): Promise<boolean> =
       throw new Error('Entity ID not found for wishlist item');
     }
     
-    const response = await fetch(`http://10.133.134.146:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType}`, {
+    const response = await fetch(`http://10.132.119.88:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -132,7 +132,7 @@ export const isInWishlist = async (id: string, itemType: string): Promise<boolea
       return false;
     }
 
-    const response = await fetch(`http://10.133.134.146:8080/api/wishlist/check?entityId=${id}&itemType=${itemType.toUpperCase()}`, {
+    const response = await fetch(`http://10.132.119.88:8080/api/wishlist/check?entityId=${id}&itemType=${itemType.toUpperCase()}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -159,7 +159,7 @@ export const getWishlistItems = async (): Promise<WishlistItem[]> => {
       return [];
     }
 
-    const response = await fetch('http://10.133.134.146:8080/api/wishlist/items', {
+    const response = await fetch('http://10.132.119.88:8080/api/wishlist/items', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -186,7 +186,7 @@ export const getWishlistCount = async (): Promise<number> => {
       return 0;
     }
 
-    const response = await fetch('http://10.133.134.146:8080/api/wishlist/count', {
+    const response = await fetch('http://10.132.119.88:8080/api/wishlist/count', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

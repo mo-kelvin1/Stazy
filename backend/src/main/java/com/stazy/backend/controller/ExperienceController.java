@@ -205,6 +205,20 @@ public class ExperienceController {
         }
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<?> getExperiencesByTitle(@RequestParam String name,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            List<Experience> experiences = experienceService.getExperiencesByTitle(name);
+            List<ExperienceResponse> responses = experiences.stream()
+                    .map(ExperienceResponse::fromExperience)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{experienceId}")
     public ResponseEntity<?> deleteExperience(@PathVariable Long experienceId,
             @RequestHeader("Authorization") String authorization) {

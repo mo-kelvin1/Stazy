@@ -1,5 +1,14 @@
 import React from "react";
-import { SafeAreaView, StatusBar, Animated, Platform } from "react-native";
+import {
+  SafeAreaView,
+  StatusBar,
+  Animated,
+  Platform,
+  ActivityIndicator,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { Stack } from "expo-router";
 import FadeInView from "../../components/cards/FadeInView";
 import CategoryListingComponent from "../../components/cards/CategoryListingPage";
@@ -30,6 +39,11 @@ export default function HomePage() {
     getCurrentLoading,
     getCurrentError,
     getCategorizedData,
+    searchResults,
+    searching,
+    showingSearchResults,
+    searchItems,
+    clearSearchResults,
   } = useHomeData();
 
   const handleTabPress = (tab: string) => setActiveTab(tab);
@@ -46,7 +60,7 @@ export default function HomePage() {
   };
   const handleSearchSubmit = () => {
     if (searchQuery.trim() !== "") {
-      // Implement search logic if needed
+      searchItems(searchQuery.trim());
     }
   };
 
@@ -91,29 +105,64 @@ export default function HomePage() {
           onTabPress={handleTabPress}
           onSearchSubmit={handleSearchSubmit}
         />
-        <Animated.ScrollView
-          style={homeStyles.scrollView}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
-        >
-          {loading || currentLoading ? (
-            <HomeLoading />
-          ) : currentError ? (
-            <HomeError message={currentError} />
-          ) : (
-            <HomeCategoryList
-              categorizedData={categorizedData}
-              likedItems={likedItems}
-              onCategoryPress={handleCategoryPress}
-              onHeartPress={onHeartPress}
-              activeTab={activeTab}
-              pageName="index"
-            />
-          )}
-        </Animated.ScrollView>
+        {showingSearchResults ? (
+          <View style={{ flex: 1, padding: 16 }}>
+            <TouchableOpacity
+              onPress={clearSearchResults}
+              style={{ alignSelf: "flex-end", marginBottom: 8 }}
+            >
+              <Text style={{ color: "#007AFF", fontWeight: "bold" }}>
+                Clear Search
+              </Text>
+            </TouchableOpacity>
+            {searching ? (
+              <ActivityIndicator
+                size="large"
+                color="#007AFF"
+                style={{ marginTop: 32 }}
+              />
+            ) : searchResults.length === 0 ? (
+              <Text
+                style={{ textAlign: "center", marginTop: 32, color: "#888" }}
+              >
+                No results found.
+              </Text>
+            ) : (
+              <HomeCategoryList
+                categorizedData={{ Search: searchResults }}
+                likedItems={likedItems}
+                onCategoryPress={handleCategoryPress}
+                onHeartPress={onHeartPress}
+                activeTab={activeTab}
+                pageName="index"
+              />
+            )}
+          </View>
+        ) : (
+          <Animated.ScrollView
+            style={homeStyles.scrollView}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
+          >
+            {loading || currentLoading ? (
+              <HomeLoading />
+            ) : currentError ? (
+              <HomeError message={currentError} />
+            ) : (
+              <HomeCategoryList
+                categorizedData={categorizedData}
+                likedItems={likedItems}
+                onCategoryPress={handleCategoryPress}
+                onHeartPress={onHeartPress}
+                activeTab={activeTab}
+                pageName="index"
+              />
+            )}
+          </Animated.ScrollView>
+        )}
       </FadeInView>
     </SafeAreaView>
   );

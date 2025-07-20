@@ -173,6 +173,20 @@ public class ServiceOfferController {
         }
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<?> getServiceOffersByTitle(@RequestParam String name,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            List<ServiceOffer> serviceOffers = serviceOfferService.getServiceOffersByTitle(name);
+            List<ServiceOfferResponse> responses = serviceOffers.stream()
+                    .map(ServiceOfferResponse::fromServiceOffer)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<?> deleteServiceOffer(@PathVariable Long serviceId,
             @RequestHeader("Authorization") String authorization) {

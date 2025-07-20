@@ -36,6 +36,9 @@ public interface ExperienceRepository extends JpaRepository<Experience, Long> {
     @Query("SELECT e FROM Experience e WHERE e.location LIKE %:location% AND e.isAvailable = true")
     List<Experience> findByLocationContaining(@Param("location") String location);
 
+    @Query("SELECT e FROM Experience e WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :title, '%')) AND e.isAvailable = true")
+    List<Experience> findByTitleContainingIgnoreCase(@Param("title") String title);
+
     @Query("SELECT e FROM Experience e WHERE e.isAvailable = true AND e.hostEmail != :excludeHostEmail ORDER BY e.createdAt DESC")
     List<Experience> findAllAvailableExperiencesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail);
 

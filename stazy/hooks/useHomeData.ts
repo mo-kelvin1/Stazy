@@ -5,11 +5,10 @@ import { Service } from "../types/Service";
 import { Experience } from "../types/Experience";
 import { SimulatedTokenStore } from "../services/SimulatedTokenStore";
 import { useWishlist } from "../hooks/useWishlist";
-
 const tokenStore = new SimulatedTokenStore();
 
 export function useHomeData() {
-  const [activeTab, setActiveTab] = useState("Homes");
+  const [activeTab, setActiveTab] = useState("home");
   const [loading, setLoading] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertiesLoading, setPropertiesLoading] = useState(true);
@@ -23,6 +22,9 @@ export function useHomeData() {
   const [showCategoryListing, setShowCategoryListing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showingSearchResults, setShowingSearchResults] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 100],
@@ -56,6 +58,14 @@ export function useHomeData() {
   useEffect(() => {
     initializeWishlistData();
   }, [refreshKey]);
+
+  // Re-run search when activeTab changes and a search is being shown
+  useEffect(() => {
+    if (showingSearchResults && searchQuery.trim() !== "") {
+      searchItems(searchQuery.trim());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
   useEffect(() => {
     const fetchProperties = async () => {
       setPropertiesLoading(true);
@@ -130,11 +140,11 @@ export function useHomeData() {
   }, [checkWishlistStatusForItems]);
   const getCurrentData = () => {
     switch (activeTab) {
-      case "Homes":
+      case "home":
         return properties;
-      case "Experiences":
+      case "experience":
         return experiences;
-      case "Services":
+      case "service":
         return services;
       default:
         return properties;
@@ -142,11 +152,11 @@ export function useHomeData() {
   };
   const getCurrentLoading = () => {
     switch (activeTab) {
-      case "Homes":
+      case "home":
         return propertiesLoading;
-      case "Experiences":
+      case "experience":
         return experiencesLoading;
-      case "Services":
+      case "service":
         return servicesLoading;
       default:
         return propertiesLoading;
@@ -154,11 +164,11 @@ export function useHomeData() {
   };
   const getCurrentError = () => {
     switch (activeTab) {
-      case "Homes":
+      case "home":
         return propertiesError;
-      case "Experiences":
+      case "experience":
         return experiencesError;
-      case "Services":
+      case "service":
         return servicesError;
       default:
         return propertiesError;
@@ -178,6 +188,43 @@ export function useHomeData() {
   const onHeartPress = (item: Property | Experience | Service) => {
     handleHeartPress(item);
   };
+
+  const searchEndpoints: Record<string, string> = {
+    home: "/api/properties/search/name",
+    service: "/api/service-offers/search/name",
+    experience: "/api/experiences/search/name",
+  };
+
+  const searchItems = async (query: string) => {
+    setSearching(true);
+    setShowingSearchResults(false);
+    setSearchResults([]);
+    try {
+      const token = await tokenStore.getToken();
+      const endpoint = searchEndpoints[activeTab];
+      if (!endpoint) throw new Error("Invalid tab for search");
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch search results");
+      const data = await res.json();
+      setSearchResults(data);
+      setShowingSearchResults(true);
+    } catch (err) {
+      setSearchResults([]);
+      setShowingSearchResults(true);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const clearSearchResults = () => {
+    setSearchResults([]);
+    setShowingSearchResults(false);
+  };
+
   return {
     activeTab,
     setActiveTab,
@@ -211,5 +258,10 @@ export function useHomeData() {
     getCurrentLoading,
     getCurrentError,
     getCategorizedData,
+    searchResults,
+    searching,
+    showingSearchResults,
+    searchItems,
+    clearSearchResults,
   };
 } 
