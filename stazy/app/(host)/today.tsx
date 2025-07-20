@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, Alert, StyleSheet } from "react-native";
+import {
+  SafeAreaView,
+  Alert,
+  StyleSheet,
+  Platform,
+  StatusBar,
+} from "react-native";
 import TodayHeader from "../../components/host/today/TodayHeader";
 import TodayTabs from "../../components/host/today/TodayTabs";
 import TodayBookingList from "../../components/host/today/TodayBookingList";
@@ -43,7 +49,7 @@ const TodayScreen = () => {
         return;
       }
       const response = await fetch(
-        "http://10.30.22.153:8080/api/bookings/host-bookings",
+        "http://10.133.134.146:8080/api/bookings/host-bookings",
         {
           method: "GET",
           headers: {
@@ -154,7 +160,7 @@ const TodayScreen = () => {
             }
             const status = action === "confirm" ? "CONFIRMED" : "REJECTED";
             const response = await fetch(
-              "http://10.30.22.153:8080/api/bookings/status",
+              "http://10.133.134.146:8080/api/bookings/status",
               {
                 method: "PATCH",
                 headers: {
@@ -191,7 +197,12 @@ const TodayScreen = () => {
   const filteredBookings = getFilteredBookings();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        Platform.OS === "android" && { paddingTop: StatusBar.currentHeight },
+      ]}
+    >
       <TodayHeader
         title="Today"
         subtitle={

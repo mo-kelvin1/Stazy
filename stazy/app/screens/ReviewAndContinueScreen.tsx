@@ -64,7 +64,7 @@ const ReviewAndContinueScreen = () => {
         setLoading(false);
         return;
       }
-      const res = await fetch("http://10.30.22.153:8080/api/bookings", {
+      const res = await fetch("http://10.133.134.146:8080/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, StatusBar, Animated } from "react-native";
+import { SafeAreaView, StatusBar, Animated, Platform } from "react-native";
 import { Stack } from "expo-router";
 import FadeInView from "../../components/cards/FadeInView";
 import CategoryListingComponent from "../../components/cards/CategoryListingPage";
@@ -65,13 +65,19 @@ export default function HomePage() {
       />
     );
   }
-
+  const height = StatusBar.currentHeight || 0;
+  const final_height = height + 30;
   const categorizedData = getCategorizedData();
   const currentLoading = getCurrentLoading();
   const currentError = getCurrentError();
 
   return (
-    <SafeAreaView style={homeStyles.container}>
+    <SafeAreaView
+      style={[
+        homeStyles.container,
+        Platform.OS === "android" && { paddingTop: final_height },
+      ]}
+    >
       <FadeInView style={homeStyles.FadeInView}>
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar barStyle="dark-content" backgroundColor="white" />

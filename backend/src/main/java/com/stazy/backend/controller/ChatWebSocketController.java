@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 
 @Controller
+@Validated
 public class ChatWebSocketController {
 
     @Autowired
@@ -20,21 +23,27 @@ public class ChatWebSocketController {
     private MessageRepository messageRepository;
 
     @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatMessage chatMessage) {
-        // Save message to DB
-        Message message = new Message();
-        message.setSenderEmail(chatMessage.getSenderEmail());
-        message.setRecipientEmail(chatMessage.getRecipientEmail());
-        message.setContent(chatMessage.getContent());
-        message.setTimestamp(LocalDateTime.now());
-        messageRepository.save(message);
+    public void sendMessage(@Valid @Payload ChatMessage chatMessage) {
+        try {
+            // Save message to DB
+            Message message = new Message();
+            message.setSenderEmail(chatMessage.getSenderEmail());
+            message.setRecipientEmail(chatMessage.getRecipientEmail());
+            message.setContent(chatMessage.getContent());
+            message.setTimestamp(LocalDateTime.now());
+            messageRepository.save(message);
 
-        // Send to recipient (and sender for echo)
-        messagingTemplate.convertAndSend(
-                "/topic/messages/" + chatMessage.getRecipientEmail(),
-                chatMessage);
-        messagingTemplate.convertAndSend(
-                "/topic/messages/" + chatMessage.getSenderEmail(),
-                chatMessage);
+            // Send to recipient (and sender for echo)
+            messagingTemplate.convertAndSend(
+                    "/topic/messages/" + chatMessage.getRecipientEmail(),
+                    chatMessage);
+            messagingTemplate.convertAndSend(
+                    "/topic/messages/" + chatMessage.getSenderEmail(),
+                    chatMessage);
+        } catch (Exception e) {
+            // Optionally log the error or send an error message back
+            // e.g., messagingTemplate.convertAndSend("/topic/errors", "Failed to send
+            // message");
+        }
     }
 }

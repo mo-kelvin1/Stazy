@@ -6,7 +6,7 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
-import ProfileHeader from '../../components/profile/ProfileHeader';
+import ProfileHeader from '../../components/profile/ProfileHeader.js';
 import ProfileAvatar from '../../components/profile/ProfileAvatar';
 import ProfileSection from '../../components/profile/ProfileSection';
 import CancelButton from '../../components/profile/CancelButton';
@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingBottom: 60,
   },
 });
 

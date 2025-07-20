@@ -47,7 +47,6 @@ public class ChatRestController {
         String token = authorization.replace("Bearer ", "");
         String userEmail = jwtUtil.getEmailFromToken(token);
 
-        return messageRepository.findBySenderEmailAndRecipientEmailOrRecipientEmailAndSenderEmailOrderByTimestampAsc(
-                userEmail, otherEmail, userEmail, otherEmail);
+        return messageRepository.findChatHistoryBetweenUsers(userEmail, otherEmail);
     }
 }

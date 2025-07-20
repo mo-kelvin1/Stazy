@@ -1,5 +1,11 @@
 import React from "react";
-import { SafeAreaView, StatusBar, ScrollView, View } from "react-native";
+import {
+  SafeAreaView,
+  StatusBar,
+  ScrollView,
+  View,
+  Platform,
+} from "react-native";
 import FadeInView from "../../components/cards/FadeInView";
 import { useProfileData } from "../../hooks/useProfileData";
 import ProfileHeader from "../../components/profile/ProfileHeader";
@@ -22,13 +28,19 @@ export default function Profile() {
   } = useProfileData();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F7F7F7" }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#F7F7F7",
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+      }}
+    >
       <StatusBar
         barStyle="dark-content"
         backgroundColor="#ffffff"
         translucent={false}
       />
-      <FadeInView style={{ flex: 1 }}>
+      <FadeInView style={{ flex: 1, paddingTop: 10 }}>
         <ProfileHeader onNotifications={handleNotifications} />
         <ScrollView showsVerticalScrollIndicator={false}>
           <ProfileCard

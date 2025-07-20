@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, SafeAreaView, StyleSheet } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { Property } from "../../types/Property";
 import { Service } from "../../types/Service";
@@ -91,7 +97,12 @@ const ListingsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        Platform.OS === "android" && { paddingTop: StatusBar.currentHeight },
+      ]}
+    >
       <ListingsHeader
         onSearch={() => {}}
         onDocs={() => {}}
