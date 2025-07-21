@@ -98,20 +98,36 @@ const TripCard = ({
       </View>
       <View style={styles.tripDetails}>
         <View style={styles.tripHeader}>
-          <Text style={styles.tripDestination}>
-            {booking.entityTitle || "Booking"}
-          </Text>
-          <View
-            style={[
-              styles.bookingTypeBadge,
-              { backgroundColor: getBookingTypeColor() + "20" },
-            ]}
-          >
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
             <Text
-              style={[styles.bookingTypeText, { color: getBookingTypeColor() }]}
+              style={styles.tripDestination}
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              {booking.bookingType || "PROPERTY"}
+              {booking.entityTitle || "Booking"}
             </Text>
+            <View style={{ flex: 1 }} />
+            <View
+              style={[
+                styles.bookingTypeBadge,
+                {
+                  backgroundColor: getBookingTypeColor() + "20",
+                  minWidth: 64,
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.bookingTypeText,
+                  { color: getBookingTypeColor() },
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {booking.bookingType || "PROPERTY"}
+              </Text>
+            </View>
           </View>
         </View>
         <Text style={styles.tripLocation}>
@@ -188,10 +204,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 4,
+    flexShrink: 1,
+    maxWidth: 180,
   },
   tripHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 4,
   },

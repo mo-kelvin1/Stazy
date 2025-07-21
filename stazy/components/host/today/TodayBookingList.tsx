@@ -33,6 +33,7 @@ interface TodayBookingListProps {
   formatTime: (date: string) => string;
   getBookingTypeIcon: (type?: string) => string;
   getBookingTypeColor: (type?: string) => string;
+  onBookingPress?: (booking: Booking) => void;
 }
 
 const TodayBookingList: React.FC<TodayBookingListProps> = ({
@@ -44,6 +45,7 @@ const TodayBookingList: React.FC<TodayBookingListProps> = ({
   formatTime,
   getBookingTypeIcon,
   getBookingTypeColor,
+  onBookingPress,
 }) => {
   if (loading) {
     return (
@@ -78,6 +80,7 @@ const TodayBookingList: React.FC<TodayBookingListProps> = ({
           formatTime={formatTime}
           getBookingTypeIcon={getBookingTypeIcon}
           getBookingTypeColor={getBookingTypeColor}
+          onPress={onBookingPress ? () => onBookingPress(booking) : undefined}
         />
       ))}
     </ScrollView>

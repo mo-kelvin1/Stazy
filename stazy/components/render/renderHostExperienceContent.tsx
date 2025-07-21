@@ -42,7 +42,7 @@ export const renderHostExperienceContent = ({
         }
 
         const response = await fetch(
-          `http://10.132.119.88:8080/api/experiences/${itemId}`,
+          `http://10.60.32.210:8080/api/experiences/${itemId}`,
           {
             method: "GET",
             headers: {
@@ -117,7 +117,7 @@ export const renderHostExperienceContent = ({
       }
 
       const response = await fetch(
-        `http://10.132.119.88:8080/api/experiences/${itemId}`,
+        `http://10.60.32.210:8080/api/experiences/${itemId}`,
         {
           method: "PUT",
           headers: {

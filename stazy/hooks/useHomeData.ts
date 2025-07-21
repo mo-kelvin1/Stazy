@@ -203,7 +203,7 @@ export function useHomeData() {
       const token = await tokenStore.getToken();
       const endpoint = searchEndpoints[activeTab];
       if (!endpoint) throw new Error("Invalid tab for search");
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://100.66.192.76:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },

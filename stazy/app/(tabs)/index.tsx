@@ -64,6 +64,11 @@ export default function HomePage() {
     }
   };
 
+  // Map the internal tab keys to the expected values in renderItem
+  let renderTab = "Homes";
+  if (activeTab === "service") renderTab = "Services";
+  else if (activeTab === "experience") renderTab = "Experiences";
+
   if (showCategoryListing) {
     const categorizedData = getCategorizedData();
     const categoryItems = categorizedData[selectedCategory] || [];
@@ -74,7 +79,7 @@ export default function HomePage() {
         onBackPress={handleBackFromCategoryListing}
         likedItems={likedItems}
         onHeartPress={onHeartPress}
-        activeTab={activeTab}
+        activeTab={renderTab} // Use the mapped renderTab here
         pageName="index"
       />
     );
@@ -133,7 +138,7 @@ export default function HomePage() {
                 likedItems={likedItems}
                 onCategoryPress={handleCategoryPress}
                 onHeartPress={onHeartPress}
-                activeTab={activeTab}
+                activeTab={renderTab}
                 pageName="index"
               />
             )}
@@ -157,7 +162,7 @@ export default function HomePage() {
                 likedItems={likedItems}
                 onCategoryPress={handleCategoryPress}
                 onHeartPress={onHeartPress}
-                activeTab={activeTab}
+                activeTab={renderTab}
                 pageName="index"
               />
             )}

@@ -5,6 +5,9 @@ import {
   StyleSheet,
   Platform,
   StatusBar,
+  TouchableOpacity,
+  Text,
+  Alert,
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { Property } from "../../types/Property";
@@ -33,42 +36,42 @@ const ListingsScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { createRefreshListingsAction } = await import(
-          "../../context/actions/refreshListings"
-        );
-        const refreshListings = createRefreshListingsAction(tokenStore);
-        const result = await refreshListings();
-        if (result.success && result.listings) {
-          setProperties(result.listings);
-        }
-        const { createRefreshServicesAction } = await import(
-          "../../context/actions/refreshServices"
-        );
-        const refreshServices = createRefreshServicesAction(tokenStore);
-        const servicesResult = await refreshServices();
-        if (servicesResult.success && servicesResult.services) {
-          setServices(servicesResult.services);
-        }
-        const { createRefreshMyExperiencesAction } = await import(
-          "../../context/actions/refreshMyExperiences"
-        );
-        const refreshMyExperiences =
-          createRefreshMyExperiencesAction(tokenStore);
-        const experiencesResult = await refreshMyExperiences();
-        if (experiencesResult.success && experiencesResult.experiences) {
-          setExperiences(experiencesResult.experiences);
-        }
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch data");
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { createRefreshListingsAction } = await import(
+        "../../context/actions/refreshListings"
+      );
+      const refreshListings = createRefreshListingsAction(tokenStore);
+      const result = await refreshListings();
+      if (result.success && result.listings) {
+        setProperties(result.listings);
       }
-    };
+      const { createRefreshServicesAction } = await import(
+        "../../context/actions/refreshServices"
+      );
+      const refreshServices = createRefreshServicesAction(tokenStore);
+      const servicesResult = await refreshServices();
+      if (servicesResult.success && servicesResult.services) {
+        setServices(servicesResult.services);
+      }
+      const { createRefreshMyExperiencesAction } = await import(
+        "../../context/actions/refreshMyExperiences"
+      );
+      const refreshMyExperiences = createRefreshMyExperiencesAction(tokenStore);
+      const experiencesResult = await refreshMyExperiences();
+      if (experiencesResult.success && experiencesResult.experiences) {
+        setExperiences(experiencesResult.experiences);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -86,14 +89,78 @@ const ListingsScreen = () => {
   };
 
   const handleCardPress = (item: any) => {
+    // Map the internal tab keys to the expected values in renderItem
+    let renderTab = "Homes";
+    if (activeTab === "experience") renderTab = "Experiences";
+    else if (activeTab === "service") renderTab = "Services";
+    // Default is "Homes"
     router.push({
       pathname: "/render/renderItem",
       params: {
         renderItem: item.id,
         pageName: "listings",
-        activeTab: activeTab,
+        activeTab: renderTab,
       },
     });
+  };
+
+  const handleLongPress = (item: any) => {
+    if (activeTab !== "home") return; // Only allow deleting properties for now
+
+    Alert.alert(
+      "Delete Listing",
+      `Are you sure you want to delete "${item.title}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => deleteListing(item.id),
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const deleteListing = async (propertyId: number) => {
+    try {
+      const token = await tokenStore.getToken();
+      if (!token) {
+        Alert.alert("Error", "You are not authenticated.");
+        return;
+      }
+      const response = await fetch(
+        `http://100.66.192.76:8080/api/properties/${propertyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        Alert.alert("Success", "Listing deleted successfully.");
+        await fetchData(); // Refresh the list
+      } else {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.message || "Failed to delete listing.");
+      }
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      Alert.alert("Error", "An error occurred while deleting the listing.");
+    }
+  };
+
+  const handleNextType = () => {
+    if (selectedType === "home") {
+      setModalVisible(false);
+      router.push("../../screens/listings/homes/guest-place-type");
+    }
+    // Add other types as needed
   };
 
   return (
@@ -129,6 +196,7 @@ const ListingsScreen = () => {
         <ListingsList
           data={getCurrentData()}
           onItemPress={handleCardPress}
+          onItemLongPress={handleLongPress}
           keyExtractor={(item) => item.id}
         />
       )}
@@ -137,6 +205,7 @@ const ListingsScreen = () => {
         onClose={() => setModalVisible(false)}
         onSelectType={setSelectedType}
         selectedType={selectedType}
+        onNext={handleNextType}
       />
     </SafeAreaView>
   );

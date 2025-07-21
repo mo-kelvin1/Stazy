@@ -20,7 +20,7 @@ export const createCompleteProfileAction = (
       }
 
       const response = await axios.post(
-        "http://10.132.119.88:8080/api/auth/complete-profile",
+        "http://10.60.32.210:8080/api/auth/complete-profile",
         {
           firstName,
           lastName,

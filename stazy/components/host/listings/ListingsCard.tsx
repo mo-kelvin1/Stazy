@@ -4,10 +4,15 @@ import { TouchableOpacity, Image, Text, StyleSheet, View } from "react-native";
 interface ListingsCardProps {
   item: any;
   onPress: () => void;
+  onLongPress: () => void;
 }
 
-const ListingsCard = ({ item, onPress }: ListingsCardProps) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
+const ListingsCard = ({ item, onPress, onLongPress }: ListingsCardProps) => (
+  <TouchableOpacity
+    style={styles.card}
+    onPress={onPress}
+    onLongPress={onLongPress}
+  >
     <Image
       source={{
         uri: item.images && item.images.length > 0 ? item.images[0] : undefined,

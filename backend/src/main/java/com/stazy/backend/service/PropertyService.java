@@ -9,6 +9,7 @@ import com.stazy.backend.repository.PropertyRepository;
 import com.stazy.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class PropertyService {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional
     public Property createProperty(CreatePropertyRequest request, String hostEmail) {
         // Verify that the user exists
         Optional<User> userOpt = userRepository.findByEmail(hostEmail);
@@ -98,6 +100,7 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
+    @Transactional
     public Property updateProperty(Long propertyId, UpdatePropertyRequest request, String hostEmail) {
         Optional<Property> propertyOpt = propertyRepository.findByIdAndHostEmail(propertyId, hostEmail);
         if (propertyOpt.isEmpty()) {
@@ -213,6 +216,7 @@ public class PropertyService {
         return propertyOpt.isPresent();
     }
 
+    @Transactional
     public void deleteProperty(Long propertyId, String hostEmail) {
         Optional<Property> propertyOpt = propertyRepository.findByIdAndHostEmail(propertyId, hostEmail);
         if (propertyOpt.isEmpty()) {
@@ -221,6 +225,7 @@ public class PropertyService {
         propertyRepository.delete(propertyOpt.get());
     }
 
+    @Transactional
     public Property togglePropertyAvailability(Long propertyId, String hostEmail) {
         Optional<Property> propertyOpt = propertyRepository.findByIdAndHostEmail(propertyId, hostEmail);
         if (propertyOpt.isEmpty()) {

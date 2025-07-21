@@ -5,18 +5,24 @@ import ListingsCard from "./ListingsCard";
 interface ListingsListProps {
   data: any[];
   onItemPress: (item: any) => void;
+  onItemLongPress: (item: any) => void;
   keyExtractor: (item: any) => string;
 }
 
 const ListingsList = ({
   data,
   onItemPress,
+  onItemLongPress,
   keyExtractor,
 }: ListingsListProps) => (
   <FlatList
     data={data}
     renderItem={({ item }) => (
-      <ListingsCard item={item} onPress={() => onItemPress(item)} />
+      <ListingsCard
+        item={item}
+        onPress={() => onItemPress(item)}
+        onLongPress={() => onItemLongPress(item)}
+      />
     )}
     keyExtractor={keyExtractor}
     contentContainerStyle={styles.listContent}
