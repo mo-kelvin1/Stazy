@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { router } from "expo-router";
 import { WishlistItem } from "../types/WishlistTypes";
 import { useWishlist } from "../hooks/useWishlist";
@@ -28,22 +28,17 @@ export function useWishlistScreenData() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (
-        globalThis.tabRefreshKeys &&
-        globalThis.tabRefreshKeys.wishlist !== undefined
-      ) {
-        setRefreshKey(globalThis.tabRefreshKeys.wishlist);
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-  useEffect(() => {
     loadWishlistItems();
-  }, [refreshKey]);
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadWishlistItems();
+    setRefreshing(false);
+  }, [loadWishlistItems]);
 
   const handleItemClick = (item: WishlistItem) => {
     triggerHaptic();
@@ -140,5 +135,7 @@ export function useWishlistScreenData() {
     handleSharePress,
     handlePlanTripPress,
     handleExplorePress,
+    refreshing,
+    onRefresh,
   };
 } 

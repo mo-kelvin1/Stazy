@@ -1,16 +1,25 @@
 import React from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, RefreshControl } from "react-native";
 import TripCard from "./TripCard";
 import { Booking } from "../../context/actions/refreshBookings";
 
 const TripsList = ({
   bookings,
   onOptions,
+  refreshing,
+  onRefresh,
 }: {
   bookings: Booking[];
   onOptions: (booking: Booking) => void;
+  refreshing: boolean;
+  onRefresh: () => void;
 }) => (
-  <ScrollView style={styles.tripsList}>
+  <ScrollView
+    style={styles.tripsList}
+    refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+    }
+  >
     {bookings.map((booking) => (
       <TripCard
         key={booking.id}

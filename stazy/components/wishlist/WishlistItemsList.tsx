@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { WishlistItem } from "../../types/WishlistTypes";
 import WishlistItemComponent from "./WishlistItemComponent";
 import WishlistEmptyState from "./WishlistEmptyState";
@@ -10,6 +10,8 @@ interface WishlistItemsListProps {
   onRemove: (entityId: number, itemType: string) => void;
   onItemClick: (item: WishlistItem) => void;
   onExplorePress: () => void;
+  refreshing: boolean;
+  onRefresh: () => void;
 }
 
 const WishlistItemsList: React.FC<WishlistItemsListProps> = ({
@@ -18,9 +20,16 @@ const WishlistItemsList: React.FC<WishlistItemsListProps> = ({
   onRemove,
   onItemClick,
   onExplorePress,
+  refreshing,
+  onRefresh,
 }) => {
   return (
-    <ScrollView style={styles.wishlistContainer}>
+    <ScrollView
+      style={styles.wishlistContainer}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {filteredItems.length > 0 ? (
         filteredItems.map((item: WishlistItem) =>
           item.entityId !== undefined && item.itemType ? (

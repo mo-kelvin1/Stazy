@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { SimulatedTokenStore } from "../services/SimulatedTokenStore";
@@ -14,28 +14,15 @@ export function useTripsData() {
   const [selectedTab, setSelectedTab] = useState("upcoming");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    // Listen for tab refresh
-    const interval = setInterval(() => {
-      if (
-        globalThis.tabRefreshKeys &&
-        globalThis.tabRefreshKeys.trips !== undefined
-      ) {
-        setRefreshKey(globalThis.tabRefreshKeys.trips);
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     fetchBookings();
-  }, [refreshKey]);
+  }, []);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -54,6 +41,12 @@ export function useTripsData() {
     }
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchBookings();
+    setRefreshing(false);
+  }, []);
+
   const today = new Date();
   const upcomingBookings = bookings.filter((booking) => {
     const startDate = new Date(booking.startDate);
@@ -71,7 +64,7 @@ export function useTripsData() {
       setLoading(true);
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.60.32.210:8080/api/bookings/${selectedBooking.id}`,
+        `http://10.132.119.88:8080/api/bookings/${selectedBooking.id}`,
         {
           method: "DELETE",
           headers: {
@@ -133,5 +126,7 @@ export function useTripsData() {
     upcomingBookings,
     pastBookings,
     currentBookings,
+    refreshing,
+    onRefresh,
   };
 } 

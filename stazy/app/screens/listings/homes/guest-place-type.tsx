@@ -59,7 +59,7 @@ const GuestPlaceTypeScreen = () => {
         "[DEBUG] Sending request to create property with type:",
         propertyData
       );
-      const response = await fetch("http://100.66.192.76:8080/api/properties", {
+      const response = await fetch("http://10.132.119.88:8080/api/properties", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -2,12 +2,14 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 interface ChatBubbleProps {
+  id: string | number;
   content: string;
   timestamp: string;
   sentByUser: boolean;
 }
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({
+  id,
   content,
   timestamp,
   sentByUser,

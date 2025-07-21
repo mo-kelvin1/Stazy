@@ -27,6 +27,8 @@ export default function TripsScreen() {
     upcomingBookings,
     pastBookings,
     currentBookings,
+    refreshing,
+    onRefresh,
   } = useTripsData();
 
   return (
@@ -50,6 +52,8 @@ export default function TripsScreen() {
               setSelectedBooking(booking);
               setModalVisible(true);
             }}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           />
         ) : (
           <TripsEmptyState selectedTab={selectedTab} />

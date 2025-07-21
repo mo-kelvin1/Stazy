@@ -8,6 +8,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { Stack } from "expo-router";
 import FadeInView from "../../components/cards/FadeInView";
@@ -44,6 +45,8 @@ export default function HomePage() {
     showingSearchResults,
     searchItems,
     clearSearchResults,
+    refreshing,
+    onRefresh,
   } = useHomeData();
 
   const handleTabPress = (tab: string) => setActiveTab(tab);
@@ -151,6 +154,9 @@ export default function HomePage() {
               { useNativeDriver: false }
             )}
             scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           >
             {loading || currentLoading ? (
               <HomeLoading />

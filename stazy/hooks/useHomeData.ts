@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Animated } from "react-native";
 import { Property } from "../types/Property";
 import { Service } from "../types/Service";
@@ -10,6 +10,7 @@ const tokenStore = new SimulatedTokenStore();
 export function useHomeData() {
   const [activeTab, setActiveTab] = useState("home");
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertiesLoading, setPropertiesLoading] = useState(true);
   const [propertiesError, setPropertiesError] = useState<string | null>(null);
@@ -43,21 +44,93 @@ export function useHomeData() {
     initializeWishlistData,
     checkWishlistStatusForItems,
   } = useWishlist();
-  const [refreshKey, setRefreshKey] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (
-        globalThis.tabRefreshKeys &&
-        globalThis.tabRefreshKeys.home !== undefined
-      ) {
-        setRefreshKey(globalThis.tabRefreshKeys.home);
+
+  const fetchProperties = useCallback(async () => {
+    setPropertiesLoading(true);
+    setPropertiesError(null);
+    try {
+      const { createRefreshPropertiesAction } = await import(
+        "../context/actions/refreshProperties"
+      );
+      const refreshProperties = createRefreshPropertiesAction(tokenStore);
+      const result = await refreshProperties();
+      if (result.success && result.properties) {
+        setProperties(result.properties);
+        await checkWishlistStatusForItems(result.properties);
+      } else {
+        setPropertiesError(result.message || "Failed to fetch properties");
       }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
+    } catch (err: any) {
+      setPropertiesError(err.message || "Failed to fetch properties");
+    } finally {
+      setPropertiesLoading(false);
+    }
+  }, [checkWishlistStatusForItems]);
+
+  const fetchServices = useCallback(async () => {
+    setServicesLoading(true);
+    setServicesError(null);
+    try {
+      const { createRefreshServicesAction } = await import(
+        "../context/actions/refreshServices"
+      );
+      const refreshServices = createRefreshServicesAction(tokenStore);
+      const result = await refreshServices();
+      if (result.success && result.services) {
+        setServices(result.services);
+        await checkWishlistStatusForItems(result.services);
+      } else {
+        setServicesError(result.message || "Failed to fetch services");
+      }
+    } catch (err: any) {
+      setServicesError(err.message || "Failed to fetch services");
+    } finally {
+      setServicesLoading(false);
+    }
+  }, [checkWishlistStatusForItems]);
+
+  const fetchExperiences = useCallback(async () => {
+    setExperiencesLoading(true);
+    setExperiencesError(null);
+    try {
+      const { createRefreshExperiencesAction } = await import(
+        "../context/actions/refreshExperiences"
+      );
+      const refreshExperiences = createRefreshExperiencesAction(tokenStore);
+      const result = await refreshExperiences();
+      if (result.success && result.experiences) {
+        setExperiences(result.experiences);
+        await checkWishlistStatusForItems(result.experiences);
+      } else {
+        setExperiencesError(result.message || "Failed to fetch experiences");
+      }
+    } catch (err: any) {
+      setExperiencesError(err.message || "Failed to fetch experiences");
+    } finally {
+      setExperiencesLoading(false);
+    }
+  }, [checkWishlistStatusForItems]);
+
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchProperties(),
+      fetchServices(),
+      fetchExperiences(),
+    ]);
+    setLoading(false);
+  }, [fetchProperties, fetchServices, fetchExperiences]);
+
   useEffect(() => {
     initializeWishlistData();
-  }, [refreshKey]);
+    fetchAllData();
+  }, [fetchAllData, initializeWishlistData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAllData();
+    setRefreshing(false);
+  }, [fetchAllData]);
 
   // Re-run search when activeTab changes and a search is being shown
   useEffect(() => {
@@ -66,78 +139,7 @@ export function useHomeData() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
-  useEffect(() => {
-    const fetchProperties = async () => {
-      setPropertiesLoading(true);
-      setPropertiesError(null);
-      try {
-        const { createRefreshPropertiesAction } = await import(
-          "../context/actions/refreshProperties"
-        );
-        const refreshProperties = createRefreshPropertiesAction(tokenStore);
-        const result = await refreshProperties();
-        if (result.success && result.properties) {
-          setProperties(result.properties);
-          await checkWishlistStatusForItems(result.properties);
-        } else {
-          setPropertiesError(result.message || "Failed to fetch properties");
-        }
-      } catch (err: any) {
-        setPropertiesError(err.message || "Failed to fetch properties");
-      } finally {
-        setPropertiesLoading(false);
-      }
-    };
-    fetchProperties();
-  }, [checkWishlistStatusForItems]);
-  useEffect(() => {
-    const fetchServices = async () => {
-      setServicesLoading(true);
-      setServicesError(null);
-      try {
-        const { createRefreshServicesAction } = await import(
-          "../context/actions/refreshServices"
-        );
-        const refreshServices = createRefreshServicesAction(tokenStore);
-        const result = await refreshServices();
-        if (result.success && result.services) {
-          setServices(result.services);
-          await checkWishlistStatusForItems(result.services);
-        } else {
-          setServicesError(result.message || "Failed to fetch services");
-        }
-      } catch (err: any) {
-        setServicesError(err.message || "Failed to fetch services");
-      } finally {
-        setServicesLoading(false);
-      }
-    };
-    fetchServices();
-  }, [checkWishlistStatusForItems]);
-  useEffect(() => {
-    const fetchExperiences = async () => {
-      setExperiencesLoading(true);
-      setExperiencesError(null);
-      try {
-        const { createRefreshExperiencesAction } = await import(
-          "../context/actions/refreshExperiences"
-        );
-        const refreshExperiences = createRefreshExperiencesAction(tokenStore);
-        const result = await refreshExperiences();
-        if (result.success && result.experiences) {
-          setExperiences(result.experiences);
-          await checkWishlistStatusForItems(result.experiences);
-        } else {
-          setExperiencesError(result.message || "Failed to fetch experiences");
-        }
-      } catch (err: any) {
-        setExperiencesError(err.message || "Failed to fetch experiences");
-      } finally {
-        setExperiencesLoading(false);
-      }
-    };
-    fetchExperiences();
-  }, [checkWishlistStatusForItems]);
+
   const getCurrentData = () => {
     switch (activeTab) {
       case "home":
@@ -176,7 +178,7 @@ export function useHomeData() {
   };
   const getCategorizedData = () => {
     const currentData = getCurrentData();
-    return currentData.reduce((acc, item) => {
+    const grouped = currentData.reduce((acc, item) => {
       const category = item.category || "Other";
       if (!acc[category]) {
         acc[category] = [];
@@ -184,6 +186,18 @@ export function useHomeData() {
       acc[category].push(item);
       return acc;
     }, {} as Record<string, any[]>);
+    // Shuffle the category order
+    const categoryKeys = Object.keys(grouped);
+    for (let i = categoryKeys.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [categoryKeys[i], categoryKeys[j]] = [categoryKeys[j], categoryKeys[i]];
+    }
+    // Build a new object with shuffled keys
+    const shuffled = {} as Record<string, any[]>;
+    for (const key of categoryKeys) {
+      shuffled[key] = grouped[key];
+    }
+    return shuffled;
   };
   const onHeartPress = (item: Property | Experience | Service) => {
     handleHeartPress(item);
@@ -203,7 +217,7 @@ export function useHomeData() {
       const token = await tokenStore.getToken();
       const endpoint = searchEndpoints[activeTab];
       if (!endpoint) throw new Error("Invalid tab for search");
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://100.66.192.76:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },
@@ -252,8 +266,6 @@ export function useHomeData() {
     handleHeartPress,
     initializeWishlistData,
     checkWishlistStatusForItems,
-    refreshKey,
-    setRefreshKey,
     getCurrentData,
     getCurrentLoading,
     getCurrentError,
@@ -263,5 +275,7 @@ export function useHomeData() {
     showingSearchResults,
     searchItems,
     clearSearchResults,
+    refreshing,
+    onRefresh,
   };
 } 

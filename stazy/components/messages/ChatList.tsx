@@ -32,7 +32,7 @@ const ChatList: React.FC<ChatListProps> = ({ messages, userEmail }) => {
         data={messages}
         renderItem={({ item }) => (
           <ChatBubble
-            key={item.id || item.timestamp}
+            id={item.id || item.timestamp}
             content={item.content}
             timestamp={item.timestamp}
             sentByUser={item.senderEmail === userEmail}

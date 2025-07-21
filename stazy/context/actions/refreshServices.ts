@@ -18,7 +18,7 @@ export const createRefreshServicesAction = (tokenStore: SimulatedTokenStore) => 
         };
       }
 
-      const response = await fetch("http://10.60.32.210:8080/api/service-offers", {
+      const response = await fetch("http://10.132.119.88:8080/api/service-offers", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

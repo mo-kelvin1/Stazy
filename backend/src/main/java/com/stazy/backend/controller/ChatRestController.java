@@ -25,8 +25,7 @@ public class ChatRestController {
         String token = authorization.replace("Bearer ", "");
         String userEmail = jwtUtil.getEmailFromToken(token);
 
-        List<Message> messages = messageRepository.findBySenderEmailOrRecipientEmailOrderByTimestampAsc(userEmail,
-                userEmail);
+        List<Message> messages = messageRepository.findBySenderEmailOrRecipientEmailOrderByTimestampAsc(userEmail);
 
         Set<String> threads = new HashSet<>();
         for (Message msg : messages) {

@@ -51,7 +51,7 @@ const HomeDetailsScreen = () => {
         propertyData
       );
       const response = await fetch(
-        `http://100.66.192.76:8080/api/properties/${propertyId}`,
+        `http://10.132.119.88:8080/api/properties/${propertyId}`,
         {
           method: "PUT",
           headers: {

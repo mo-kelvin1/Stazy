@@ -63,24 +63,8 @@ export default function TabLayout() {
           },
         }}
       />
-      <Tabs.Screen
-        name="wishlist"
-        options={{ title: "Wishlist" }}
-        listeners={{
-          tabPress: () => {
-            globalThis.tabRefreshKeys.wishlist++;
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="trips"
-        options={{ title: "Trips" }}
-        listeners={{
-          tabPress: () => {
-            globalThis.tabRefreshKeys.trips++;
-          },
-        }}
-      />
+      <Tabs.Screen name="wishlist" options={{ title: "Wishlist" }} />
+      <Tabs.Screen name="trips" options={{ title: "Trips" }} />
       <Tabs.Screen
         name="messages"
         options={{ title: "Messages" }}

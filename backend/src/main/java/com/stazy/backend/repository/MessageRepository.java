@@ -8,7 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    List<Message> findBySenderEmailOrRecipientEmailOrderByTimestampAsc(String sender, String recipient);
+    @Query("SELECT m FROM Message m WHERE m.senderEmail = :email OR m.recipientEmail = :email ORDER BY m.timestamp ASC")
+    List<Message> findBySenderEmailOrRecipientEmailOrderByTimestampAsc(@Param("email") String email);
 
     List<Message> findBySenderEmailAndRecipientEmailOrRecipientEmailAndSenderEmailOrderByTimestampAsc(
             String sender1, String recipient1, String sender2, String recipient2);
