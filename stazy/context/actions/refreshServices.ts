@@ -7,7 +7,9 @@ export interface RefreshServicesResult {
   message?: string;
 }
 
-export const createRefreshServicesAction = (tokenStore: SimulatedTokenStore) => {
+export const createRefreshServicesAction = (
+  tokenStore: SimulatedTokenStore
+) => {
   return async (): Promise<RefreshServicesResult> => {
     try {
       const token = await tokenStore.getToken();
@@ -18,24 +20,28 @@ export const createRefreshServicesAction = (tokenStore: SimulatedTokenStore) => 
         };
       }
 
-      const response = await fetch("http://10.30.22.161:8080/api/service-offers", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://10.132.119.88:8080/api/service-offers",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          message: errorData.message || `HTTP error! status: ${response.status}`,
+          message:
+            errorData.message || `HTTP error! status: ${response.status}`,
         };
       }
 
       const servicesData = await response.json();
-      
+
       // Transform the backend data to match the frontend Service interface
       const services: Service[] = servicesData.map((service: any) => ({
         id: service.id.toString(),
@@ -74,4 +80,4 @@ export const createRefreshServicesAction = (tokenStore: SimulatedTokenStore) => 
       };
     }
   };
-}; 
+};

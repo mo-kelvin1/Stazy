@@ -42,7 +42,7 @@ export const renderExperienceContent = ({
         }
 
         const response = await fetch(
-          `http://10.30.22.161:8080/api/experiences/${itemId}`,
+          `http://10.132.119.88:8080/api/experiences/${itemId}`,
           {
             method: "GET",
             headers: {

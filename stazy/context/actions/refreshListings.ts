@@ -2,15 +2,21 @@ import axios from "axios";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 import { Property } from "../../types/Property";
 
-export const createRefreshListingsAction = (tokenStore: SimulatedTokenStore) => {
-  return async (): Promise<{ success: boolean; listings?: Property[]; message?: string }> => {
+export const createRefreshListingsAction = (
+  tokenStore: SimulatedTokenStore
+) => {
+  return async (): Promise<{
+    success: boolean;
+    listings?: Property[];
+    message?: string;
+  }> => {
     try {
       const token = await tokenStore.getToken();
       if (!token) {
         return { success: false, message: "No token found. Please log in." };
       }
       const response = await axios.get(
-        "http://10.30.22.161:8080/api/properties/my-properties",
+        "http://10.132.119.88:8080/api/properties/my-properties",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -24,8 +30,9 @@ export const createRefreshListingsAction = (tokenStore: SimulatedTokenStore) => 
       console.error("Error fetching listings:", error);
       return {
         success: false,
-        message: error?.response?.data?.message || "Network error. Please try again.",
+        message:
+          error?.response?.data?.message || "Network error. Please try again.",
       };
     }
   };
-}; 
+};

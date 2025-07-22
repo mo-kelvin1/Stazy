@@ -39,7 +39,7 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
         }
 
         const response = await fetch(
-          `http://10.30.22.161:8080/api/service-offers/${itemId}`,
+          `http://10.132.119.88:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

@@ -44,7 +44,7 @@ export const renderPropertyContent = ({
         }
 
         const response = await fetch(
-          `http://10.30.22.161:8080/api/properties/${itemId}`,
+          `http://10.132.119.88:8080/api/properties/${itemId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },

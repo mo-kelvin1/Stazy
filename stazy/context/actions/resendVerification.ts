@@ -13,7 +13,7 @@ export const createResendVerificationAction = (
       }
 
       const response = await axios.post(
-        "http://10.30.22.161:8080/api/auth/resend-verification",
+        "http://10.132.119.88:8080/api/auth/resend-verification",
         {}, // no body
         {
           headers: {

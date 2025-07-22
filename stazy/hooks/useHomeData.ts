@@ -113,11 +113,7 @@ export function useHomeData() {
 
   const fetchAllData = useCallback(async () => {
     setLoading(true);
-    await Promise.all([
-      fetchProperties(),
-      fetchServices(),
-      fetchExperiences(),
-    ]);
+    await Promise.all([fetchProperties(), fetchServices(), fetchExperiences()]);
     setLoading(false);
   }, [fetchProperties, fetchServices, fetchExperiences]);
 
@@ -206,11 +202,16 @@ export function useHomeData() {
       const token = await tokenStore.getToken();
       const endpoint = searchEndpoints[activeTab];
       if (!endpoint) throw new Error("Invalid tab for search");
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.30.22.161:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
+      const res = await fetch(
+        `${
+          process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"
+        }${endpoint}?name=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
       if (!res.ok) throw new Error("Failed to fetch search results");
       const data = await res.json();
       setSearchResults(data);
@@ -267,4 +268,4 @@ export function useHomeData() {
     refreshing,
     onRefresh,
   };
-} 
+}

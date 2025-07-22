@@ -56,7 +56,8 @@ export function useTripsData() {
     const endDate = new Date(booking.endDate);
     return endDate < today;
   });
-  const currentBookings = selectedTab === "upcoming" ? upcomingBookings : pastBookings;
+  const currentBookings =
+    selectedTab === "upcoming" ? upcomingBookings : pastBookings;
 
   const handleCancelBooking = async (booking: Booking) => {
     if (!booking) return;
@@ -64,7 +65,7 @@ export function useTripsData() {
       setLoading(true);
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.30.22.161:8080/api/bookings/${booking.id}`,
+        `http://10.132.119.88:8080/api/bookings/${booking.id}`,
         {
           method: "DELETE",
           headers: {
@@ -122,4 +123,4 @@ export function useTripsData() {
     refreshing,
     onRefresh,
   };
-} 
+}

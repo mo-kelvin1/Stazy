@@ -29,7 +29,9 @@ export interface RefreshBookingsResult {
   message?: string;
 }
 
-export const createRefreshBookingsAction = (tokenStore: SimulatedTokenStore) => {
+export const createRefreshBookingsAction = (
+  tokenStore: SimulatedTokenStore
+) => {
   return async (): Promise<RefreshBookingsResult> => {
     try {
       const token = await tokenStore.getToken();
@@ -40,19 +42,23 @@ export const createRefreshBookingsAction = (tokenStore: SimulatedTokenStore) => 
         };
       }
 
-      const response = await fetch("http://10.30.22.161:8080/api/bookings/my-bookings", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://10.132.119.88:8080/api/bookings/my-bookings",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          message: errorData.message || `HTTP error! status: ${response.status}`,
+          message:
+            errorData.message || `HTTP error! status: ${response.status}`,
         };
       }
 
@@ -66,4 +72,4 @@ export const createRefreshBookingsAction = (tokenStore: SimulatedTokenStore) => 
       };
     }
   };
-}; 
+};
