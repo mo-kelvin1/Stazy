@@ -14,6 +14,7 @@ import {
 import { Property } from "../../types/Property";
 import { Ionicons } from "@expo/vector-icons";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
+import { useWindowDimensions } from "react-native";
 
 interface RenderListingContentProps {
   itemId: string;
@@ -27,6 +28,8 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Property>>({});
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -39,7 +42,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
         }
 
         const response = await fetch(
-          `http://10.132.119.88:8080/api/properties/${itemId}`,
+          `http://10.30.22.161:8080/api/properties/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -74,7 +77,7 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
       }
 
       const response = await fetch(
-        `http://10.132.119.88:8080/api/properties/${itemId}`,
+        `http://10.30.22.161:8080/api/properties/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -132,11 +135,45 @@ export const renderListingContent = ({ itemId }: RenderListingContentProps) => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Image
-        source={{ uri: property.images[0] }}
-        style={styles.mainImage}
-        resizeMode="cover"
-      />
+      {/* Swipeable Image Carousel */}
+      <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / width);
+            setActiveImage(index);
+          }}
+          scrollEventThrottle={16}
+          style={{ width, height: 300 }}
+        >
+          {propertyData.images &&
+            propertyData.images.length > 0 &&
+            propertyData.images.map((img: string, idx: number) => (
+              <Image
+                key={idx}
+                source={{ uri: img }}
+                style={{ width, height: 300, borderRadius: 24 }}
+                resizeMode="cover"
+              />
+            ))}
+        </ScrollView>
+        {/* Image indicators */}
+        <View style={styles.imageIndicators}>
+          {propertyData.images &&
+            propertyData.images.length > 1 &&
+            propertyData.images.map((_: string, idx: number) => (
+              <View
+                key={idx}
+                style={[
+                  styles.indicatorDot,
+                  activeImage === idx && styles.activeIndicatorDot,
+                ]}
+              />
+            ))}
+        </View>
+      </View>
       <View style={styles.detailsContainer}>
         {/* Header Section */}
         <View style={styles.headerSection}>
@@ -701,5 +738,20 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 20,
+  },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
   },
 });

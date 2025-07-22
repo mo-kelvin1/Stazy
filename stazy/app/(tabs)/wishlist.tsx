@@ -55,11 +55,6 @@ export default function WishlistScreen() {
           />
         )}
 
-        <WishlistBottomActions
-          onSharePress={handleSharePress}
-          onPlanTripPress={handlePlanTripPress}
-        />
-
         {selectedProperty && (
           <WishlistPropertyModal
             visible={modalVisible}

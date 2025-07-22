@@ -148,6 +148,7 @@ export default function HomePage() {
           </View>
         ) : (
           <Animated.ScrollView
+            showsVerticalScrollIndicator={false}
             style={homeStyles.scrollView}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],

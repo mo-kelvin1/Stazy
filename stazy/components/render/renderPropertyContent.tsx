@@ -10,6 +10,7 @@ import {
   Alert,
   TouchableOpacity,
   Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Property } from "../../types/Property";
@@ -27,6 +28,8 @@ export const renderPropertyContent = ({
   const [error, setError] = useState<string | null>(null);
 
   const tokenStore = new SimulatedTokenStore();
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -41,7 +44,7 @@ export const renderPropertyContent = ({
         }
 
         const response = await fetch(
-          `http://10.132.119.88:8080/api/properties/${itemId}`,
+          `http://10.30.22.161:8080/api/properties/${itemId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
@@ -131,11 +134,45 @@ export const renderPropertyContent = ({
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Image
-          source={{ uri: prop.images[0] }}
-          style={styles.mainImage}
-          resizeMode="cover"
-        />
+        {/* Swipeable Image Carousel */}
+        <View>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setActiveImage(index);
+            }}
+            scrollEventThrottle={16}
+            style={{ width, height: 300 }}
+          >
+            {prop.images &&
+              prop.images.length > 0 &&
+              prop.images.map((img: string, idx: number) => (
+                <Image
+                  key={idx}
+                  source={{ uri: img }}
+                  style={{ width, height: 300, borderRadius: 24 }}
+                  resizeMode="cover"
+                />
+              ))}
+          </ScrollView>
+          {/* Image indicators */}
+          <View style={styles.imageIndicators}>
+            {prop.images &&
+              prop.images.length > 1 &&
+              prop.images.map((_: string, idx: number) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.indicatorDot,
+                    activeImage === idx && styles.activeIndicatorDot,
+                  ]}
+                />
+              ))}
+          </View>
+        </View>
         <View style={styles.detailsContainer}>
           {/* Header Section */}
           <View style={styles.headerSection}>
@@ -730,4 +767,19 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   reserveButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
+  },
 });

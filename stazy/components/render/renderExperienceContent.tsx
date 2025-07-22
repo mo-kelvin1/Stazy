@@ -13,6 +13,7 @@ import {
 import { Experience } from "../../types/Experience";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 import { useRouter } from "expo-router";
+import { useWindowDimensions } from "react-native";
 
 interface RenderExperienceContentProps {
   itemId: string;
@@ -27,6 +28,8 @@ export const renderExperienceContent = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchExperience = async () => {
@@ -39,7 +42,7 @@ export const renderExperienceContent = ({
         }
 
         const response = await fetch(
-          `http://10.132.119.88:8080/api/experiences/${itemId}`,
+          `http://10.30.22.161:8080/api/experiences/${itemId}`,
           {
             method: "GET",
             headers: {
@@ -56,38 +59,38 @@ export const renderExperienceContent = ({
           );
         }
 
-        const experienceData = await response.json();
+        const experience = await response.json();
 
         // Transform the backend data to match the frontend Experience interface
         const transformedExperience: Experience = {
-          id: experienceData.id.toString(),
-          title: experienceData.title || "",
-          description: experienceData.description || "",
-          location: experienceData.location || "",
-          price: experienceData.price || 0,
-          duration: experienceData.duration || 0,
-          rating: experienceData.rating || 0,
-          images: experienceData.images || [],
-          hostName: experienceData.hostName || "",
-          hostEmail: experienceData.hostEmail || "",
-          category: experienceData.category || "adventure",
-          experienceType: experienceData.experienceType || "group",
-          difficulty: experienceData.difficulty || "easy",
+          id: experience.id.toString(),
+          title: experience.title || "",
+          description: experience.description || "",
+          location: experience.location || "",
+          price: experience.price || 0,
+          duration: experience.duration || 0,
+          rating: experience.rating || 0,
+          images: experience.images || [],
+          hostName: experience.hostName || "",
+          hostEmail: experience.hostEmail || "",
+          category: experience.category || "adventure",
+          experienceType: experience.experienceType || "group",
+          difficulty: experience.difficulty || "easy",
           ageRestriction: {
-            minimum: experienceData.minimumAge || 0,
-            maximum: experienceData.maximumAge,
+            minimum: experience.minimumAge || 0,
+            maximum: experience.maximumAge,
           },
-          maxParticipants: experienceData.maxParticipants || 1,
-          included: experienceData.included || [],
-          toBring: experienceData.toBring || [],
-          meetingPoint: experienceData.meetingPoint || "",
-          languages: experienceData.languages || [],
+          maxParticipants: experience.maxParticipants || 1,
+          included: experience.included || [],
+          toBring: experience.toBring || [],
+          meetingPoint: experience.meetingPoint || "",
+          languages: experience.languages || [],
           availability: {
-            days: experienceData.availabilityDays || [],
-            timeSlots: experienceData.availabilityTimeSlots || [],
+            days: experience.availabilityDays || [],
+            timeSlots: experience.availabilityTimeSlots || [],
           },
-          createdAt: new Date(experienceData.createdAt),
-          updatedAt: new Date(experienceData.updatedAt),
+          createdAt: new Date(experience.createdAt),
+          updatedAt: new Date(experience.updatedAt),
         };
 
         setExperience(transformedExperience);
@@ -134,11 +137,45 @@ export const renderExperienceContent = ({
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Image
-          source={{ uri: experience.images[0] }}
-          style={styles.mainImage}
-          resizeMode="cover"
-        />
+        {/* Swipeable Image Carousel */}
+        <View>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setActiveImage(index);
+            }}
+            scrollEventThrottle={16}
+            style={{ width, height: 300 }}
+          >
+            {experience.images &&
+              experience.images.length > 0 &&
+              experience.images.map((img: string, idx: number) => (
+                <Image
+                  key={idx}
+                  source={{ uri: img }}
+                  style={{ width, height: 300, borderRadius: 24 }}
+                  resizeMode="cover"
+                />
+              ))}
+          </ScrollView>
+          {/* Image indicators */}
+          <View style={styles.imageIndicators}>
+            {experience.images &&
+              experience.images.length > 1 &&
+              experience.images.map((_: string, idx: number) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.indicatorDot,
+                    activeImage === idx && styles.activeIndicatorDot,
+                  ]}
+                />
+              ))}
+          </View>
+        </View>
         <View style={styles.detailsContainer}>
           {/* Header Section */}
           <View style={styles.headerSection}>
@@ -569,4 +606,19 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   requestButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
+  },
 });

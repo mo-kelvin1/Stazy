@@ -234,7 +234,7 @@ public class PropertyController {
             Path uploadPath = Paths.get("uploads/" + filename);
             Files.createDirectories(uploadPath.getParent());
             Files.write(uploadPath, file.getBytes());
-            String url = "http://10.132.119.88:8080/uploads/" + filename;
+            String url = "http://10.30.22.161:8080/uploads/" + filename;
             System.out.println("[DEBUG] Uploaded image URL: " + url);
             return ResponseEntity.ok(url);
         } catch (Exception e) {

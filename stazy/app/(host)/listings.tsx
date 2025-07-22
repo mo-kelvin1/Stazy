@@ -133,7 +133,7 @@ const ListingsScreen = () => {
         return;
       }
       const response = await fetch(
-        `http://10.132.119.88:8080/api/properties/${propertyId}`,
+        `http://10.30.22.161:8080/api/properties/${propertyId}`,
         {
           method: "DELETE",
           headers: {

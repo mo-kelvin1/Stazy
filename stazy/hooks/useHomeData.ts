@@ -186,18 +186,7 @@ export function useHomeData() {
       acc[category].push(item);
       return acc;
     }, {} as Record<string, any[]>);
-    // Shuffle the category order
-    const categoryKeys = Object.keys(grouped);
-    for (let i = categoryKeys.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [categoryKeys[i], categoryKeys[j]] = [categoryKeys[j], categoryKeys[i]];
-    }
-    // Build a new object with shuffled keys
-    const shuffled = {} as Record<string, any[]>;
-    for (const key of categoryKeys) {
-      shuffled[key] = grouped[key];
-    }
-    return shuffled;
+    return grouped;
   };
   const onHeartPress = (item: Property | Experience | Service) => {
     handleHeartPress(item);
@@ -217,7 +206,7 @@ export function useHomeData() {
       const token = await tokenStore.getToken();
       const endpoint = searchEndpoints[activeTab];
       if (!endpoint) throw new Error("Invalid tab for search");
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || "http://10.30.22.161:8080"}${endpoint}?name=${encodeURIComponent(query)}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },

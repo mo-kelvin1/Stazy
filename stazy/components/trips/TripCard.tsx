@@ -5,10 +5,12 @@ import { Booking } from "../../context/actions/refreshBookings";
 
 const TripCard = ({
   booking,
-  onOptions,
+  onCancelBooking,
+  onMessageHost,
 }: {
   booking: Booking;
-  onOptions: () => void;
+  onCancelBooking: () => void;
+  onMessageHost: () => void;
 }) => {
   const startDate = new Date(booking.startDate);
   const endDate = new Date(booking.endDate);
@@ -71,10 +73,7 @@ const TripCard = ({
   };
 
   return (
-    <TouchableOpacity
-      style={styles.tripCard}
-      onPress={isUpcoming ? onOptions : undefined}
-    >
+    <View style={styles.tripCard}>
       <View style={styles.tripImageContainer}>
         <View style={styles.tripImage}>
           {booking.entityImages ? (
@@ -156,8 +155,23 @@ const TripCard = ({
             <Text style={styles.infoText}>${booking.totalPrice}</Text>
           </View>
         </View>
+        {/* Action Buttons for Bookings (always show) */}
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onCancelBooking}
+          >
+            <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.messageButton}
+            onPress={onMessageHost}
+          >
+            <Text style={styles.messageButtonText}>Message Host</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -250,6 +264,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginLeft: 4,
+  },
+  actionButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#dc3545",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  messageButton: {
+    flex: 1,
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginLeft: 8,
+  },
+  messageButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

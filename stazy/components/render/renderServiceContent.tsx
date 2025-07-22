@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Dimensions,
   TouchableOpacity,
+  useWindowDimensions,
 } from "react-native";
 import { Service } from "../../types/Service";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
@@ -24,6 +25,8 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -36,7 +39,7 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
         }
 
         const response = await fetch(
-          `http://10.132.119.88:8080/api/service-offers/${itemId}`,
+          `http://10.30.22.161:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -118,11 +121,45 @@ export const renderServiceContent = ({ itemId }: RenderServiceContentProps) => {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Image
-          source={{ uri: service.images[0] }}
-          style={styles.mainImage}
-          resizeMode="cover"
-        />
+        {/* Swipeable Image Carousel */}
+        <View>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setActiveImage(index);
+            }}
+            scrollEventThrottle={16}
+            style={{ width, height: 300 }}
+          >
+            {service.images &&
+              service.images.length > 0 &&
+              service.images.map((img: string, idx: number) => (
+                <Image
+                  key={idx}
+                  source={{ uri: img }}
+                  style={{ width, height: 300, borderRadius: 24 }}
+                  resizeMode="cover"
+                />
+              ))}
+          </ScrollView>
+          {/* Image indicators */}
+          <View style={styles.imageIndicators}>
+            {service.images &&
+              service.images.length > 1 &&
+              service.images.map((_: string, idx: number) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.indicatorDot,
+                    activeImage === idx && styles.activeIndicatorDot,
+                  ]}
+                />
+              ))}
+          </View>
+        </View>
         <View style={styles.detailsContainer}>
           {/* Header Section */}
           <View style={styles.headerSection}>
@@ -542,4 +579,19 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   reserveButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
+  },
 });

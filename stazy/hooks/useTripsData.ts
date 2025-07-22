@@ -58,13 +58,13 @@ export function useTripsData() {
   });
   const currentBookings = selectedTab === "upcoming" ? upcomingBookings : pastBookings;
 
-  const handleCancelBooking = async () => {
-    if (!selectedBooking) return;
+  const handleCancelBooking = async (booking: Booking) => {
+    if (!booking) return;
     try {
       setLoading(true);
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.132.119.88:8080/api/bookings/${selectedBooking.id}`,
+        `http://10.30.22.161:8080/api/bookings/${booking.id}`,
         {
           method: "DELETE",
           headers: {
@@ -75,8 +75,6 @@ export function useTripsData() {
       );
       if (res.ok) {
         Alert.alert("Booking deleted");
-        setModalVisible(false);
-        setSelectedBooking(null);
         fetchBookings();
       } else {
         let data = {};
@@ -97,15 +95,14 @@ export function useTripsData() {
     }
   };
 
-  const handleMessageHost = () => {
-    if (!selectedBooking) return;
-    setModalVisible(false);
+  const handleMessageHost = (booking: Booking) => {
+    if (!booking) return;
     router.push({
       pathname: "/(tabs)/messages",
       params: {
-        hostEmail: selectedBooking.hostEmail,
-        hostName: selectedBooking.entityTitle,
-        hostId: selectedBooking.hostId,
+        hostEmail: booking.hostEmail,
+        hostName: booking.entityTitle,
+        hostId: booking.hostId,
       },
     });
   };
@@ -116,10 +113,6 @@ export function useTripsData() {
     bookings,
     loading,
     error,
-    modalVisible,
-    setModalVisible,
-    selectedBooking,
-    setSelectedBooking,
     fetchBookings,
     handleCancelBooking,
     handleMessageHost,

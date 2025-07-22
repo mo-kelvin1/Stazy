@@ -1,16 +1,18 @@
 import React from "react";
-import { ScrollView, StyleSheet, RefreshControl } from "react-native";
+import { ScrollView, StyleSheet, RefreshControl, Alert } from "react-native";
 import TripCard from "./TripCard";
 import { Booking } from "../../context/actions/refreshBookings";
 
 const TripsList = ({
   bookings,
-  onOptions,
+  onCancelBooking,
+  onMessageHost,
   refreshing,
   onRefresh,
 }: {
   bookings: Booking[];
-  onOptions: (booking: Booking) => void;
+  onCancelBooking: (booking: Booking) => void;
+  onMessageHost: (booking: Booking) => void;
   refreshing: boolean;
   onRefresh: () => void;
 }) => (
@@ -24,7 +26,21 @@ const TripsList = ({
       <TripCard
         key={booking.id}
         booking={booking}
-        onOptions={() => onOptions(booking)}
+        onCancelBooking={() => {
+          Alert.alert(
+            "Cancel Booking",
+            "Are you sure you want to cancel this booking?",
+            [
+              { text: "No", style: "cancel" },
+              {
+                text: "Yes",
+                style: "destructive",
+                onPress: () => onCancelBooking(booking),
+              },
+            ]
+          );
+        }}
+        onMessageHost={() => onMessageHost(booking)}
       />
     ))}
   </ScrollView>

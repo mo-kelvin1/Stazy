@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "83be3855-2eb8-427e-89f1-ff01f7e41034"
+      }
+    },
+    "android": {
+      "package": "com.mo_kelvin1.stazy"
+    },
+    "ios": {
+      "bundleIdentifier": "stazy",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

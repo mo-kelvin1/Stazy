@@ -8,19 +8,17 @@ import TripsList from "../../components/trips/TripsList";
 import TripsEmptyState from "../../components/trips/TripsEmptyState";
 import TripsLoading from "../../components/trips/TripsLoading";
 import TripsError from "../../components/trips/TripsError";
-import TripsModal from "../../components/trips/TripsModal";
+import { useLocalSearchParams } from "expo-router";
 
 export default function TripsScreen() {
+  const params = useLocalSearchParams();
+  const initialTab = typeof params.tab === "string" ? params.tab : undefined;
   const {
     selectedTab,
     setSelectedTab,
     bookings,
     loading,
     error,
-    modalVisible,
-    setModalVisible,
-    selectedBooking,
-    setSelectedBooking,
     fetchBookings,
     handleCancelBooking,
     handleMessageHost,
@@ -30,6 +28,14 @@ export default function TripsScreen() {
     refreshing,
     onRefresh,
   } = useTripsData();
+
+  // Set initial tab from query param
+  React.useEffect(() => {
+    if (initialTab && (initialTab === "upcoming" || initialTab === "past")) {
+      setSelectedTab(initialTab);
+    }
+    // Only run on mount or when initialTab changes
+  }, [initialTab]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -48,22 +54,14 @@ export default function TripsScreen() {
         ) : currentBookings.length > 0 ? (
           <TripsList
             bookings={currentBookings}
-            onOptions={(booking) => {
-              setSelectedBooking(booking);
-              setModalVisible(true);
-            }}
+            onCancelBooking={handleCancelBooking}
+            onMessageHost={handleMessageHost}
             refreshing={refreshing}
             onRefresh={onRefresh}
           />
         ) : (
           <TripsEmptyState selectedTab={selectedTab} />
         )}
-        <TripsModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onCancel={handleCancelBooking}
-          onMessage={handleMessageHost}
-        />
       </FadeInView>
     </SafeAreaView>
   );

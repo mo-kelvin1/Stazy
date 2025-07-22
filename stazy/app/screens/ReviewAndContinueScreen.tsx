@@ -28,7 +28,7 @@ const ReviewAndContinueScreen = () => {
   } catch {
     item = itemParam || {};
   }
-  const [payNow, setPayNow] = React.useState(true);
+  const [payNow, setPayNow] = React.useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -45,7 +45,9 @@ const ReviewAndContinueScreen = () => {
   const currency = item.currency || "USD";
   const dateRange = item.dateRange || "Select dates";
   const guests = item.guests || 1;
-  const freeCancelDate = item.freeCancelDate || "N/A";
+  const freeCancelDate =
+    item.freeCancelDate ||
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toDateString();
 
   const handleBookNow = async () => {
     if (!startDate || !endDate) {
@@ -64,7 +66,7 @@ const ReviewAndContinueScreen = () => {
         setLoading(false);
         return;
       }
-      const res = await fetch("http://10.132.119.88:8080/api/bookings", {
+      const res = await fetch("http://10.30.22.161:8080/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,18 +118,6 @@ const ReviewAndContinueScreen = () => {
               <Text style={styles.rating}>
                 {rating.toFixed(2)} ({ratingCount})
               </Text>
-            </View>
-            <View style={styles.rowBetween}>
-              <View>
-                <Text style={styles.label}>Trip details</Text>
-                <Text style={styles.value}>{dateRange}</Text>
-                <Text style={styles.value}>
-                  {guests} adult{guests > 1 ? "s" : ""}
-                </Text>
-              </View>
-              <TouchableOpacity style={styles.changeBtn}>
-                <Text style={styles.changeText}>Change</Text>
-              </TouchableOpacity>
             </View>
             <View style={styles.rowBetween}>
               <View>
@@ -222,15 +212,6 @@ const ReviewAndContinueScreen = () => {
         <View style={styles.payOptions}>
           <TouchableOpacity
             style={styles.payOption}
-            onPress={() => setPayNow(true)}
-          >
-            <View style={styles.radioCircle}>
-              {payNow && <View style={styles.radioDot} />}
-            </View>
-            <Text style={styles.payText}>Pay ${price.toFixed(2)} now</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.payOption}
             onPress={() => setPayNow(false)}
           >
             <View style={styles.radioCircle}>
@@ -241,6 +222,15 @@ const ReviewAndContinueScreen = () => {
               ${price.toFixed(2)} charged later. No extra fees.{" "}
               <Text style={styles.link}>More info</Text>
             </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.payOption}
+            onPress={() => alert("In app payment coming soon")}
+          >
+            <View style={styles.radioCircle}>
+              {payNow && <View style={styles.radioDot} />}
+            </View>
+            <Text style={styles.payText}>Pay ${price.toFixed(2)} now</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -20,7 +20,7 @@ export const createUpdateProfileAction = (
       }
 
       const response = await axios.post(
-        "http://10.132.119.88:8080/update-profile",
+        "http://10.30.22.161:8080/update-profile",
         {
           firstName,
           lastName,

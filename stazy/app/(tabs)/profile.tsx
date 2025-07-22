@@ -14,6 +14,7 @@ import FeatureRow from "../../components/profile/FeatureRow";
 import HostCard from "../../components/profile/HostCard";
 import MenuSection from "../../components/profile/MenuSection";
 import SwitchToHostingButton from "../../components/profile/SwitchToHostingButton";
+import { router } from "expo-router";
 
 export default function Profile() {
   const {
@@ -49,7 +50,10 @@ export default function Profile() {
             status="Guest"
             onPress={handleViewProfile}
           />
-          <FeatureRow onPastTrips={() => {}} onConnections={() => {}} />
+          <FeatureRow
+            onPastTrips={() => router.push("/(tabs)/trips?tab=past")}
+            onConnections={() => {}}
+          />
           <HostCard onPress={handleSwitchToHosting} />
           <MenuSection
             onViewProfile={handleViewProfile}
