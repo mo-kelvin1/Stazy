@@ -5,10 +5,12 @@ import { Booking } from "../../context/actions/refreshBookings";
 
 const TripCard = ({
   booking,
-  onOptions,
+  onCancelBooking,
+  onMessageHost,
 }: {
   booking: Booking;
-  onOptions: () => void;
+  onCancelBooking: () => void;
+  onMessageHost: () => void;
 }) => {
   const startDate = new Date(booking.startDate);
   const endDate = new Date(booking.endDate);
@@ -71,10 +73,7 @@ const TripCard = ({
   };
 
   return (
-    <TouchableOpacity
-      style={styles.tripCard}
-      onPress={isUpcoming ? onOptions : undefined}
-    >
+    <View style={styles.tripCard}>
       <View style={styles.tripImageContainer}>
         <View style={styles.tripImage}>
           {booking.entityImages ? (
@@ -98,20 +97,36 @@ const TripCard = ({
       </View>
       <View style={styles.tripDetails}>
         <View style={styles.tripHeader}>
-          <Text style={styles.tripDestination}>
-            {booking.entityTitle || "Booking"}
-          </Text>
-          <View
-            style={[
-              styles.bookingTypeBadge,
-              { backgroundColor: getBookingTypeColor() + "20" },
-            ]}
-          >
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
             <Text
-              style={[styles.bookingTypeText, { color: getBookingTypeColor() }]}
+              style={styles.tripDestination}
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              {booking.bookingType || "PROPERTY"}
+              {booking.entityTitle || "Booking"}
             </Text>
+            <View style={{ flex: 1 }} />
+            <View
+              style={[
+                styles.bookingTypeBadge,
+                {
+                  backgroundColor: getBookingTypeColor() + "20",
+                  minWidth: 64,
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.bookingTypeText,
+                  { color: getBookingTypeColor() },
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {booking.bookingType || "PROPERTY"}
+              </Text>
+            </View>
           </View>
         </View>
         <Text style={styles.tripLocation}>
@@ -140,8 +155,23 @@ const TripCard = ({
             <Text style={styles.infoText}>${booking.totalPrice}</Text>
           </View>
         </View>
+        {/* Action Buttons for Bookings (always show) */}
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onCancelBooking}
+          >
+            <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.messageButton}
+            onPress={onMessageHost}
+          >
+            <Text style={styles.messageButtonText}>Message Host</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -188,10 +218,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 4,
+    flexShrink: 1,
+    maxWidth: 180,
   },
   tripHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 4,
   },
@@ -233,6 +264,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginLeft: 4,
+  },
+  actionButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#dc3545",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  messageButton: {
+    flex: 1,
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginLeft: 8,
+  },
+  messageButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

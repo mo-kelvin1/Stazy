@@ -27,6 +27,8 @@ export default function WishlistScreen() {
     handlePlanTripPress,
     handleExplorePress,
     handleRemove,
+    refreshing,
+    onRefresh,
   } = useWishlistScreenData();
 
   return (
@@ -48,13 +50,10 @@ export default function WishlistScreen() {
             onRemove={handleRemove}
             onItemClick={handleItemClick}
             onExplorePress={handleExplorePress}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           />
         )}
-
-        <WishlistBottomActions
-          onSharePress={handleSharePress}
-          onPlanTripPress={handlePlanTripPress}
-        />
 
         {selectedProperty && (
           <WishlistPropertyModal

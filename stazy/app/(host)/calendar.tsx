@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, SafeAreaView } from "react-native";
+import { StyleSheet, SafeAreaView, Platform, StatusBar } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 import CalendarHeader from "../../components/host/calendar/CalendarHeader";
@@ -50,7 +50,7 @@ const CalendarScreen = () => {
       const token = await tokenStore.getToken();
       if (!token) return;
       const response = await fetch(
-        "http://10.30.22.153:8080/api/bookings/host-bookings",
+        "http://10.132.119.88:8080/api/bookings/host-bookings",
         {
           method: "GET",
           headers: {
@@ -111,7 +111,12 @@ const CalendarScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        Platform.OS === "android" && { paddingTop: StatusBar.currentHeight },
+      ]}
+    >
       <CalendarHeader />
       <Calendar
         style={styles.calendar}

@@ -93,4 +93,17 @@ public class BookingController {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{bookingId}")
+    public ResponseEntity<?> deleteBooking(@PathVariable Long bookingId,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            String token = authorization.replace("Bearer ", "");
+            String userEmail = jwtUtil.getEmailFromToken(token);
+            bookingService.deleteBooking(bookingId, userEmail);
+            return ResponseEntity.ok(new ApiResponse(true, "Booking deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
 }

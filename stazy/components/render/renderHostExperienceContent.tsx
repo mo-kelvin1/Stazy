@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import { Experience } from "../../types/Experience";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,6 +31,8 @@ export const renderHostExperienceContent = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Experience>>({});
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchExperience = async () => {
@@ -42,7 +45,7 @@ export const renderHostExperienceContent = ({
         }
 
         const response = await fetch(
-          `http://10.30.22.153:8080/api/experiences/${itemId}`,
+          `http://10.132.119.88:8080/api/experiences/${itemId}`,
           {
             method: "GET",
             headers: {
@@ -117,7 +120,7 @@ export const renderHostExperienceContent = ({
       }
 
       const response = await fetch(
-        `http://10.30.22.153:8080/api/experiences/${itemId}`,
+        `http://10.132.119.88:8080/api/experiences/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -180,11 +183,45 @@ export const renderHostExperienceContent = ({
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Image
-        source={{ uri: experience.images[0] }}
-        style={styles.mainImage}
-        resizeMode="cover"
-      />
+      {/* Swipeable Image Carousel */}
+      <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / width);
+            setActiveImage(index);
+          }}
+          scrollEventThrottle={16}
+          style={{ width, height: 300 }}
+        >
+          {experience.images &&
+            experience.images.length > 0 &&
+            experience.images.map((img: string, idx: number) => (
+              <Image
+                key={idx}
+                source={{ uri: img }}
+                style={{ width, height: 300, borderRadius: 24 }}
+                resizeMode="cover"
+              />
+            ))}
+        </ScrollView>
+        {/* Image indicators */}
+        <View style={styles.imageIndicators}>
+          {experience.images &&
+            experience.images.length > 1 &&
+            experience.images.map((_: string, idx: number) => (
+              <View
+                key={idx}
+                style={[
+                  styles.indicatorDot,
+                  activeImage === idx && styles.activeIndicatorDot,
+                ]}
+              />
+            ))}
+        </View>
+      </View>
       <View style={styles.detailsContainer}>
         {/* Header Section */}
         <View style={styles.headerSection}>
@@ -728,5 +765,20 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 20,
+  },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
   },
 });

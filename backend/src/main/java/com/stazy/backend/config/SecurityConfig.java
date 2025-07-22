@@ -29,6 +29,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/ws/chat/**").permitAll() // <-- Allow WebSocket handshake
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/forgot-password",
                                 "/api/auth/reset-password", "/api/auth/verify-email", "/api/auth/resend-verification")
                         .permitAll()

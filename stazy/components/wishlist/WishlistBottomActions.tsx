@@ -7,22 +7,8 @@ interface WishlistBottomActionsProps {
   onPlanTripPress?: () => void;
 }
 
-const WishlistBottomActions: React.FC<WishlistBottomActionsProps> = ({
-  onSharePress,
-  onPlanTripPress,
-}) => {
-  return (
-    <View style={styles.bottomActions}>
-      <TouchableOpacity style={styles.shareAllButton} onPress={onSharePress}>
-        <Ionicons name="share-outline" size={20} color="#007AFF" />
-        <Text style={styles.shareAllText}>Share Wishlist</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.planTripButton} onPress={onPlanTripPress}>
-        <Ionicons name="calendar-outline" size={20} color="#fff" />
-        <Text style={styles.planTripText}>Plan Trip</Text>
-      </TouchableOpacity>
-    </View>
-  );
+const WishlistBottomActions: React.FC<WishlistBottomActionsProps> = () => {
+  return <></>;
 };
 
 const styles = StyleSheet.create({

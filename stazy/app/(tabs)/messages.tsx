@@ -1,109 +1,304 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   View,
   StyleSheet,
   Text,
   TouchableOpacity,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 import { useLocalSearchParams } from "expo-router";
+import { Client } from "@stomp/stompjs";
+import { useAuth } from "../../hooks/useAuth";
+import SockJS from "sockjs-client";
+import { SafeAreaView as SafeAreaViewRN } from "react-native-safe-area-context";
+import ChatHeader from "../../components/messages/ChatHeader";
+import ChatInputBar from "../../components/messages/ChatInputBar";
+import ChatList from "../../components/messages/ChatList";
+import ThreadList from "../../components/messages/ThreadList";
 
-const TabMessages = () => {
-  const params = useLocalSearchParams();
-  const hostEmail = params.hostEmail as string | undefined;
-  const hostName = params.hostName as string | undefined;
-  const hostId = params.hostId as string | undefined;
+const tokenStore = new SimulatedTokenStore();
+const WS_URL = "ws://10.132.119.88:8080/ws/chat";
 
-  const [refreshKey, setRefreshKey] = useState(0);
+function formatTimestamp(ts: string) {
+  if (!ts) return "";
+  const date = new Date(ts);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+const ChatScreen = ({
+  recipientEmail,
+  onBack,
+}: {
+  recipientEmail: string;
+  onBack: () => void;
+}) => {
+  const { user } = useAuth();
+  const userEmail = user?.email || "";
+  const [messages, setMessages] = useState<any[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [recipientName, setRecipientName] = useState<string>("");
+  const stompClientRef = useRef<Client | null>(null);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (
-        globalThis.tabRefreshKeys &&
-        globalThis.tabRefreshKeys.messages !== undefined
-      ) {
-        setRefreshKey(globalThis.tabRefreshKeys.messages);
+    if (!user?.email || !recipientEmail) return;
+    fetchMessages();
+    fetchRecipientName();
+    let client: Client | null = null;
+    const setupWebSocket = async () => {
+      try {
+        const token = await tokenStore.getToken();
+        if (!token) return;
+        const sockJsUrl = `${WS_URL.replace(
+          "ws://",
+          "http://"
+        )}?token=${token}`;
+        const socket = new SockJS(sockJsUrl);
+        client = new Client({
+          webSocketFactory: () => socket,
+          reconnectDelay: 5000,
+          debug: (str) => {},
+          onConnect: () => {
+            client!.subscribe(`/topic/messages/${user.email}`, () => {
+              fetchMessages();
+            });
+          },
+        });
+        client.activate();
+        stompClientRef.current = client;
+      } catch {}
+    };
+    setupWebSocket();
+    return () => {
+      if (client) client.deactivate();
+    };
+  }, [user?.email, recipientEmail]);
+
+  const fetchMessages = async () => {
+    setLoading(true);
+    try {
+      const token = await tokenStore.getToken();
+      const res = await fetch(
+        `http://10.132.119.88:8080/api/chats/${recipientEmail}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data);
       }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-  useEffect(() => {}, [refreshKey]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRecipientName = async () => {
+    try {
+      const token = await tokenStore.getToken();
+      const res = await fetch(
+        `http://10.132.119.88:8080/api/auth/profile-by-email?email=${encodeURIComponent(
+          recipientEmail
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) {
+          setRecipientName(
+            `${data.data.firstName} ${data.data.lastName}`.trim()
+          );
+        } else {
+          setRecipientName(recipientEmail);
+        }
+      } else {
+        setRecipientName(recipientEmail);
+      }
+    } catch {
+      setRecipientName(recipientEmail);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim() || !recipientEmail || !user?.email) return;
+    setLoading(true);
+    try {
+      const client = stompClientRef.current;
+      if (client && client.connected) {
+        const messagePayload = {
+          senderEmail: user.email,
+          recipientEmail,
+          content: input,
+        };
+        client.publish({
+          destination: "/app/chat.send",
+          body: JSON.stringify(messagePayload),
+        });
+        setInput("");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Messages</Text>
-      </View>
-      {hostEmail ? (
-        <View style={styles.centeredContent}>
-          <Text style={styles.chatTitle}>
-            Chat with {hostName || hostEmail}
-          </Text>
-          <Text style={styles.chatEmail}>Email: {hostEmail}</Text>
-          <View style={styles.chatPlaceholder}>
-            <Text style={styles.chatPlaceholderText}>[Chat UI goes here]</Text>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.centeredContent}>
-          <Text style={styles.noChatText}>
-            No chat selected. Please select a user or host to chat with.
-          </Text>
-        </View>
-      )}
-    </SafeAreaView>
+    <SafeAreaViewRN style={styles.headerSafeArea} edges={["top"]}>
+      <ChatHeader title={recipientName || recipientEmail} onBack={onBack} />
+      <ChatList messages={messages} userEmail={userEmail} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={80}
+      >
+        <ChatInputBar
+          value={input}
+          onChangeText={setInput}
+          onSend={sendMessage}
+          loading={loading}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaViewRN>
   );
 };
 
-export default TabMessages;
+const MessagesTab = () => {
+  const params = useLocalSearchParams();
+  const initialThread = params.hostEmail as string | undefined;
+  const [threads, setThreads] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<string | null>(
+    initialThread || null
+  );
+
+  useEffect(() => {
+    fetchThreads();
+  }, []);
+
+  useEffect(() => {
+    if (initialThread) setSelectedThread(initialThread);
+  }, [initialThread]);
+
+  const fetchThreads = async () => {
+    setLoading(true);
+    try {
+      const token = await tokenStore.getToken();
+      const res = await fetch(`http://10.132.119.88:8080/api/chats/threads`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setThreads(data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (selectedThread) {
+    return (
+      <ChatScreen
+        recipientEmail={selectedThread}
+        onBack={() => setSelectedThread(null)}
+      />
+    );
+  }
+
+  return (
+    <SafeAreaViewRN style={styles.headerSafeArea} edges={["top"]}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Messages</Text>
+      </View>
+      <ThreadList
+        threads={threads}
+        selectedThread={selectedThread}
+        onSelect={setSelectedThread}
+        loading={loading}
+      />
+    </SafeAreaViewRN>
+  );
+};
+
+export default MessagesTab;
 
 const styles = StyleSheet.create({
-  container: {
+  headerSafeArea: {
+    backgroundColor: "#fff",
     flex: 1,
+  },
+  header: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
     backgroundColor: "#fff",
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 48,
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
-    minHeight: 80,
-  },
-  headerTitle: {
-    fontSize: 28,
+  title: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "#222",
-    letterSpacing: 0.5,
   },
-  centeredContent: {
+  threadsList: {
+    flexGrow: 1,
+    padding: 16,
+  },
+  threadItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    borderRadius: 12,
+    marginBottom: 6,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  threadEmail: {
+    fontSize: 16,
+    color: "#222",
+    fontWeight: "600",
+    marginLeft: 12,
+  },
+  loadingText: {
+    color: "#888",
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+  },
+  emptyStateBox: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 60,
+  },
+  emptyText: {
+    color: "#888",
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "500",
+    marginTop: 10,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+    marginHorizontal: 6,
+    marginBottom: 2,
+    backgroundColor: "#000",
   },
-  chatTitle: {
-    fontSize: 20,
+  avatarText: {
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: 8,
+    fontSize: 16,
   },
-  chatEmail: {
-    color: "#888",
-    marginBottom: 16,
-  },
-  chatPlaceholder: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 24,
-    width: 320,
-    alignItems: "center",
-  },
-  chatPlaceholderText: {
-    color: "#aaa",
-  },
-  noChatText: {
-    color: "#888",
-    fontSize: 18,
-    padding: 10,
-    textAlign: "center",
+  messagesList: {
+    flexGrow: 1,
+    padding: 16,
+    paddingBottom: 24,
   },
 });

@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,18 +30,22 @@ public class PropertyController {
     @PostMapping
     public ResponseEntity<?> createProperty(@RequestBody CreatePropertyRequest request,
             @RequestHeader("Authorization") String authorization) {
+        System.out.println("[DEBUG] Received createProperty request: " + request);
         try {
             // Extract token from Authorization header
             String token = authorization.replace("Bearer ", "");
             String hostEmail = jwtUtil.getEmailFromToken(token);
+            System.out.println("[DEBUG] Host email: " + hostEmail);
 
             Property createdProperty = propertyService.createProperty(request, hostEmail);
+            System.out.println("[DEBUG] Created property ID: " + createdProperty.getId());
             CreatePropertyResponse response = new CreatePropertyResponse(
                     createdProperty.getId(),
                     "Property created successfully");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
+            System.out.println("[ERROR] Exception in createProperty: " + e.getMessage());
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
         }
     }
@@ -172,6 +180,20 @@ public class PropertyController {
         }
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<?> getPropertiesByTitle(@RequestParam String name,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            List<Property> properties = propertyService.getPropertiesByTitle(name);
+            List<PropertyResponse> responses = properties.stream()
+                    .map(PropertyResponse::fromProperty)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<?> deleteProperty(@PathVariable Long propertyId,
             @RequestHeader("Authorization") String authorization) {
@@ -201,6 +223,23 @@ public class PropertyController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        System.out.println("[DEBUG] Received uploadImage request: " + file.getOriginalFilename());
+        try {
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get("uploads/" + filename);
+            Files.createDirectories(uploadPath.getParent());
+            Files.write(uploadPath, file.getBytes());
+            String url = "http://10.132.119.88:8080/uploads/" + filename;
+            System.out.println("[DEBUG] Uploaded image URL: " + url);
+            return ResponseEntity.ok(url);
+        } catch (Exception e) {
+            System.out.println("[ERROR] Exception in uploadImage: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
         }
     }
 }

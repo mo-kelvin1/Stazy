@@ -199,4 +199,16 @@ public class BookingService {
         // Use the simpler findByHostId method
         return bookingRepository.findByHostId(hostOpt.get().getId());
     }
+
+    public void deleteBooking(Long bookingId, String userEmail) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            throw new PropertyException("Booking not found");
+        }
+        Booking booking = bookingOpt.get();
+        if (!booking.getUser().getEmail().equals(userEmail)) {
+            throw new PropertyException("You do not have permission to delete this booking");
+        }
+        bookingRepository.delete(booking);
+    }
 }

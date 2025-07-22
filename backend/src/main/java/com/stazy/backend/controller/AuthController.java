@@ -159,6 +159,24 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/profile-by-email")
+    public ResponseEntity<ApiResponse> getProfileByEmail(@RequestParam String email) {
+        Optional<User> userOpt = userService.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, "User not found"));
+        }
+        User user = userOpt.get();
+        return ResponseEntity.ok(new ApiResponse(true, "Profile retrieved successfully",
+                new UserProfileResponse(
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getAddress(),
+                        user.getDateOfBirth())));
+    }
+
     @PostMapping("/resend-verification")
     public ResponseEntity<ApiResponse> resendVerificationOtp(Authentication authentication) {
         try {

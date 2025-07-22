@@ -6,7 +6,7 @@ export const createForgotPasswordAction = () => {
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await axios.post(
-        "http://10.30.22.153:8080/api/auth/forgot-password",
+        "http://10.132.119.88:8080/api/auth/forgot-password",
         { email }
       );
 

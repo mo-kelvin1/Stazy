@@ -1,5 +1,11 @@
 import React from "react";
-import { StyleSheet, ScrollView, SafeAreaView } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { router } from "expo-router";
 import {
   Ionicons,
@@ -69,7 +75,12 @@ const MenuScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        Platform.OS === "android" && { paddingTop: StatusBar.currentHeight },
+      ]}
+    >
       <MenuTopBar
         firstInitial={firstInitial}
         onNotificationsPress={() => router.push("/screens/NotificationScreen")}

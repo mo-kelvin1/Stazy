@@ -25,6 +25,7 @@ interface TodayBookingCardProps {
   formatTime: (date: string) => string;
   getBookingTypeIcon: (type?: string) => string;
   getBookingTypeColor: (type?: string) => string;
+  onPress?: () => void;
 }
 
 const TodayBookingCard: React.FC<TodayBookingCardProps> = ({
@@ -34,9 +35,11 @@ const TodayBookingCard: React.FC<TodayBookingCardProps> = ({
   formatTime,
   getBookingTypeIcon,
   getBookingTypeColor,
+  onPress,
 }) => {
+  const CardComponent = onPress ? TouchableOpacity : View;
   return (
-    <View style={styles.card}>
+    <CardComponent style={styles.card} onPress={onPress} activeOpacity={0.85}>
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
           <Ionicons
@@ -82,7 +85,7 @@ const TodayBookingCard: React.FC<TodayBookingCardProps> = ({
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </CardComponent>
   );
 };
 

@@ -25,8 +25,7 @@ public class ChatRestController {
         String token = authorization.replace("Bearer ", "");
         String userEmail = jwtUtil.getEmailFromToken(token);
 
-        List<Message> messages = messageRepository.findBySenderEmailOrRecipientEmailOrderByTimestampAsc(userEmail,
-                userEmail);
+        List<Message> messages = messageRepository.findBySenderEmailOrRecipientEmailOrderByTimestampAsc(userEmail);
 
         Set<String> threads = new HashSet<>();
         for (Message msg : messages) {
@@ -47,7 +46,6 @@ public class ChatRestController {
         String token = authorization.replace("Bearer ", "");
         String userEmail = jwtUtil.getEmailFromToken(token);
 
-        return messageRepository.findBySenderEmailAndRecipientEmailOrRecipientEmailAndSenderEmailOrderByTimestampAsc(
-                userEmail, otherEmail, userEmail, otherEmail);
+        return messageRepository.findChatHistoryBetweenUsers(userEmail, otherEmail);
     }
 }

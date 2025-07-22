@@ -240,4 +240,8 @@ public class ExperienceService {
         experience.setIsAvailable(!experience.getIsAvailable());
         return experienceRepository.save(experience);
     }
+
+    public List<Experience> getExperiencesByTitle(String title) {
+        return experienceRepository.findByTitleContainingIgnoreCase(title);
+    }
 }

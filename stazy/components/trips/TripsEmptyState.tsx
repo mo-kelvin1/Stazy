@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const TripsEmptyState = ({ selectedTab }: { selectedTab: string }) => (
   <View style={styles.emptyState}>
@@ -14,7 +15,10 @@ const TripsEmptyState = ({ selectedTab }: { selectedTab: string }) => (
         : "Your travel history will appear here."}
     </Text>
     {selectedTab === "upcoming" && (
-      <TouchableOpacity style={styles.planTripButton}>
+      <TouchableOpacity
+        onPress={() => router.replace("/(tabs)")}
+        style={styles.planTripButton}
+      >
         <Text style={styles.planTripText}>Plan a Trip</Text>
       </TouchableOpacity>
     )}

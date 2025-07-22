@@ -14,11 +14,11 @@ const CancelButton = ({ onPress, visible }) => {
 const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: '#FF3B30',
-    marginHorizontal: 16,
-    marginVertical: 16,
-    paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
+    paddingVertical: 16,
+    marginHorizontal: 16,
+    marginBottom: 30,
   },
   cancelButtonText: {
     color: 'white',

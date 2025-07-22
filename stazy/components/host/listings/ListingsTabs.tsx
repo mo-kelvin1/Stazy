@@ -8,30 +8,26 @@ interface ListingsTabsProps {
 }
 
 const TABS = [
-  { label: "Homes", icon: "home" },
-  { label: "Experiences", icon: "balloon" },
-  { label: "Services", icon: "restaurant" },
+  { key: "home", label: "Home", emoji: "🏠" },
+  { key: "experience", label: "Experience", emoji: "🎈" },
+  { key: "service", label: "Service", emoji: "🛎️" },
 ];
 
 const ListingsTabs = ({ activeTab, onTabChange }: ListingsTabsProps) => (
   <View style={styles.tabContainer}>
     {TABS.map((tab) => (
       <TouchableOpacity
-        key={tab.label}
-        style={[styles.tab, activeTab === tab.label && styles.activeTab]}
-        onPress={() => onTabChange(tab.label)}
+        key={tab.key}
+        style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+        onPress={() => onTabChange(tab.key)}
       >
         <View style={styles.tabWithBadge}>
-          <Ionicons
-            name={tab.icon as any}
-            size={20}
-            color={activeTab === tab.label ? "#222222" : "#717171"}
-          />
+          <Text style={styles.emoji}>{tab.emoji}</Text>
         </View>
         <Text
           style={[
             styles.tabText,
-            activeTab === tab.label && styles.activeTabText,
+            activeTab === tab.key && styles.activeTabText,
           ]}
         >
           {tab.label}
@@ -68,6 +64,10 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#222222",
     fontWeight: "600",
+  },
+  emoji: {
+    fontSize: 24,
+    marginBottom: 2,
   },
 });
 

@@ -64,37 +64,47 @@ export const useWishlist = () => {
   // Toggle wishlist item (add/remove)
   const handleHeartPress = useCallback(
     async (item: Property | Experience | Service) => {
-      console.log("Heart icon clicked for item:", item);
+      // Optimistically update likedItems
+      setLikedItems((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(item.id.toString())) {
+          newSet.delete(item.id.toString());
+        } else {
+          newSet.add(item.id.toString());
+        }
+        return newSet;
+      });
+      // Optionally, update wishlistCount optimistically as well
+      setWishlistCount((prev) =>
+        likedItems.has(item.id.toString()) ? prev - 1 : prev + 1
+      );
+
+      // Call backend
       await onHeartClicked(
         item,
         async (isNowInWishlist: boolean) => {
+          // No need to reload the whole wishlist, likedItems is already updated
+          // Optionally, you could sync with backend if needed
+        },
+        (error: string) => {
+          // Revert optimistic update if backend fails
           setLikedItems((prev) => {
             const newSet = new Set(prev);
-            // Use the entity ID (item.id) for likedItems
-            if (isNowInWishlist) {
-              newSet.add(item.id.toString());
-            } else {
+            if (newSet.has(item.id.toString())) {
               newSet.delete(item.id.toString());
+            } else {
+              newSet.add(item.id.toString());
             }
             return newSet;
           });
-
-          await refreshWishlistState();
-          await loadWishlistItems(); // update the visual wishlist
-          (globalThis as any).wishlistRefreshKey = Date.now();
-
-          console.log(
-            isNowInWishlist
-              ? `${item.title} added to wishlist!`
-              : `${item.title} removed from wishlist!`
+          // Optionally, revert wishlistCount
+          setWishlistCount((prev) =>
+            likedItems.has(item.id.toString()) ? prev + 1 : prev - 1
           );
-        },
-        (error: string) => {
-          console.error("Wishlist error:", error);
         }
       );
     },
-    [loadWishlistItems, refreshWishlistState]
+    [likedItems]
   );
 
   // Remove item directly by ID from visual wishlist

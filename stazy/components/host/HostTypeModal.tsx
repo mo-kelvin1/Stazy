@@ -7,6 +7,7 @@ interface HostTypeModalProps {
   onClose: () => void;
   onSelectType: (type: string) => void;
   selectedType: string | null;
+  onNext?: () => void;
 }
 
 const options = [
@@ -20,6 +21,7 @@ const HostTypeModal: React.FC<HostTypeModalProps> = ({
   onClose,
   onSelectType,
   selectedType,
+  onNext,
 }) => (
   <Modal visible={visible} animationType="slide" transparent>
     <View style={styles.overlay}>
@@ -45,8 +47,11 @@ const HostTypeModal: React.FC<HostTypeModalProps> = ({
         <TouchableOpacity
           style={[styles.nextBtn, !selectedType && styles.nextBtnDisabled]}
           disabled={!selectedType}
+          onPress={selectedType ? () => onNext && onNext() : undefined}
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, selectedType && { color: "#222" }]}>
+            Next
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

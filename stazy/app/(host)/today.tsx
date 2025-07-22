@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, Alert, StyleSheet } from "react-native";
+import {
+  SafeAreaView,
+  Alert,
+  StyleSheet,
+  Platform,
+  StatusBar,
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import TodayHeader from "../../components/host/today/TodayHeader";
 import TodayTabs from "../../components/host/today/TodayTabs";
 import TodayBookingList from "../../components/host/today/TodayBookingList";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
+import { useRouter } from "expo-router";
 
 const tokenStore = new SimulatedTokenStore();
 
@@ -24,12 +35,15 @@ interface Booking {
 }
 
 const TodayScreen = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"pending" | "confirmed">(
     "pending"
   );
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     fetchHostBookings();
@@ -43,7 +57,7 @@ const TodayScreen = () => {
         return;
       }
       const response = await fetch(
-        "http://10.30.22.153:8080/api/bookings/host-bookings",
+        "http://10.132.119.88:8080/api/bookings/host-bookings",
         {
           method: "GET",
           headers: {
@@ -154,7 +168,7 @@ const TodayScreen = () => {
             }
             const status = action === "confirm" ? "CONFIRMED" : "REJECTED";
             const response = await fetch(
-              "http://10.30.22.153:8080/api/bookings/status",
+              "http://10.132.119.88:8080/api/bookings/status",
               {
                 method: "PATCH",
                 headers: {
@@ -188,10 +202,36 @@ const TodayScreen = () => {
     ]);
   };
 
+  const handleBookingPress = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setModalVisible(true);
+  };
+
+  const handleMessageUser = () => {
+    if (selectedBooking && selectedBooking.userEmail) {
+      setModalVisible(false);
+      setSelectedBooking(null);
+      router.push({
+        pathname: "/(host)/messages",
+        params: { user: selectedBooking.userEmail },
+      });
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedBooking(null);
+  };
+
   const filteredBookings = getFilteredBookings();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        Platform.OS === "android" && { paddingTop: StatusBar.currentHeight },
+      ]}
+    >
       <TodayHeader
         title="Today"
         subtitle={
@@ -215,7 +255,69 @@ const TodayScreen = () => {
         formatTime={formatTime}
         getBookingTypeIcon={getBookingTypeIcon}
         getBookingTypeColor={getBookingTypeColor}
+        onBookingPress={handleBookingPress}
       />
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseModal}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.3)",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              width: 320,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}
+            >
+              Booking Options
+            </Text>
+            {selectedBooking && (
+              <Text
+                style={{ marginBottom: 16, color: "#444", textAlign: "center" }}
+              >
+                Guest: {selectedBooking.userFirstName || ""}{" "}
+                {selectedBooking.userLastName || ""}
+                {"\n"}Email: {selectedBooking.userEmail || "N/A"}
+              </Text>
+            )}
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#007AFF",
+                padding: 12,
+                borderRadius: 8,
+                width: "100%",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+              onPress={handleMessageUser}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Message User
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleCloseModal}
+              style={{ marginTop: 8 }}
+            >
+              <Text style={{ color: "#007AFF" }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

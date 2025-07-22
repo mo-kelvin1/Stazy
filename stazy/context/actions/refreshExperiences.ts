@@ -7,7 +7,9 @@ export interface RefreshExperiencesResult {
   message?: string;
 }
 
-export const createRefreshExperiencesAction = (tokenStore: SimulatedTokenStore) => {
+export const createRefreshExperiencesAction = (
+  tokenStore: SimulatedTokenStore
+) => {
   return async (): Promise<RefreshExperiencesResult> => {
     try {
       const token = await tokenStore.getToken();
@@ -18,55 +20,61 @@ export const createRefreshExperiencesAction = (tokenStore: SimulatedTokenStore) 
         };
       }
 
-      const response = await fetch("http://10.30.22.153:8080/api/experiences", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://10.132.119.88:8080/api/experiences",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
           success: false,
-          message: errorData.message || `HTTP error! status: ${response.status}`,
+          message:
+            errorData.message || `HTTP error! status: ${response.status}`,
         };
       }
 
       const experiencesData = await response.json();
-      
+
       // Transform the backend data to match the frontend Experience interface
-      const experiences: Experience[] = experiencesData.map((experience: any) => ({
-        id: experience.id.toString(),
-        title: experience.title || "",
-        description: experience.description || "",
-        location: experience.location || "",
-        price: experience.price || 0,
-        duration: experience.duration || 0,
-        rating: experience.rating || 0,
-        images: experience.images || [],
-        hostName: experience.hostName || "",
-        hostEmail: experience.hostEmail || "",
-        category: experience.category || "adventure",
-        experienceType: experience.experienceType || "group",
-        difficulty: experience.difficulty || "easy",
-        ageRestriction: {
-          minimum: experience.minimumAge || 0,
-          maximum: experience.maximumAge,
-        },
-        maxParticipants: experience.maxParticipants || 1,
-        included: experience.included || [],
-        toBring: experience.toBring || [],
-        meetingPoint: experience.meetingPoint || "",
-        languages: experience.languages || [],
-        availability: {
-          days: experience.availabilityDays || [],
-          timeSlots: experience.availabilityTimeSlots || [],
-        },
-        createdAt: new Date(experience.createdAt),
-        updatedAt: new Date(experience.updatedAt),
-      }));
+      const experiences: Experience[] = experiencesData.map(
+        (experience: any) => ({
+          id: experience.id.toString(),
+          title: experience.title || "",
+          description: experience.description || "",
+          location: experience.location || "",
+          price: experience.price || 0,
+          duration: experience.duration || 0,
+          rating: experience.rating || 0,
+          images: experience.images || [],
+          hostName: experience.hostName || "",
+          hostEmail: experience.hostEmail || "",
+          category: experience.category || "adventure",
+          experienceType: experience.experienceType || "group",
+          difficulty: experience.difficulty || "easy",
+          ageRestriction: {
+            minimum: experience.minimumAge || 0,
+            maximum: experience.maximumAge,
+          },
+          maxParticipants: experience.maxParticipants || 1,
+          included: experience.included || [],
+          toBring: experience.toBring || [],
+          meetingPoint: experience.meetingPoint || "",
+          languages: experience.languages || [],
+          availability: {
+            days: experience.availabilityDays || [],
+            timeSlots: experience.availabilityTimeSlots || [],
+          },
+          createdAt: new Date(experience.createdAt),
+          updatedAt: new Date(experience.updatedAt),
+        })
+      );
 
       return {
         success: true,
@@ -80,4 +88,4 @@ export const createRefreshExperiencesAction = (tokenStore: SimulatedTokenStore) 
       };
     }
   };
-}; 
+};

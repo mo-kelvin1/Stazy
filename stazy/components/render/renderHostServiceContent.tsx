@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { Service } from "../../types/Service";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +30,8 @@ export const renderHostServiceContent = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Service>>({});
+  const { width } = useWindowDimensions();
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -41,7 +44,7 @@ export const renderHostServiceContent = ({
         }
 
         const response = await fetch(
-          `http://10.30.22.153:8080/api/service-offers/${itemId}`,
+          `http://10.132.119.88:8080/api/service-offers/${itemId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -103,7 +106,7 @@ export const renderHostServiceContent = ({
       }
 
       const response = await fetch(
-        `http://10.30.22.153:8080/api/service-offers/${itemId}`,
+        `http://10.132.119.88:8080/api/service-offers/${itemId}`,
         {
           method: "PUT",
           headers: {
@@ -158,11 +161,45 @@ export const renderHostServiceContent = ({
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Image
-        source={{ uri: service.images[0] }}
-        style={styles.mainImage}
-        resizeMode="cover"
-      />
+      {/* Swipeable Image Carousel */}
+      <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / width);
+            setActiveImage(index);
+          }}
+          scrollEventThrottle={16}
+          style={{ width, height: 300 }}
+        >
+          {service.images &&
+            service.images.length > 0 &&
+            service.images.map((img: string, idx: number) => (
+              <Image
+                key={idx}
+                source={{ uri: img }}
+                style={{ width, height: 300, borderRadius: 24 }}
+                resizeMode="cover"
+              />
+            ))}
+        </ScrollView>
+        {/* Image indicators */}
+        <View style={styles.imageIndicators}>
+          {service.images &&
+            service.images.length > 1 &&
+            service.images.map((_: string, idx: number) => (
+              <View
+                key={idx}
+                style={[
+                  styles.indicatorDot,
+                  activeImage === idx && styles.activeIndicatorDot,
+                ]}
+              />
+            ))}
+        </View>
+      </View>
       <View style={styles.detailsContainer}>
         {/* Header Section */}
         <View style={styles.headerSection}>
@@ -571,5 +608,20 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 20,
+  },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
+  },
+  activeIndicatorDot: {
+    backgroundColor: "#007AFF",
   },
 });

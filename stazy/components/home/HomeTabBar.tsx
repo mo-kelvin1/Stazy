@@ -8,9 +8,9 @@ interface HomeTabBarProps {
 }
 
 const TABS = [
-  { key: "Homes", title: "Homes", icon: "home" },
-  { key: "Experiences", title: "Experiences", icon: "balloon" },
-  { key: "Services", title: "Services", icon: "restaurant" },
+  { key: "home", label: "Home", emoji: "🏠" },
+  { key: "experience", label: "Experience", emoji: "🎈" },
+  { key: "service", label: "Service", emoji: "🛎️" },
 ];
 
 const HomeTabBar = ({ activeTab, onTabPress }: HomeTabBarProps) => (
@@ -22,11 +22,7 @@ const HomeTabBar = ({ activeTab, onTabPress }: HomeTabBarProps) => (
         onPress={() => onTabPress(tab.key)}
       >
         <View style={styles.tabWithBadge}>
-          <Ionicons
-            name={tab.icon as any}
-            size={20}
-            color={activeTab === tab.key ? "#222222" : "#717171"}
-          />
+          <Text style={styles.emoji}>{tab.emoji}</Text>
         </View>
         <Text
           style={[
@@ -34,7 +30,7 @@ const HomeTabBar = ({ activeTab, onTabPress }: HomeTabBarProps) => (
             activeTab === tab.key && styles.activeTabText,
           ]}
         >
-          {tab.title}
+          {tab.label}
         </Text>
       </TouchableOpacity>
     ))}
@@ -44,12 +40,15 @@ const HomeTabBar = ({ activeTab, onTabPress }: HomeTabBarProps) => (
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
+    marginTop: -15,
     paddingHorizontal: 0,
     marginBottom: 0,
   },
   tab: {
     flex: 1,
+    height: 70,
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     borderRadius: 8,
   },
@@ -68,6 +67,10 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#222222",
     fontWeight: "600",
+  },
+  emoji: {
+    fontSize: 36,
+    marginLeft: 12,
   },
 });
 
