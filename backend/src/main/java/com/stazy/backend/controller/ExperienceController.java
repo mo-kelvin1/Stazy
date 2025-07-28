@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/experiences")
@@ -74,18 +77,19 @@ public class ExperienceController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllExperiences(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<?> getAllExperiences(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            // Extract token from Authorization header
             String token = authorization.replace("Bearer ", "");
             String userEmail = jwtUtil.getEmailFromToken(token);
-
-            List<Experience> experiences = experienceService.getAllExperiencesExcludingUser(userEmail);
-            List<ExperienceResponse> responses = experiences.stream()
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Experience> experiencesPage = experienceService.getAllExperiencesExcludingUser(userEmail, pageable);
+            List<ExperienceResponse> responses = experiencesPage.getContent().stream()
                     .map(ExperienceResponse::fromExperience)
                     .collect(Collectors.toList());
-
-            return ResponseEntity.ok(responses);
+            return ResponseEntity.ok(new PaginatedResponse<>(responses, experiencesPage.getNumber(), experiencesPage.getTotalPages(), experiencesPage.getTotalElements()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
         }

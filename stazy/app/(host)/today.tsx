@@ -9,6 +9,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import TodayHeader from "../../components/host/today/TodayHeader";
 import TodayTabs from "../../components/host/today/TodayTabs";
@@ -44,6 +45,7 @@ const TodayScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchHostBookings();
@@ -223,6 +225,12 @@ const TodayScreen = () => {
     setSelectedBooking(null);
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHostBookings();
+    setRefreshing(false);
+  };
+
   const filteredBookings = getFilteredBookings();
 
   return (
@@ -256,6 +264,7 @@ const TodayScreen = () => {
         getBookingTypeIcon={getBookingTypeIcon}
         getBookingTypeColor={getBookingTypeColor}
         onBookingPress={handleBookingPress}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
       <Modal
         visible={modalVisible}

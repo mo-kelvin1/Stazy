@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/service-offers")
@@ -75,18 +78,19 @@ public class ServiceOfferController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllServiceOffers(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<?> getAllServiceOffers(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            // Extract token from Authorization header
             String token = authorization.replace("Bearer ", "");
             String userEmail = jwtUtil.getEmailFromToken(token);
-
-            List<ServiceOffer> serviceOffers = serviceOfferService.getAllServiceOffersExcludingUser(userEmail);
-            List<ServiceOfferResponse> responses = serviceOffers.stream()
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ServiceOffer> serviceOffersPage = serviceOfferService.getAllServiceOffersExcludingUser(userEmail, pageable);
+            List<ServiceOfferResponse> responses = serviceOffersPage.getContent().stream()
                     .map(ServiceOfferResponse::fromServiceOffer)
                     .collect(Collectors.toList());
-
-            return ResponseEntity.ok(responses);
+            return ResponseEntity.ok(new PaginatedResponse<>(responses, serviceOffersPage.getNumber(), serviceOffersPage.getTotalPages(), serviceOffersPage.getTotalElements()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
         }

@@ -5,6 +5,7 @@ import {
   ScrollView,
   View,
   Platform,
+  RefreshControl,
 } from "react-native";
 import FadeInView from "../../components/cards/FadeInView";
 import { useProfileData } from "../../hooks/useProfileData";
@@ -26,7 +27,14 @@ export default function Profile() {
     handleViewProfile,
     handleNotifications,
     handleGetHelp,
+    refreshUserData,
   } = useProfileData();
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refreshUserData?.();
+    setRefreshing(false);
+  }, [refreshUserData]);
 
   return (
     <SafeAreaView
@@ -43,7 +51,10 @@ export default function Profile() {
       />
       <FadeInView style={{ flex: 1, paddingTop: 10 }}>
         <ProfileHeader onNotifications={handleNotifications} />
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
           <ProfileCard
             avatarLetter={avatarLetter}
             firstName={firstName}

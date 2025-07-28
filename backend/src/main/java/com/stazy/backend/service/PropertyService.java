@@ -8,6 +8,8 @@ import com.stazy.backend.model.User;
 import com.stazy.backend.repository.PropertyRepository;
 import com.stazy.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,8 +185,8 @@ public class PropertyService {
         return propertyRepository.findAllAvailableProperties();
     }
 
-    public List<Property> getAllPropertiesExcludingUser(String userEmail) {
-        return propertyRepository.findAllAvailablePropertiesExcludingHost(userEmail);
+    public Page<Property> getAllPropertiesExcludingUser(String userEmail, Pageable pageable) {
+        return propertyRepository.findAllAvailablePropertiesExcludingHost(userEmail, pageable);
     }
 
     public List<Property> getPropertiesByHostEmail(String hostEmail) {

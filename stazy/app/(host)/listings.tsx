@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Text,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { Property } from "../../types/Property";
@@ -35,6 +36,7 @@ const ListingsScreen = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -163,6 +165,12 @@ const ListingsScreen = () => {
     // Add other types as needed
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
   return (
     <SafeAreaView
       style={[
@@ -198,6 +206,7 @@ const ListingsScreen = () => {
           onItemPress={handleCardPress}
           onItemLongPress={handleLongPress}
           keyExtractor={(item) => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       )}
       <HostTypeModal
