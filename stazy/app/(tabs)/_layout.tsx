@@ -78,6 +78,7 @@ export default function TabLayout() {
         name="profile"
         options={{ title: "Profile" }}
         listeners={{
+
           tabPress: () => {
             globalThis.tabRefreshKeys.profile++;
             refreshUserData();

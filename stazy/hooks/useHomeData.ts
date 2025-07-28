@@ -204,7 +204,7 @@ export function useHomeData() {
       if (!endpoint) throw new Error("Invalid tab for search");
       const res = await fetch(
         `${
-          process.env.EXPO_PUBLIC_API_URL || "http://10.132.119.88:8080"
+          process.env.EXPO_PUBLIC_API_URL || "https://stazy-app.onrender.com"
         }${endpoint}?name=${encodeURIComponent(query)}`,
         {
           headers: {
