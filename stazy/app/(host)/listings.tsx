@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Text,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { Property } from "../../types/Property";
@@ -35,6 +36,7 @@ const ListingsScreen = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -133,7 +135,7 @@ const ListingsScreen = () => {
         return;
       }
       const response = await fetch(
-        `http://10.132.119.88:8080/api/properties/${propertyId}`,
+        `http://172.20.10.2:8080/api/properties/${propertyId}`,
         {
           method: "DELETE",
           headers: {
@@ -159,8 +161,19 @@ const ListingsScreen = () => {
     if (selectedType === "home") {
       setModalVisible(false);
       router.push("../../screens/listings/homes/guest-place-type");
+    } else if (selectedType === "experience") {
+      setModalVisible(false);
+      router.push("../../screens/listings/experience/experience_type1");
+    } else if (selectedType === "service") {
+      setModalVisible(false);
+      router.push("../../screens/listings/service/service_type");
     }
-    // Add other types as needed
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
   };
 
   return (
@@ -198,6 +211,8 @@ const ListingsScreen = () => {
           onItemPress={handleCardPress}
           onItemLongPress={handleLongPress}
           keyExtractor={(item) => item.id}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
         />
       )}
       <HostTypeModal

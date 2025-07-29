@@ -13,7 +13,7 @@ export const createVerifyOTPAction = (tokenStore: SimulatedTokenStore) => {
       }
 
       const response = await axios.post(
-        "http://10.132.119.88:8080/api/auth/verify-email",
+        "http://172.20.10.2:8080/api/auth/verify-email",
         { otp: otpCode },
         {
           headers: {

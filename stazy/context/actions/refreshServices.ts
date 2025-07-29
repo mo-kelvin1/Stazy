@@ -1,16 +1,22 @@
 import { Service } from "../../types/Service";
 import { SimulatedTokenStore } from "../../services/SimulatedTokenStore";
 
-export interface RefreshServicesResult {
+export interface PaginatedServicesResult {
   success: boolean;
   services?: Service[];
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
   message?: string;
 }
 
 export const createRefreshServicesAction = (
   tokenStore: SimulatedTokenStore
 ) => {
-  return async (): Promise<RefreshServicesResult> => {
+  return async (
+    page: number = 0,
+    size: number = 10
+  ): Promise<PaginatedServicesResult> => {
     try {
       const token = await tokenStore.getToken();
       if (!token) {
@@ -19,9 +25,8 @@ export const createRefreshServicesAction = (
           message: "No authentication token found",
         };
       }
-
       const response = await fetch(
-        "http://10.132.119.88:8080/api/service-offers",
+        `http://172.20.10.2:8080/api/service-offers?page=${page}&size=${size}`,
         {
           method: "GET",
           headers: {
@@ -30,7 +35,6 @@ export const createRefreshServicesAction = (
           },
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
@@ -39,11 +43,8 @@ export const createRefreshServicesAction = (
             errorData.message || `HTTP error! status: ${response.status}`,
         };
       }
-
-      const servicesData = await response.json();
-
-      // Transform the backend data to match the frontend Service interface
-      const services: Service[] = servicesData.map((service: any) => ({
+      const data = await response.json();
+      const services: Service[] = (data.items || []).map((service: any) => ({
         id: service.id.toString(),
         title: service.title || "",
         description: service.description || "",
@@ -67,10 +68,12 @@ export const createRefreshServicesAction = (
         provider: service.provider || "",
         providerEmail: service.providerEmail || "",
       }));
-
       return {
         success: true,
         services,
+        currentPage: data.currentPage,
+        totalPages: data.totalPages,
+        totalItems: data.totalItems,
       };
     } catch (error: any) {
       console.error("Error refreshing services:", error);

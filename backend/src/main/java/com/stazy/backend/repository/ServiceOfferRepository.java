@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface ServiceOfferRepository extends JpaRepository<ServiceOffer, Long> {
@@ -40,6 +42,5 @@ public interface ServiceOfferRepository extends JpaRepository<ServiceOffer, Long
     List<ServiceOffer> findByTitleContainingIgnoreCase(@Param("title") String title);
 
     @Query("SELECT s FROM ServiceOffer s WHERE s.isAvailable = true AND s.providerEmail != :excludeProviderEmail ORDER BY s.createdAt DESC")
-    List<ServiceOffer> findAllAvailableServiceOffersExcludingProvider(
-            @Param("excludeProviderEmail") String excludeProviderEmail);
+    Page<ServiceOffer> findAllAvailableServiceOffersExcludingProvider(@Param("excludeProviderEmail") String excludeProviderEmail, Pageable pageable);
 }

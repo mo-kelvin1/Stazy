@@ -15,6 +15,9 @@ import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/properties")
@@ -82,18 +85,19 @@ public class PropertyController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllProperties(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<?> getAllProperties(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            // Extract token from Authorization header
             String token = authorization.replace("Bearer ", "");
             String userEmail = jwtUtil.getEmailFromToken(token);
-
-            List<Property> properties = propertyService.getAllPropertiesExcludingUser(userEmail);
-            List<PropertyResponse> responses = properties.stream()
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Property> propertiesPage = propertyService.getAllPropertiesExcludingUser(userEmail, pageable);
+            List<PropertyResponse> responses = propertiesPage.getContent().stream()
                     .map(PropertyResponse::fromProperty)
                     .collect(Collectors.toList());
-
-            return ResponseEntity.ok(responses);
+            return ResponseEntity.ok(new PaginatedResponse<>(responses, propertiesPage.getNumber(), propertiesPage.getTotalPages(), propertiesPage.getTotalElements()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
         }
@@ -234,7 +238,7 @@ public class PropertyController {
             Path uploadPath = Paths.get("uploads/" + filename);
             Files.createDirectories(uploadPath.getParent());
             Files.write(uploadPath, file.getBytes());
-            String url = "http://10.132.119.88:8080/uploads/" + filename;
+            String url = "https://stazy-app.onrender.com/uploads/" + filename;
             System.out.println("[DEBUG] Uploaded image URL: " + url);
             return ResponseEntity.ok(url);
         } catch (Exception e) {

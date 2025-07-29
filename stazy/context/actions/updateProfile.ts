@@ -20,7 +20,7 @@ export const createUpdateProfileAction = (
       }
 
       const response = await axios.post(
-        "http://10.132.119.88:8080/update-profile",
+        "https://stazy-app.onrender.com/update-profile",
         {
           firstName,
           lastName,

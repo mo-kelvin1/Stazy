@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface ExperienceRepository extends JpaRepository<Experience, Long> {
@@ -40,7 +42,7 @@ public interface ExperienceRepository extends JpaRepository<Experience, Long> {
     List<Experience> findByTitleContainingIgnoreCase(@Param("title") String title);
 
     @Query("SELECT e FROM Experience e WHERE e.isAvailable = true AND e.hostEmail != :excludeHostEmail ORDER BY e.createdAt DESC")
-    List<Experience> findAllAvailableExperiencesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail);
+    Page<Experience> findAllAvailableExperiencesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail, Pageable pageable);
 
     @Query("SELECT e FROM Experience e WHERE e.difficulty = :difficulty AND e.isAvailable = true")
     List<Experience> findByDifficulty(@Param("difficulty") Experience.Difficulty difficulty);

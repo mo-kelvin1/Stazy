@@ -8,6 +8,8 @@ import com.stazy.backend.model.User;
 import com.stazy.backend.repository.ExperienceRepository;
 import com.stazy.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -186,8 +188,8 @@ public class ExperienceService {
         return experienceRepository.findAllAvailableExperiences();
     }
 
-    public List<Experience> getAllExperiencesExcludingUser(String userEmail) {
-        return experienceRepository.findAllAvailableExperiencesExcludingHost(userEmail);
+    public Page<Experience> getAllExperiencesExcludingUser(String userEmail, Pageable pageable) {
+        return experienceRepository.findAllAvailableExperiencesExcludingHost(userEmail, pageable);
     }
 
     public List<Experience> getExperiencesByHostEmail(String hostEmail) {

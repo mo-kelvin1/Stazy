@@ -9,6 +9,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import TodayHeader from "../../components/host/today/TodayHeader";
 import TodayTabs from "../../components/host/today/TodayTabs";
@@ -44,6 +45,7 @@ const TodayScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchHostBookings();
@@ -57,7 +59,7 @@ const TodayScreen = () => {
         return;
       }
       const response = await fetch(
-        "http://10.132.119.88:8080/api/bookings/host-bookings",
+        "http://172.20.10.2:8080/api/bookings/host-bookings",
         {
           method: "GET",
           headers: {
@@ -168,7 +170,7 @@ const TodayScreen = () => {
             }
             const status = action === "confirm" ? "CONFIRMED" : "REJECTED";
             const response = await fetch(
-              "http://10.132.119.88:8080/api/bookings/status",
+              "http://172.20.10.2:8080/api/bookings/status",
               {
                 method: "PATCH",
                 headers: {
@@ -223,6 +225,12 @@ const TodayScreen = () => {
     setSelectedBooking(null);
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHostBookings();
+    setRefreshing(false);
+  };
+
   const filteredBookings = getFilteredBookings();
 
   return (
@@ -256,6 +264,9 @@ const TodayScreen = () => {
         getBookingTypeIcon={getBookingTypeIcon}
         getBookingTypeColor={getBookingTypeColor}
         onBookingPress={handleBookingPress}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
       <Modal
         visible={modalVisible}

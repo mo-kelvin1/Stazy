@@ -8,6 +8,8 @@ import com.stazy.backend.model.User;
 import com.stazy.backend.repository.ServiceOfferRepository;
 import com.stazy.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -162,8 +164,8 @@ public class ServiceOfferService {
         return serviceOfferRepository.findAllAvailableServiceOffers();
     }
 
-    public List<ServiceOffer> getAllServiceOffersExcludingUser(String userEmail) {
-        return serviceOfferRepository.findAllAvailableServiceOffersExcludingProvider(userEmail);
+    public Page<ServiceOffer> getAllServiceOffersExcludingUser(String userEmail, Pageable pageable) {
+        return serviceOfferRepository.findAllAvailableServiceOffersExcludingProvider(userEmail, pageable);
     }
 
     public List<ServiceOffer> getServiceOffersByProviderEmail(String providerEmail) {

@@ -13,7 +13,7 @@ export const createResetPasswordAction = (
   }> => {
     try {
       const response = await axios.post(
-        "http://10.132.119.88:8080/api/auth/reset-password",
+        "http://172.20.10.2:8080/api/auth/reset-password",
         {
           email,
           otp,

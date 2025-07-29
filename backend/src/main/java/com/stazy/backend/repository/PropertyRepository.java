@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long> {
@@ -42,5 +44,5 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     List<Property> findByTitleContainingIgnoreCase(@Param("title") String title);
 
     @Query("SELECT p FROM Property p WHERE p.isAvailable = true AND p.hostEmail != :excludeHostEmail ORDER BY p.createdAt DESC")
-    List<Property> findAllAvailablePropertiesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail);
+    Page<Property> findAllAvailablePropertiesExcludingHost(@Param("excludeHostEmail") String excludeHostEmail, Pageable pageable);
 }

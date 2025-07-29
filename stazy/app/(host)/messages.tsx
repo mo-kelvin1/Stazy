@@ -21,7 +21,7 @@ import ChatList from "../../components/messages/ChatList";
 import ThreadList from "../../components/messages/ThreadList";
 
 const tokenStore = new SimulatedTokenStore();
-const WS_URL = "ws://10.132.119.88:8080/ws/chat";
+const WS_URL = "ws://172.20.10.2:8080/ws/chat";
 
 function formatTimestamp(ts: string) {
   if (!ts) return "";
@@ -83,7 +83,7 @@ const ChatScreen = ({
     try {
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.132.119.88:8080/api/chats/${recipientEmail}`,
+        `http://172.20.10.2:8080/api/chats/${recipientEmail}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.ok) {
@@ -99,7 +99,7 @@ const ChatScreen = ({
     try {
       const token = await tokenStore.getToken();
       const res = await fetch(
-        `http://10.132.119.88:8080/api/auth/profile-by-email?email=${encodeURIComponent(
+        `http://172.20.10.2:8080/api/auth/profile-by-email?email=${encodeURIComponent(
           recipientEmail
         )}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -184,7 +184,7 @@ const HostMessagesTab = () => {
     setLoading(true);
     try {
       const token = await tokenStore.getToken();
-      const res = await fetch(`http://10.132.119.88:8080/api/chats/threads`, {
+      const res = await fetch(`http://172.20.10.2:8080/api/chats/threads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {

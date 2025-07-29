@@ -13,7 +13,7 @@ export const createLoginAction = (
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await axios.post(
-        "http://10.132.119.88:8080/api/auth/login",
+        "http://172.20.10.2:8080/api/auth/login",
         {
           email,
           password,
