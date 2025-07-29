@@ -20,16 +20,6 @@ const FeatureRow = ({
       }
       onPress={onPastTrips}
     />
-    <FeatureCard
-      title="Connections"
-      isNew={true}
-      icon={
-        <View style={styles.connectionsIcon}>
-          <Text style={styles.connectionsEmoji}>👥</Text>
-        </View>
-      }
-      onPress={onConnections}
-    />
   </View>
 );
 
