@@ -30,7 +30,7 @@ export const addToWishlist = async (
 
     const itemType = getItemType(item).toUpperCase();
 
-    const response = await fetch("http://10.132.119.88:8080/api/wishlist/add", {
+    const response = await fetch("http://172.20.10.2:8080/api/wishlist/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,7 +67,7 @@ export const removeFromWishlistByEntityId = async (
     }
 
     const response = await fetch(
-      `http://10.132.119.88:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType.toUpperCase()}`,
+      `http://172.20.10.2:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType.toUpperCase()}`,
       {
         method: "DELETE",
         headers: {
@@ -116,7 +116,7 @@ export const removeFromWishlist = async (
     }
 
     const response = await fetch(
-      `http://10.132.119.88:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType}`,
+      `http://172.20.10.2:8080/api/wishlist/remove?entityId=${entityId}&itemType=${itemType}`,
       {
         method: "DELETE",
         headers: {
@@ -149,7 +149,7 @@ export const isInWishlist = async (
     }
 
     const response = await fetch(
-      `http://10.132.119.88:8080/api/wishlist/check?entityId=${id}&itemType=${itemType.toUpperCase()}`,
+      `http://172.20.10.2:8080/api/wishlist/check?entityId=${id}&itemType=${itemType.toUpperCase()}`,
       {
         method: "GET",
         headers: {
@@ -179,7 +179,7 @@ export const getWishlistItems = async (): Promise<WishlistItem[]> => {
     }
 
     const response = await fetch(
-      "http://10.132.119.88:8080/api/wishlist/items",
+      "http://172.20.10.2:8080/api/wishlist/items",
       {
         method: "GET",
         headers: {
@@ -209,7 +209,7 @@ export const getWishlistCount = async (): Promise<number> => {
     }
 
     const response = await fetch(
-      "http://10.132.119.88:8080/api/wishlist/count",
+      "http://172.20.10.2:8080/api/wishlist/count",
       {
         method: "GET",
         headers: {

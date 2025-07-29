@@ -83,7 +83,7 @@ const HighlightsScreen = () => {
         propertyData
       );
       const response = await fetch(
-        `http://10.132.119.88:8080/api/properties/${propertyId}`,
+        `http://172.20.10.2:8080/api/properties/${propertyId}`,
         {
           method: "PUT",
           headers: {

@@ -26,7 +26,7 @@ export const createRefreshExperiencesAction = (
         };
       }
       const response = await fetch(
-        `http://10.132.119.88:8080/api/experiences?page=${page}&size=${size}`,
+        `http://172.20.10.2:8080/api/experiences?page=${page}&size=${size}`,
         {
           method: "GET",
           headers: {
