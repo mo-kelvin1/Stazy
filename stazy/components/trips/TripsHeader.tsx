@@ -5,9 +5,6 @@ import { Ionicons } from "@expo/vector-icons";
 const TripsHeader = ({ onAdd }: { onAdd: () => void }) => (
   <View style={styles.header}>
     <Text style={styles.title}>My Trips</Text>
-    <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-      <Ionicons name="add" size={24} color="#007AFF" />
-    </TouchableOpacity>
   </View>
 );
 

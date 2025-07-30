@@ -34,7 +34,9 @@ const MenuScreen = () => {
     {
       label: "Account settings",
       icon: <Ionicons name="settings-outline" size={24} color="#222" />,
-      onPress: () => {},
+      onPress: () => {
+        router.push("/screens/ProfileScreen");
+      },
     },
     {
       label: "Hosting resources",

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import MenuOption from "./MenuOption";
+import { router } from "expo-router";
 
 const MenuSection = ({
   onViewProfile,
@@ -17,7 +18,9 @@ const MenuSection = ({
     <MenuOption
       icon="settings-outline"
       title="Account settings"
-      onPress={() => {}}
+      onPress={() => {
+        router.push("/screens/ProfileScreen");
+      }}
     />
     <MenuOption
       icon="help-circle-outline"
@@ -29,7 +32,13 @@ const MenuSection = ({
       title="View profile"
       onPress={onViewProfile}
     />
-    <MenuOption icon="hand-left-outline" title="Privacy" onPress={onPrivacy} />
+    <MenuOption
+      icon="heart-outline"
+      title="Favourites"
+      onPress={() => {
+        router.push("/(tabs)/wishlist");
+      }}
+    />
     <MenuOption
       icon="log-out-outline"
       title="Log out"
